@@ -1,6 +1,6 @@
 import mongoose, { Schema, model } from 'mongoose';
 
-const userSchema = new Schema(
+const userSchema:Schema = new Schema(
   {
     firstName: {
       type: String,
@@ -29,7 +29,11 @@ const userSchema = new Schema(
     role:{
       type: String,
       trim: true,
-      default: 'normal'
+      default: 'user'
+    },
+    isVerified:{
+      type:Boolean,
+      default:false
     }
   },
   { timestamps: true }

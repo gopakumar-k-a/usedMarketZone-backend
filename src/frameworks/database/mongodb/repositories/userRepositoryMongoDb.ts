@@ -2,12 +2,16 @@
 
 import User from "../models/userModel"
 
+import Otp from "../models/otpSchema"
 
 import { UserEntityType } from "../../../../entities/user"
+
+import { OtpEntityType } from "../../../../entities/otp"
 
 
 export const userRepositoryMongoDb = () => {
 
+    const getUserByEmail = async (email: string) => await User.findOne({ email: email })
 
 
     const addUser = async (user: UserEntityType) => {
@@ -15,7 +19,7 @@ export const userRepositoryMongoDb = () => {
             firstName: user.getFirstName(),
             lastName: user.getLastName(),
             email: user.getEmail(),
-            phone: user.getPassword(),
+            phone: user.getPhone(),
             password: user.getPassword()
         })
 
@@ -24,8 +28,18 @@ export const userRepositoryMongoDb = () => {
         return newUser
     }
 
+    const addOtp = async (otpData: OtpEntityType) => {
+        const newOtp:any= new Otp({
+            email: otpData.getEmail(),
+            otp:otpData.getOtp()
+        })
+        await newOtp.save()
+    }
+
     return {
-        addUser
+        addUser,
+        getUserByEmail,
+        addOtp
     }
 
 }

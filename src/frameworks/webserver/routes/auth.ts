@@ -1,15 +1,10 @@
 import express from "express";
-
-import { Request, Response } from "express";
-
-// import authController from "../../../adapters/authController/authController";
-
 import { userDbRepository } from '../../../application/repositories/userDbRepository'
-
 import {  userRepositoryMongoDb } from '../../../frameworks/database/mongodb/repositories/userRepositoryMongoDb'
 import authController from "../../../adapters/authController/authController";
 import { authService } from "../../services/authService";
 import { authServiceInterface } from "../../../application/services/authServiceInterface";
+
 const authRouter = () => {
     const router = express.Router();
 
@@ -25,6 +20,8 @@ const authRouter = () => {
 
 
     router.post('/signup',controller.registerUser)
+
+
     
 
     return router
