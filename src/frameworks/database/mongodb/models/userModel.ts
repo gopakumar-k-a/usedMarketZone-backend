@@ -18,7 +18,7 @@ const userSchema:Schema = new Schema(
       unique: true,
       match: [/^[^\s@]+@[^\s@]+\.[^\s@]+$/, 'Please add a valid email'],
     },
-    phoneNumber: {
+    phone: {
       type: Number,
       maxlength: 10,
     },
@@ -31,9 +31,17 @@ const userSchema:Schema = new Schema(
       trim: true,
       default: 'user'
     },
-    isVerified:{
+    isActive:{
       type:Boolean,
-      default:false
+      default:true
+    },
+    bio:{
+      type:String,
+      default:''
+    },
+    imageUrl:{
+      type:String,
+      default:''
     }
   },
   { timestamps: true }

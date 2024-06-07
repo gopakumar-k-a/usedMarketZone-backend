@@ -1,8 +1,15 @@
 import express, { Application } from 'express';
-
+const cors = require('cors')
+import configKeys from '../../config';
 const expressConfig = (app: Application) => {
-    app.use(express.json());
-    app.use(express.urlencoded({ extended: true }));
+  const corsOptions = {
+    origin:configKeys.CLIENT_URL, // Replace with your client's URL
+    optionsSuccessStatus: 200 ,
+    credentials: true,// For legacy browser support
   };
-  
-  export default expressConfig;
+  app.use(cors(corsOptions));
+  app.use(express.json());
+  app.use(express.urlencoded({ extended: true }));
+};
+
+export default expressConfig;

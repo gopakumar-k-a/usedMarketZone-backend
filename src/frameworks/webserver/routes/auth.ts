@@ -19,7 +19,9 @@ const authRouter = () => {
     )
 
 
-    router.post('/signup',controller.registerUser)
+    router.post('/send-otp',controller.otpSend)
+    router.post('/verify-sign-up',controller.verifyOtpRegister)
+    router.post('/login',controller.userLogIn)
 
 
     

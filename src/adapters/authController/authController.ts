@@ -1,6 +1,6 @@
 import asyncHandler from "express-async-handler";
 import { Request, Response } from "express";
-import { UserInterface } from '../../types/userInterface'
+import { UserInterface, SignUpUsingOtp } from '../../types/userInterface'
 import { UserDbInterface } from "../../application/repositories/userDbRepository";
 import { UserRepositoryMongoDb } from "../../frameworks/database/mongodb/repositories/userRepositoryMongoDb";
 import { AuthService } from "../../frameworks/services/authService";
@@ -9,9 +9,10 @@ import AppError from "../../utils/appError";
 import { HttpStatusCodes } from "../../types/httpStatusCodes";
 
 import {
-    userRegister,
+    VerifyAndRegister,
     sendOtp,
-} from "../../application/user-cases/auth/userAuth";
+    userAuthenticate
+} from "../../application/user-cases/auth/user/userAuth";
 
 const authController = (
     userDbRepository: UserDbInterface,
@@ -25,7 +26,9 @@ const authController = (
     const userService = authServiceInterface(authService())
 
 
-    const registerUser = asyncHandler(async (req: Request, res: Response) => {
+
+    const otpSend = asyncHandler(async (req: Request, res: Response) => {
+
 
         const requiredFields = ['firstName', 'lastName', 'email', 'phone', 'password'];
         const missingFields = requiredFields.filter(field => !(field in req.body));
@@ -34,18 +37,32 @@ const authController = (
             throw new AppError(`Missing required fields: ${missingFields.join(', ')}`, HttpStatusCodes.BAD_REQUEST);
         }
 
-        const user: UserInterface = req.body
-        console.log('user in auth controller ', user)
-
-        const createdUser = await userRegister(user, dbRepositoryUser, userService)
-
-        await sendOtp(createdUser.email, dbRepositoryUser, userService)
-
+        const userData: any = await sendOtp(req.body, dbRepositoryUser, userService)
+        console.log(userData);
 
         res.status(200).json({
             status: true,
-            message: `user registered otp send successfully`,
+            message: `otp send successfully`,
+            userData
 
+        })
+
+    })
+
+
+    const verifyOtpRegister = asyncHandler(async (req: Request, res: Response) => {
+
+
+
+        const { userData, otp } = req.body
+
+        const registeredEmail = await VerifyAndRegister(userData, dbRepositoryUser, userService, otp)
+        console.log('registeredEmail ', registeredEmail);
+
+        res.status(200).json({
+            status: true,
+            message: `user registered and otp verified successfully`,
+            email: registeredEmail
         })
 
     })
@@ -56,9 +73,31 @@ const authController = (
 
     // })
 
+    const userLogIn = asyncHandler(async (req: Request, res: Response) => {
+
+        const { email, password }: { email: string; password: string } = req.body;
+
+        if (!email || !password) {
+            throw new AppError(`all fields are required `, HttpStatusCodes.BAD_REQUEST)
+        }
+    const {token,user,role}= await userAuthenticate(email, password, dbRepositoryUser, userService)
+
+        res.status(200).json({
+            status: true,
+            message: 'success user log in success',
+            token,
+            user,
+            role
+
+        })
+
+    })
+
 
     return {
-        registerUser
+        verifyOtpRegister,
+        otpSend,
+        userLogIn
     }
 
 

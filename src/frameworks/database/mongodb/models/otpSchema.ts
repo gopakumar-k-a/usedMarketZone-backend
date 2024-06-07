@@ -12,12 +12,9 @@ const otpSchema: Schema = new Schema({
     },
     createdAt: {
         type: Date,
-        default:()=> Date.now()
-    },
-    expiresAt: {
-        type: Date,
-        default: () => new Date(+new Date() + 15 * 60 * 1000)
-    } // 15 minutes expiry
+        expires: 300, // TTL index in seconds ( 5 minutes)
+        default: Date.now,
+      },
 });
 
 const Otp=model('otp',otpSchema)

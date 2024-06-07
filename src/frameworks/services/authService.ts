@@ -9,46 +9,49 @@ import AppError from "../../utils/appError";
 import { HttpStatusCodes } from "../../types/httpStatusCodes";
 
 export const authService = () => {
-    const encryptPassword = async (password: string) => {
-        const salt = await bcrypt.genSalt(10)
-        password = await bcrypt.hash(password, salt)
-        return password
-    }
+  const encryptPassword = async (password: string) => {
+    const salt = await bcrypt.genSalt(10)
+    password = await bcrypt.hash(password, salt)
+    return password
+  }
 
-    const comparePassword = (password: string, hashedPassword: string) => {
-        return bcrypt.compare(password, hashedPassword)
-    }
+  const comparePassword = (password: string, hashedPassword: string) => {
+    return bcrypt.compare(password, hashedPassword)
+  }
 
-    const generateToken = (payload: string) => {
-        const token = jwt.sign({ payload }, configKeys.JWT_SECRET, {
-            expiresIn: "5d",
-        });
-        return token;
-    };
+  const generateToken = (payload: string) => {
+    const token = jwt.sign({ payload }, configKeys.JWT_SECRET, {
+      expiresIn: "5d",
+    });
+    return token;
+  };
 
-    const verifyToken = (token: string) => {
+  const verifyToken = (token: string) => {
 
-        return jwt.verify(token, configKeys.JWT_SECRET);
-    };
+    return jwt.verify(token, configKeys.JWT_SECRET);
+  };
 
 
 
-    const sendOtpEmail = async(email: string,otp:number) => {
-        try {
+  const sendOtpEmail = async (email: string, otp: number) => {
+    try {
+      console.log('sended otp ', otp);
 
-            const transporter = nodemailer.createTransport({
-                service: 'gmail',
-                auth: {
-                    user: configKeys.MAIL_SENDER,
-                    pass: configKeys.MAIL_SENDER_PASS
-                }
-            });
+      const transporter = nodemailer.createTransport({
+        host: 'smtp.gmail.com',
+        port: 465,
+        secure: true,
+        auth: {
+          user: configKeys.MAIL_SENDER,
+          pass: configKeys.MAIL_SENDER_PASS
+        }
+      });
 
-            const mailOptions = {
-                from: 'Used Market Zone',
-                to: email,
-                subject: 'OTP For your verification',
-                html: `
+      const mailOptions = {
+        from: 'Used Market Zone',
+        to: email,
+        subject: 'OTP For your verification',
+        html: `
                 <!DOCTYPE html>
                 <html lang="en">
                 <head>
@@ -99,31 +102,25 @@ export const authService = () => {
                 </body>
                 </html>
                 `
-            };
+      };
 
-            transporter.sendMail(mailOptions)
-                .then((info: any) => {
-                    console.log('Email sent:', info.response);
-                    return otp
-                })
-                .catch((error: any) => {
-                    console.error('Error sending email:', error.message);
-                    return `error sending otp`
-                });
-        } catch (error: any) {
-            console.error('Error sending email:', error.message);
-            throw new AppError('Error sending email',HttpStatusCodes.BAD_GATEWAY)
-        }
-    };
+      const info = await transporter.sendMail(mailOptions);
+      console.log('Email sent:', info.response);
 
-
-    return {
-        encryptPassword,
-        comparePassword,
-        generateToken,
-        verifyToken,
-        sendOtpEmail
+    } catch (error: any) {
+      console.error('Error sending email:', error.message);
+      throw new AppError('Error sending email', HttpStatusCodes.BAD_GATEWAY)
     }
+  };
+
+
+  return {
+    encryptPassword,
+    comparePassword,
+    generateToken,
+    verifyToken,
+    sendOtpEmail
+  }
 }
 
 export type AuthService = typeof authService
