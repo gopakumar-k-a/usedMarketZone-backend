@@ -13,12 +13,15 @@ export const authServiceInterface=(service:AuthServiceReturnType)=>{
 
     const sendOtpEmail=async (email:string,otp:number)=>await service.sendOtpEmail(email,otp)
 
+    // const createUserName=async(firstName:string,lastName:string)=>await 
+
     return {
         encryptPassword,
         comparePassword,
         generateToken,
         verifyToken,
-        sendOtpEmail
+        sendOtpEmail,
+        
     }
 
 

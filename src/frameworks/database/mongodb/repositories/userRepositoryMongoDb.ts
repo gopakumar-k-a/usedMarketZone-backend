@@ -24,8 +24,13 @@ export const userRepositoryMongoDb = () => {
             lastName: user.getLastName(),
             email: user.getEmail(),
             phone: user.getPhone(),
-            password: user.getPassword()
+            password: user.getPassword(),
+            userName:user.getUserName(),
+            imageUrl:user.getImageUrl(),
+
         })
+
+     
 
         await newUser.save()
 
@@ -42,12 +47,16 @@ export const userRepositoryMongoDb = () => {
 
     const otpByEmail = async (email: string) => await Otp.findOne({ email }).sort({ createdAt: -1 }).limit(1)
 
+    const getUserByUserName=async(userName:string)=>await User.findOne({userName})
+
     return {
         addUser,
         getUserByEmail,
         addOtp,
-        otpByEmail
+        otpByEmail,
+        getUserByUserName
     }
+
 
 }
 

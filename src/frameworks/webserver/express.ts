@@ -3,7 +3,7 @@ const cors = require('cors')
 import configKeys from '../../config';
 const expressConfig = (app: Application) => {
   const corsOptions = {
-    origin:configKeys.CLIENT_URL, // Replace with your client's URL
+    origin:configKeys.CLIENT_URL, 
     optionsSuccessStatus: 200 ,
     credentials: true,// For legacy browser support
   };

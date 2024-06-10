@@ -22,6 +22,7 @@ const authRouter = () => {
     router.post('/send-otp',controller.otpSend)
     router.post('/verify-sign-up',controller.verifyOtpRegister)
     router.post('/login',controller.userLogIn)
+    router.post('/google-login',controller.googleAuthenticator)
 
 
     

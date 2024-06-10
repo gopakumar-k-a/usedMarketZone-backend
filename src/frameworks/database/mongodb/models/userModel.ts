@@ -1,6 +1,7 @@
-import mongoose, { Schema, model } from 'mongoose';
+import { kMaxLength } from "buffer";
+import mongoose, { Schema, model } from "mongoose";
 
-const userSchema:Schema = new Schema(
+const userSchema: Schema = new Schema(
   {
     firstName: {
       type: String,
@@ -12,11 +13,16 @@ const userSchema:Schema = new Schema(
       trim: true,
       maxlength: 32,
     },
+    userName: {
+      type: String,
+      trim:true,
+      maxlength:32
+    },
     email: {
       type: String,
       trim: true,
       unique: true,
-      match: [/^[^\s@]+@[^\s@]+\.[^\s@]+$/, 'Please add a valid email'],
+      match: [/^[^\s@]+@[^\s@]+\.[^\s@]+$/, "Please add a valid email"],
     },
     phone: {
       type: Number,
@@ -26,27 +32,26 @@ const userSchema:Schema = new Schema(
       type: String,
       trim: true,
     },
-    role:{
+    role: {
       type: String,
       trim: true,
-      default: 'user'
+      default: "user",
     },
-    isActive:{
-      type:Boolean,
-      default:true
+    isActive: {
+      type: Boolean,
+      default: true,
     },
-    bio:{
-      type:String,
-      default:''
+    bio: {
+      type: String,
+      default: "",
     },
-    imageUrl:{
-      type:String,
-      default:''
-    }
+    imageUrl: {
+      type: String,
+      default: "",
+    },
   },
   { timestamps: true }
 );
 
-const User = model('User', userSchema);
+const User = model("User", userSchema);
 export default User;
-
