@@ -20,7 +20,8 @@ export interface UserInterface {
     lastName: string;
     email: string;
     phone: string;
-    password: string;
+    password?: string;
+    bio?:string;
   
 }
 

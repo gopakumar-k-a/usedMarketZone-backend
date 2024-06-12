@@ -5,44 +5,51 @@ import { userDbRepository } from "../../../application/repositories/userDbReposi
 import { userRepositoryMongoDb } from "../../database/mongodb/repositories/userRepositoryMongoDb";
 import AppError from "../../../utils/appError";
 import { HttpStatusCodes } from "../../../types/httpStatusCodes";
-const serviceProvider = authServiceInterface(authService());
-const userDb=userDbRepository(userRepositoryMongoDb())
+import { JwtPayload } from "jsonwebtoken";
 
-export default async function jwtTokenVerfiyUser(
+const serviceProvider = authServiceInterface(authService());
+const userDb = userDbRepository(userRepositoryMongoDb());
+
+interface CustomJwtPayload extends JwtPayload {
+  _id: string;
+  role: string;
+}
+
+export default async function jwtTokenVerifyUser(
   req: Request,
   res: Response,
   next: NextFunction
 ) {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    throw new AppError("UnAuthorised Entry", HttpStatusCodes.UNAUTHORIZED);
+    return next(
+      new AppError("Unauthorized Entry", HttpStatusCodes.UNAUTHORIZED)
+    );
   }
 
   const token = authHeader.split(" ")[1];
   try {
-    const decoded = serviceProvider.verifyToken(token)
-    // req.user = await userDb.getUserByI
-    next();
+    const decoded = serviceProvider.verifyToken(token);
+    console.log("decoded ", decoded);
+
+ 
+    const customPayload = JSON.parse(
+      (decoded as any).payload
+    ) as CustomJwtPayload;
+
+    
+    
+
+    const userData = await userDb.getUserById(customPayload._id);
+
+    
+    if (userData && userData.role === "user" && userData.isActive) {
+      return next();
+    } else {
+      return next(new AppError("Not authorized", HttpStatusCodes.UNAUTHORIZED));
+    }
   } catch (err) {
-    console.log(err);
-    res.status(403).json({ message: "Invalid token" });
-    throw new AppError("Not authorized", HttpStatusCodes.UNAUTHORIZED);
+    console.error(err);
+    return next(new AppError("Invalid token", HttpStatusCodes.UNAUTHORIZED));
   }
 }
-
-// async function verifyToken(req, res, next) {
-//     const authHeader = req.headers.authorization;
-//     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-//         return res.status(401).json({ message: 'Unauthorized' });
-//     }
-//     const token = authHeader.split(' ')[1];
-//     try {
-//         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-//         req.user = await userModel.findOne({ _id: decoded.id }).select('-password')
-//         next();
-//     } catch (err) {
-//         console.log(err);
-//         res.status(403).json({ message: 'Invalid token' });
-//         throw new Error('Not authorized')
-//     }
-// }

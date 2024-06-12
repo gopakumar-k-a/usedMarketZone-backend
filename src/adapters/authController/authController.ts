@@ -13,7 +13,7 @@ import {
   googleAuthenticate,
   sendOtp,
   userAuthenticate,
-} from "../../application/user-cases/auth/user/userAuth";
+} from "../../application/user-cases/auth/auth";
 
 const authController = (
   userDbRepository: UserDbInterface,
@@ -51,7 +51,7 @@ const authController = (
     );
     console.log(userData);
 
-    res.status(200).json({
+    res.status(HttpStatusCodes.OK).json({
       status: true,
       message: `otp send successfully`,
       userData,
@@ -70,7 +70,7 @@ const authController = (
       );
       console.log("registeredEmail ", registeredEmail);
 
-      res.status(200).json({
+      res.status(HttpStatusCodes.OK).json({
         status: true,
         message: `user registered and otp verified successfully`,
         email: registeredEmail,
@@ -100,7 +100,7 @@ const authController = (
 
     console.log("user with out pass is ", user);
 
-    res.status(200).json({
+    res.status(HttpStatusCodes.OK).json({
       status: true,
       message: "success user log in success",
       token,
@@ -122,7 +122,7 @@ console.log('google authenticator token, user, role ',token, user, role);
 
 
 
-      res.status(200).json({
+      res.status(HttpStatusCodes.OK).json({
         status: true,
         message: "success user log in success",
         token,

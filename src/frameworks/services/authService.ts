@@ -19,7 +19,7 @@ export const authService = () => {
     return bcrypt.compare(password, hashedPassword)
   }
 
-  const generateToken = (payload: string) => {
+  const generateToken = (payload: any) => {
     const token = jwt.sign({ payload }, configKeys.JWT_SECRET, {
       expiresIn: "5d",
     });

@@ -1,19 +1,20 @@
-import { UserDbInterface } from "../../../repositories/userDbRepository";
-import { AuthServiceInterface } from "../../../services/authServiceInterface";
-import createUserEntity, { UserEntityType } from "../../../../entities/user";
+import { UserDbInterface } from "../../repositories/userDbRepository";
+import { AuthServiceInterface } from "../../services/authServiceInterface";
+import createUserEntity, { UserEntityType } from "../../../entities/user";
 import createGoogleEntity, {
   GoogleUserEntityType,
-} from "../../../../entities/googleUserEntity";
-import AppError from "../../../../utils/appError";
-import { HttpStatusCodes } from "../../../../types/httpStatusCodes";
-import { generateOTP } from "../../../../utils/generateOtp";
-import createOtpEntity, { OtpEntityType } from "../../../../entities/otp";
+} from "../../../entities/googleUserEntity";
+import AppError from "../../../utils/appError";
+import { HttpStatusCodes } from "../../../types/httpStatusCodes";
+import { generateOTP } from "../../../utils/generateOtp";
+import createOtpEntity, { OtpEntityType } from "../../../entities/otp";
 import {
   UserInterface,
   DecryptInterface,
   CreateUserInterface,
-} from "../../../../types/userInterface";
-import omit from "lodash/omit";
+} from "../../../types/userInterface";
+import { removeSensitiveFields } from "../user/read";
+
 
 export const VerifyAndRegister = async (
   user: {
@@ -115,7 +116,6 @@ export const sendOtp = async (
   return user;
 };
 
-
 export const userAuthenticate = async (
   email: string,
   pass: string,
@@ -150,17 +150,16 @@ export const userAuthenticate = async (
     role: "user",
   };
 
+  // const user = omit(userData, "password");
+  const user = await removeSensitiveFields(userData);
 
-
-  const user = omit(userData, "password");
-
+  console.log("user data is ", user);
 
   const token = await userService.generateToken(JSON.stringify(jwtPayload));
   const role = user.role;
 
   return { token, user, role };
 };
-
 
 export const googleAuthenticate = async (
   userCred: {
@@ -173,20 +172,20 @@ export const googleAuthenticate = async (
   userRepository: ReturnType<UserDbInterface>,
   userService: ReturnType<AuthServiceInterface>
 ) => {
-
   const userData = await userRepository.getUserByEmail(userCred.email);
 
   let user;
   let token;
   const role = "user";
   if (userData) {
-
     const jwtPayload = {
       _id: userData._id,
       role: "user",
     };
     token = await userService.generateToken(JSON.stringify(jwtPayload));
-    user = userData;
+    const userWithoutPass = await removeSensitiveFields(userData);
+
+    user = userWithoutPass;
   } else {
     console.log("else user data ");
 
@@ -211,11 +210,11 @@ export const googleAuthenticate = async (
     );
 
     const createdUser: any = await userRepository.addUser(userEntity);
- 
-    const plainUser = createdUser.toObject(); // Converts to plain JavaScript object
-    const { password, ...userWithoutPass } = plainUser;
-    
 
+    // const plainUser = createdUser.toObject(); // Converts to plain JavaScript object
+    // const { password, ...userWithoutPass } = plainUser;
+
+    const userWithoutPass = await removeSensitiveFields(createdUser);
 
     user = userWithoutPass;
     const jwtPayload = {

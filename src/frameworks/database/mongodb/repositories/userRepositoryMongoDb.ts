@@ -5,7 +5,7 @@ import User from "../models/userModel"
 import Otp from "../models/otpSchema"
 
 import { UserEntityType } from "../../../../entities/user"
-
+import { UserInterface } from "../../../../types/userInterface"
 import { OtpEntityType } from "../../../../entities/otp"
 import { CreateUserInterface } from "../../../../types/userInterface"
 
@@ -45,17 +45,54 @@ export const userRepositoryMongoDb = () => {
         await newOtp.save()
     }
 
-    const otpByEmail = async (email: string) => await Otp.findOne({ email }).sort({ createdAt: -1 }).limit(1)
+    const otpByEmail = async (email: string) => {
+        const otp=await Otp.findOne({ email }).sort({ createdAt: -1 }).limit(1)
+        return otp
+    }
 
-    const getUserByUserName=async(userName:string)=>await User.findOne({userName})
+    const getUserByUserName=async(userName:string)=>{
+        console.log('user name is ',userName);
+        
+        const user=await User.findOne({userName})
+        console.log('user in mongo ',user);
+        
+        return user
+    }
+
+    const getUserById=async(userId:string)=>{
+        const user=await User.findById(userId)
+        return user
+    }
+
+    const updateUserProfile=async(userData:UserInterface,userId:string)=>{
+    console.log('inside mongog update user profile ',userData,userId);
+    const updatedUser = await User.findByIdAndUpdate(
+        userId,
+        { $set: userData },
+        { new: true, runValidators: true }
+      );
+
+      return updatedUser
+    
+    }
+
+    const updateUserImage=async(imageUrl:string,userId:string)=>{
+        const updatedUser=await User.findByIdAndUpdate(userId,{$set:{imageUrl}},{new:true,runValidators:true})
+        return updatedUser
+    }
 
     return {
         addUser,
         getUserByEmail,
         addOtp,
         otpByEmail,
-        getUserByUserName
+        getUserByUserName,
+        getUserById,
+        updateUserProfile,
+        updateUserImage
     }
+
+
 
 
 }

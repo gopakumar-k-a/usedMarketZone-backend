@@ -7,7 +7,7 @@ export const authServiceInterface=(service:AuthServiceReturnType)=>{
 
     const comparePassword=(password:string,hashedPassword:string)=>service.comparePassword(password,hashedPassword)
 
-    const generateToken=(payload:string)=>service.generateToken(payload)
+    const generateToken=(payload:any)=>service.generateToken(payload)
 
     const verifyToken=(token:string)=>service.verifyToken(token)
 
