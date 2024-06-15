@@ -131,6 +131,12 @@ export const userAuthenticate = async (
     throw new AppError("this user doesn't exist", HttpStatusCodes.UNAUTHORIZED);
   }
 
+  if(userData.isActive==false){
+    console.log('inside this');
+    
+    throw new AppError("cannot sign in authentication blocked by admin ",HttpStatusCodes.UNAUTHORIZED)
+  }
+
   //   const applicantId = user?._id;
 
   const isPasswordCorrect = await userService.comparePassword(

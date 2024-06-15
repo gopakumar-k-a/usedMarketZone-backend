@@ -3,7 +3,6 @@ import AppError from "../../../utils/appError";
 import { UserDbInterface } from "../../repositories/userDbRepository";
 
 export function removeSensitiveFields(object: any) {
-  
   const {
     _id,
     firstName,
@@ -60,13 +59,11 @@ export const getUserProfile = async (
 
 export const checkUserNameAvailabilty = async (
   userName: string,
-  userId:string,
+  userId: string,
   userRepository: ReturnType<UserDbInterface>
 ) => {
-
   const user = await userRepository.getUserByUserName(userName);
-  console.log('user is ,',user);
-  
+  console.log("user is ,", user);
 
   console.log("user in the repository  ", user);
 
@@ -75,4 +72,13 @@ export const checkUserNameAvailabilty = async (
   } else {
     return true;
   }
+};
+
+export const getAllUsers = async (
+  startIndex: number,
+  limit: number,
+  userRepository: ReturnType<UserDbInterface>
+) => {
+  const {users,totalDocuments} = await userRepository.getAllUsers(startIndex, limit);
+  return {users,totalDocuments};
 };

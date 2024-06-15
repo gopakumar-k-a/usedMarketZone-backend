@@ -20,6 +20,8 @@ export const userDbRepository = (repository: ReturnType<UserRepositoryMongoDb>) 
     const getUserById=async(userId:string)=>await repository.getUserById(userId)
     const updateUserProfile=async(userData:UserInterface,userId:string)=>await repository.updateUserProfile(userData,userId)
     const updateUserImage=async(imageUrl:string,userId:string)=>await repository.updateUserImage(imageUrl,userId)
+    const getAllUsers=async(startIndex:number,limit:number)=>await repository.getAllUsers(startIndex,limit)
+    const modifyUserAccess=async(userId:string)=>await repository.modifyUserAccess(userId)
 
     return {
         addUser,
@@ -29,7 +31,9 @@ export const userDbRepository = (repository: ReturnType<UserRepositoryMongoDb>) 
         getUserByUserName,
         getUserById,
         updateUserProfile,
-        updateUserImage
+        updateUserImage,
+        getAllUsers,
+        modifyUserAccess
     }
 }
 

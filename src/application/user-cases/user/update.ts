@@ -42,3 +42,15 @@ return formatedUserData;
 
 
 }
+
+export const  modifyUserAccess=async(userId:string,userRepository:ReturnType<UserDbInterface>)=>{
+
+  const updatedUser=await userRepository.modifyUserAccess(userId)
+  
+  if(!updatedUser){
+    throw new AppError("user not found ",HttpStatusCodes.NOT_FOUND)
+  }
+
+  return updatedUser
+
+}
