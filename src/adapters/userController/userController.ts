@@ -8,15 +8,24 @@ import {
   getUserProfile,
   checkUserNameAvailabilty,
 } from "../../application/user-cases/user/read";
-import { updateUserProfile ,
-  updateUserImage
+import {
+  updateUserProfile,
+  updateUserImage,
+  updateUserPassword,
+  removeProfilePicUrl,
 } from "../../application/user-cases/user/update";
+import AppError from "../../utils/appError";
+import { AuthService } from "../../frameworks/services/authService";
+import { AuthServiceInterface } from "../../application/services/authServiceInterface";
 
 const userController = (
   userDbRepository: UserDbInterface,
-  userRepositoryMongoDb: UserRepositoryMongoDb
+  userDbImpl: UserRepositoryMongoDb,
+  authServiceInterface: AuthServiceInterface,
+  authService: AuthService
 ) => {
-  const dbRepositoryUser = userDbRepository(userRepositoryMongoDb());
+  const dbRepositoryUser = userDbRepository(userDbImpl());
+  const userService = authServiceInterface(authService());
 
   const handleGetUserProfile = asyncHandlder(
     async (req: Request, res: Response) => {
@@ -75,7 +84,7 @@ const userController = (
         dbRepositoryUser
       );
       res.status(HttpStatusCodes.OK).json({
-        status:true,
+        status: true,
         message: "user profile updated successfully",
         updatedUser,
       });
@@ -87,17 +96,70 @@ const userController = (
       const { userId } = req.params;
       const { imageUrl } = req.body;
 
-      console.log('userId imageUrl',userId,imageUrl);
+      console.log("userId imageUrl", userId, imageUrl);
 
-      const updatedUser=await updateUserImage(imageUrl,userId,dbRepositoryUser)
-      
+      const updatedUser = await updateUserImage(
+        imageUrl,
+        userId,
+        dbRepositoryUser
+      );
 
-      res.status(HttpStatusCodes.OK).send({
-        status:true,
-        message:"udpated user profile ",
+      res.status(HttpStatusCodes.OK).json({
+        status: true,
+        message: "udpated user profile ",
+        updatedUser,
+      });
+    }
+  );
+
+  const handleUserPasswordUpdate = asyncHandlder(async (req, res) => {
+    const { currentPassword, newPassword, confirmPassword } = req.body;
+    const { userId } = req.params;
+
+    if (!userId) {
+      throw new AppError(
+        "Missing required parameter: userId",
+        HttpStatusCodes.UNAUTHORIZED
+      );
+    }
+
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      throw new AppError(
+        "All fields (current password, new password, confirm password) are required",
+        HttpStatusCodes.UNAUTHORIZED
+      );
+    }
+
+    if (newPassword !== confirmPassword) {
+      throw new AppError(
+        "New password and confirm password do not match",
+        HttpStatusCodes.UNAUTHORIZED
+      );
+    }
+
+    await updateUserPassword(
+      currentPassword,
+      newPassword,
+      userId,
+      dbRepositoryUser,
+      userService
+    );
+
+    res
+      .status(HttpStatusCodes.OK)
+      .json({ success: true, message: "Password updated successfully!" });
+  });
+
+  const handleProfilePicRemove = asyncHandlder(
+    async (req: Request, res: Response) => {
+      const { userId } = req.params;
+     const updatedUser= await removeProfilePicUrl(userId, dbRepositoryUser);
+
+      res.status(HttpStatusCodes.OK).json({
+        success: true,
+        message: "user profile image removed successfully",
         updatedUser
-
-      })
+      });
     }
   );
 
@@ -106,6 +168,8 @@ const userController = (
     handleUserNameCheck,
     handleProfileUpdate,
     handleProfileImageUpdate,
+    handleUserPasswordUpdate,
+    handleProfilePicRemove,
   };
 };
 

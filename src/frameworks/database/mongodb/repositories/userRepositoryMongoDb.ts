@@ -7,7 +7,6 @@ import { UserInterface } from "../../../../types/userInterface";
 import { OtpEntityType } from "../../../../entities/otp";
 import { CreateUserInterface } from "../../../../types/userInterface";
 
-
 export const userRepositoryMongoDb = () => {
   const getUserByEmail = async (email: string) => {
     const user: CreateUserInterface | null = await User.findOne({ email });
@@ -94,9 +93,31 @@ export const userRepositoryMongoDb = () => {
       user.isActive = !user.isActive;
       await user.save();
     }
-    console.log('user in mongo modifyUserAccess',user);
-    
+    console.log("user in mongo modifyUserAccess", user);
+
     return user;
+  };
+
+  const updateUserPassword = async (email: string, newPassword: string) => {
+    const updatedUser = await User.findOneAndUpdate(
+      { email },
+      { password: newPassword },
+      { new: true }
+    );
+
+    console.log("updated password and thee user is ", updatedUser);
+
+    return;
+  };
+
+  const removeProfilePicUrl = async (userId: string) => {
+    const updatedUser = await User.findOneAndUpdate(
+      { _id: userId },
+      { imageUrl: "" },
+      { new: true }
+    );
+
+    return updatedUser;
   };
 
   return {
@@ -110,6 +131,8 @@ export const userRepositoryMongoDb = () => {
     updateUserImage,
     getAllUsers,
     modifyUserAccess,
+    updateUserPassword,
+    removeProfilePicUrl
   };
 };
 

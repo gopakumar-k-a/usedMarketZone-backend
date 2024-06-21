@@ -1,27 +1,47 @@
-import express from 'express'
+import express from "express";
 import { userDbRepository } from "../../../application/repositories/userDbRepository";
-import { UserRepositoryMongoDb, userRepositoryMongoDb } from "../../database/mongodb/repositories/userRepositoryMongoDb";
-import userController from '../../../adapters/userController/userController';
+import {
+  UserRepositoryMongoDb,
+  userRepositoryMongoDb,
+} from "../../database/mongodb/repositories/userRepositoryMongoDb";
+import { authService } from "../../services/authService";
+import { authServiceInterface } from "../../../application/services/authServiceInterface";
+import userController from "../../../adapters/userController/userController";
 
-const userRouter=()=>{
-  const router = express.Router()
+const userRouter = () => {
+  const router = express.Router();
 
-  const controller=userController(userDbRepository,userRepositoryMongoDb)
+  const controller = userController(
+    userDbRepository,
+    userRepositoryMongoDb,
+    authServiceInterface,
+    authService
+  );
 
-  router
-  .route("/profile/:userId")
-  .get(controller.handleGetUserProfile)
-  router.put("/edit-profile/:userId",controller.handleProfileUpdate)
-  
-  router.put("/edit-profile/update-image/:userId",controller.handleProfileImageUpdate)
+  router.route("/profile/:userId").get(controller.handleGetUserProfile);
+  router.put("/edit-profile/:userId", controller.handleProfileUpdate);
 
+  router.put(
+    "/edit-profile/update-image/:userId",
+    controller.handleProfileImageUpdate
+  );
 
-  router.get("/username-check/:userName/:userId",controller.handleUserNameCheck)
+  router.put(
+    "/edit-profile/update-password/:userId",
+    controller.handleUserPasswordUpdate
+  );
 
-  return router
-  
+  router.put(
+    "/edit-profile/remove-profile-pic/:userId",
+    controller.handleProfilePicRemove
+  );
 
-}
+  router.get(
+    "/username-check/:userName/:userId",
+    controller.handleUserNameCheck
+  );
 
+  return router;
+};
 
-export default userRouter
+export default userRouter;

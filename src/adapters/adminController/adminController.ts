@@ -2,7 +2,6 @@ import asyncHandler from "express-async-handler";
 import { UserDbInterface } from "../../application/repositories/userDbRepository";
 import {
   UserRepositoryMongoDb,
-  userRepositoryMongoDb,
 } from "../../frameworks/database/mongodb/repositories/userRepositoryMongoDb";
 import { Request, Response } from "express";
 import { HttpStatusCodes } from "../../types/httpStatusCodes";
@@ -13,7 +12,7 @@ const adminController = (
   userDbInterface: UserDbInterface,
   userDbImpl: UserRepositoryMongoDb
 ) => {
-  const userDb = userDbInterface(userRepositoryMongoDb());
+  const userDb = userDbInterface(userDbImpl());
 
   const handleGetUsers = asyncHandler(async (req: Request, res: Response) => {
     // console.log("inside admin controller ", req.params);

@@ -13,8 +13,8 @@ import {
   DecryptInterface,
   CreateUserInterface,
 } from "../../../types/userInterface";
+import { JwtForgotPasswordPayload } from "../../../types/authInterface";
 import { removeSensitiveFields } from "../user/read";
-
 
 export const VerifyAndRegister = async (
   user: {
@@ -94,26 +94,50 @@ export const VerifyAndRegister = async (
   }
 };
 
+//send otp before registering user
 export const sendOtp = async (
   user: UserInterface,
   userRepository: ReturnType<UserDbInterface>,
-  userService: ReturnType<AuthServiceInterface>
+  userService: ReturnType<AuthServiceInterface>,
+  isResend: boolean = false
 ) => {
-  const isExistingEmail = await userRepository.getUserByEmail(user?.email);
+  // const isExistingEmail = await userRepository.getUserByEmail(user?.email);
 
-  if (isExistingEmail) {
-    throw new AppError("user email already exists", HttpStatusCodes.CONFLICT);
+  // if (isExistingEmail) {
+  //   throw new AppError("user email already exists", HttpStatusCodes.CONFLICT);
+  // }
+
+  // user.password = userService.generateToken(user.password);
+  // // user.confirmPassword = null
+  // console.log(user);
+  if (!isResend) {
+    const isExistingEmail = await userRepository.getUserByEmail(user?.email);
+    if (isExistingEmail) {
+      throw new AppError("user email already exists", HttpStatusCodes.CONFLICT);
+    }
+
+    user.password = userService.generateToken(user.password);
+    console.log(user);
   }
-
-  user.password = userService.generateToken(user.password);
-  // user.confirmPassword = null
-  console.log(user);
 
   const otp = generateOTP();
   const otpEntity: OtpEntityType = createOtpEntity(user.email, otp);
   await userRepository.addOtp(otpEntity);
   await userService.sendOtpEmail(user.email, otp);
   return user;
+};
+
+export const resendOtp = async (
+  userData: UserInterface,
+  userRepository: ReturnType<UserDbInterface>,
+  userService: ReturnType<AuthServiceInterface>
+) => {
+  const user = await userRepository.getUserByEmail(userData.email);
+  if (user) {
+    throw new AppError("User Exists", HttpStatusCodes.NOT_FOUND);
+  }
+
+  return await sendOtp(userData, userRepository, userService, true);
 };
 
 export const userAuthenticate = async (
@@ -131,10 +155,13 @@ export const userAuthenticate = async (
     throw new AppError("this user doesn't exist", HttpStatusCodes.UNAUTHORIZED);
   }
 
-  if(userData.isActive==false){
-    console.log('inside this');
-    
-    throw new AppError("cannot sign in authentication blocked by admin ",HttpStatusCodes.UNAUTHORIZED)
+  if (userData.isActive == false) {
+    console.log("inside this");
+
+    throw new AppError(
+      "cannot sign in authentication blocked by admin ",
+      HttpStatusCodes.UNAUTHORIZED
+    );
   }
 
   //   const applicantId = user?._id;
@@ -167,6 +194,7 @@ export const userAuthenticate = async (
   return { token, user, role };
 };
 
+//google sign in
 export const googleAuthenticate = async (
   userCred: {
     firstName: string;
@@ -201,9 +229,13 @@ export const googleAuthenticate = async (
       .join("");
     const hashedPassword = await userService.encryptPassword(generatePassword);
 
+    console.log("hashed password", hashedPassword);
+
     const createdUserName = `${userCred.firstName.toLowerCase()}_${userCred.lastName.toLowerCase()}_${Math.floor(
       1000 + Math.random() * 9000
     )}`;
+
+    console.log("created user name ", createdUserName);
 
     const userEntity: UserEntityType = createUserEntity(
       userCred.firstName,
@@ -233,4 +265,81 @@ export const googleAuthenticate = async (
   }
 
   return { token, user, role };
+};
+
+export const forgotPasswordSendOtp = async (
+  email: string,
+  userRepository: ReturnType<UserDbInterface>,
+  userService: ReturnType<AuthServiceInterface>
+) => {
+  const user = userRepository.getUserByEmail(email);
+
+  console.log("user inside forgot password generate otp");
+
+  if (!user) {
+    throw new AppError(
+      "No user Exist in the email please check Email or do Sign Up ",
+      HttpStatusCodes.BAD_GATEWAY
+    );
+  }
+  const otp = generateOTP();
+  await userService.sendOtpEmail(email, otp);
+  const otpEntity: OtpEntityType = createOtpEntity(email, otp);
+  await userRepository.addOtp(otpEntity);
+
+  const jwtPayload = {
+    email,
+    otp,
+  };
+
+  const otpToken = await userService.generateToken(JSON.stringify(jwtPayload));
+
+  return otpToken;
+};
+
+export const verifyForgotPasswordOtp = async (
+  otpToken: string,
+  otp: string,
+  userRepository: ReturnType<UserDbInterface>,
+  userService: ReturnType<AuthServiceInterface>
+) => {
+  const decoded = userService.verifyToken(otpToken) as JwtForgotPasswordPayload;
+
+  const decodedData = JSON.parse(decoded.payload);
+
+  console.log("decoded ", decoded);
+  console.log("decodedData", decodedData);
+  const otpDoc = await userRepository.otpByEmail(decodedData.email);
+  console.log("otp doc ", otpDoc);
+
+  // console.log('otp in db ', otpDoc);
+
+  const user = await userRepository.getUserByEmail(decodedData.email);
+
+  console.log("user ", user);
+
+  if (!decodedData.otp || !user || !otpDoc) {
+    throw new AppError(" invalid request ", HttpStatusCodes.UNAUTHORIZED);
+  }
+
+  if (decodedData.otp != otp || otp != otpDoc.otp) {
+    throw new AppError(
+      "verification failed wrong otp ",
+      HttpStatusCodes.UNAUTHORIZED
+    );
+  }
+
+  return decodedData.otp == otp;
+};
+
+export const resetPassword = async (
+  email: string,
+  newPassword: string,
+  dbRepositoryUser: ReturnType<UserDbInterface>,
+  userService: ReturnType<AuthServiceInterface>
+) => {
+  const hashedPassword = await userService.encryptPassword(newPassword);
+  dbRepositoryUser.updateUserPassword(email, hashedPassword);
+
+  return true;
 };

@@ -2,7 +2,7 @@ import { HttpStatusCodes } from "../../../types/httpStatusCodes";
 import AppError from "../../../utils/appError";
 import { UserDbInterface } from "../../repositories/userDbRepository";
 
-export function removeSensitiveFields(object: any) {
+export async function removeSensitiveFields(object: any) {
   const {
     _id,
     firstName,

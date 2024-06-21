@@ -46,7 +46,7 @@ export default async function jwtTokenVerifyUser(
     if (userData && userData.role === "user" && userData.isActive) {
       return next();
     } else {
-      return next(new AppError("Not authorized", HttpStatusCodes.UNAUTHORIZED));
+      return next(new AppError("User is blocked", HttpStatusCodes.UNAUTHORIZED));
     }
   } catch (err) {
     console.error(err);
