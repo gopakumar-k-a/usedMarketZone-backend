@@ -1,3 +1,4 @@
+
 export interface CreateUserInterface {
     _id: string;
     name: string;
@@ -12,6 +13,9 @@ export interface CreateUserInterface {
     imageUrl:string;
     __v:number;
 }
+
+
+
 
 
 export interface UserInterface {

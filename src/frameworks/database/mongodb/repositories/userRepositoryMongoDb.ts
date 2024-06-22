@@ -56,6 +56,10 @@ export const userRepositoryMongoDb = () => {
     return user;
   };
 
+  const getUserWithOutPass=async(userId:string)=>{
+    const user = await User.findById(userId).select("-password")
+    return user
+  }
   const updateUserProfile = async (userData: UserInterface, userId: string) => {
     console.log("inside mongog update user profile ", userData, userId);
     const updatedUser = await User.findByIdAndUpdate(
@@ -127,6 +131,7 @@ export const userRepositoryMongoDb = () => {
     otpByEmail,
     getUserByUserName,
     getUserById,
+    getUserWithOutPass,
     updateUserProfile,
     updateUserImage,
     getAllUsers,

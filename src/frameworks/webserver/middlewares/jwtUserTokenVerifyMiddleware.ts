@@ -6,6 +6,7 @@ import { userRepositoryMongoDb } from "../../database/mongodb/repositories/userR
 import AppError from "../../../utils/appError";
 import { HttpStatusCodes } from "../../../types/httpStatusCodes";
 import { JwtPayload } from "jsonwebtoken";
+import { CreateUserInterface } from "../../../types/userInterface";
 
 const serviceProvider = authServiceInterface(authService());
 const userDb = userDbRepository(userRepositoryMongoDb());
@@ -15,8 +16,17 @@ interface CustomJwtPayload extends JwtPayload {
   role: string;
 }
 
+// interface Request{
+//   user?:UserInterface|null
+// }
+
+interface ExtendedRequest extends Request {
+  user?: CreateUserInterface; // Replace with your actual user type
+}
+
+
 export default async function jwtTokenVerifyUser(
-  req: Request,
+  req: ExtendedRequest,
   res: Response,
   next: NextFunction
 ) {
@@ -40,10 +50,14 @@ export default async function jwtTokenVerifyUser(
     
     
 
-    const userData = await userDb.getUserById(customPayload._id);
+    const userData = await userDb.getUserWithOutPass(customPayload._id);
 
+    console.log('user data ',userData);
     
+
     if (userData && userData.role === "user" && userData.isActive) {
+      // req.user = userData;
+      req.user = userData.toObject() as CreateUserInterface
       return next();
     } else {
       return next(new AppError("User is blocked", HttpStatusCodes.UNAUTHORIZED));

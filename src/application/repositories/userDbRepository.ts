@@ -20,6 +20,8 @@ export const userDbRepository = (
     await repository.getUserByUserName(userName);
   const getUserById = async (userId: string) =>
     await repository.getUserById(userId);
+  const getUserWithOutPass = async (userId: string) =>
+    await repository.getUserWithOutPass(userId);
   const updateUserProfile = async (userData: UserInterface, userId: string) =>
     await repository.updateUserProfile(userData, userId);
   const updateUserImage = async (imageUrl: string, userId: string) =>
@@ -31,7 +33,8 @@ export const userDbRepository = (
   const updateUserPassword = async (email: string, newPassword: string) =>
     await repository.updateUserPassword(email, newPassword);
 
-  const removeProfilePicUrl = async (userId: string) => await repository.removeProfilePicUrl(userId)
+  const removeProfilePicUrl = async (userId: string) =>
+    await repository.removeProfilePicUrl(userId);
   return {
     addUser,
     getUserByEmail,
@@ -44,7 +47,8 @@ export const userDbRepository = (
     getAllUsers,
     modifyUserAccess,
     updateUserPassword,
-    removeProfilePicUrl
+    removeProfilePicUrl,
+    getUserWithOutPass
   };
 };
 

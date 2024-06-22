@@ -16,16 +16,20 @@ const productSchema: Schema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
-    productImageUrl: {
+    productImageUrls: {
       type: [String],
       required: true,
     },
-    productCategory: {
+    category: {
       type: String,
       required: true,
     },
-    productSubCategory: {
+    subCategory: {
       type: String,
+      required: true,
+    },
+    phone: {
+      type: Number,
       required: true,
     },
     description: {
@@ -34,9 +38,17 @@ const productSchema: Schema = new mongoose.Schema(
     },
     createdAt: {
       type: Date,
-      default: Date.now,
+      default: () => Date.now(),
     },
     productCondition: {
+      type: String,
+      required: true,
+    },
+    productAge: {
+      type: String,
+      required: true,
+    },
+    address: {
       type: String,
       required: true,
     },
@@ -73,6 +85,6 @@ const productSchema: Schema = new mongoose.Schema(
   }
 );
 
-const NormalProduct = mongoose.model("NormalProduct", productSchema);
+const Product = mongoose.model("Product", productSchema);
 
-module.exports = NormalProduct;
+export default Product;
