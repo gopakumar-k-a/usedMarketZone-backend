@@ -58,19 +58,85 @@ export const productRepositoryMongoDb = () => {
       },
       {
         $sort: {
-          createdAt: -1 
+          createdAt: -1,
         },
       },
     ]);
 
-    console.log('products ',products);
-    
+    console.log("products ", products);
+
     return products;
   };
+
+  const addUserToProductBookmark = async (
+    userId: string,
+    productId: string
+  ) => {
+    const productData = Product.findById(productId);
+
+    if (productData) {
+      await productData.updateOne(
+        { productId },
+        { $push: { bookmarkedUsers: userId } }
+      );
+      return true;
+    }
+
+    return false;
+  };
+
+  const updateProductBookmarkCount = async (
+    productId: string,
+    action: string
+  ) => {
+    let updatedProduct;
+    if (action == "inc") {
+      updatedProduct = await Product.findOneAndUpdate(
+        { _id: productId },
+        { $inc: { bookmarkedCount: 1 } },
+        { new: true }
+      );
+    } else if (action == "dec") {
+      updatedProduct = await Product.findOneAndUpdate(
+        { _id: productId },
+        { $inc: { bookmarkedCount: -1 } },
+        { new: true }
+      );
+    } else {
+      return false;
+    }
+
+    if (!updatedProduct) {
+      return false;
+    }
+
+    console.log("Bookmark count increased successfully");
+    return updatedProduct;
+  };
+
+  // const removeUserFromProductBookmark = async (
+  //   userId: string,
+  //   productId: string
+  // ) => {
+  //   const productData = Product.findById(productId);
+
+  //   if (productData) {
+  //     await productData.updateOne(
+  //       { productId },
+  //       { $push: { bookmarkedUsers: userId } }
+  //     );
+  //     return true;
+  //   }
+
+  //   return false;
+  // };
 
   return {
     postProduct,
     getAllProductPost,
+    addUserToProductBookmark,
+    updateProductBookmarkCount,
+    // removeUserFromProductBookmark,
   };
 };
 
