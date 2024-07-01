@@ -1,5 +1,6 @@
 import { HttpStatusCodes } from "../../../types/httpStatusCodes";
 import AppError from "../../../utils/appError";
+import { ProductDbInterface } from "../../repositories/productDbRepository";
 import { UserDbInterface } from "../../repositories/userDbRepository";
 
 export async function removeSensitiveFields(object: any) {
@@ -15,7 +16,12 @@ export async function removeSensitiveFields(object: any) {
     imageUrl,
     phone,
     bio,
+    isActive,
+    followers,
+    following,
   } = object;
+
+  
 
   // Format dates
   const formattedCreatedAt = new Date(createdAt).toLocaleString().split(",")[0];
@@ -33,6 +39,9 @@ export async function removeSensitiveFields(object: any) {
     imageUrl,
     phone,
     bio,
+    isActive,
+    followers,
+    following,
   };
 }
 
@@ -79,6 +88,37 @@ export const getAllUsers = async (
   limit: number,
   userRepository: ReturnType<UserDbInterface>
 ) => {
-  const {users,totalDocuments} = await userRepository.getAllUsers(startIndex, limit);
-  return {users,totalDocuments};
+  const { users, totalDocuments } = await userRepository.getAllUsers(
+    startIndex,
+    limit
+  );
+  return { users, totalDocuments };
+};
+
+export const handleGetUserPosts = async (
+  userId: string,
+  productRepository: ReturnType<ProductDbInterface>
+) => {
+  const userPosts = await productRepository.getUserPosts(userId);
+  if (!userPosts) {
+    return 0;
+  }
+
+  return userPosts;
+};
+
+export const handleGetUserPostDetails = async (
+  postId: string,
+  productRepository: ReturnType<ProductDbInterface>
+) => {
+  const postDetails = await productRepository.getUserPostDetailsAdmin(postId);
+
+  if (!postDetails) {
+    new AppError(
+      "No Product Data Found , Check Post Id",
+      HttpStatusCodes.BAD_GATEWAY
+    );
+  }
+
+  return postDetails;
 };

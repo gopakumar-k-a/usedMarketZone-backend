@@ -1,0 +1,18 @@
+
+export const commentEntity = (
+  content: string,
+  authorId: string,
+  postId: string,
+  parentCommentId: string | null = null
+) => {
+
+    console.log('content authorId postId parentCommentId ',content,authorId,postId,parentCommentId);
+    
+  return {
+    getContent: () => content,
+    getAuthorId: () => authorId,
+    getPostId: () => postId,
+    getParentCommentId: () =>parentCommentId
+  };
+};
+export type CommentEntityType = ReturnType<typeof commentEntity>;

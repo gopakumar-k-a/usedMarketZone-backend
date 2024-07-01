@@ -3,7 +3,7 @@ import asyncHandlder from "express-async-handler";
 import { UserDbInterface } from "../../application/repositories/userDbRepository";
 import { UserRepositoryMongoDb } from "../../frameworks/database/mongodb/repositories/userRepositoryMongoDb";
 import { HttpStatusCodes } from "../../types/httpStatusCodes";
-import { UserInterface } from "../../types/userInterface";
+import { CreateUserInterface, UserInterface } from "../../types/userInterface";
 import {
   getUserProfile,
   checkUserNameAvailabilty,
@@ -13,10 +13,13 @@ import {
   updateUserImage,
   updateUserPassword,
   removeProfilePicUrl,
+  handleFollowUser,
+  handleUnfollowUser,
 } from "../../application/user-cases/user/update";
 import AppError from "../../utils/appError";
 import { AuthService } from "../../frameworks/services/authService";
 import { AuthServiceInterface } from "../../application/services/authServiceInterface";
+import { ExtendedRequest } from "../../types/extendedRequest";
 
 const userController = (
   userDbRepository: UserDbInterface,
@@ -153,15 +156,42 @@ const userController = (
   const handleProfilePicRemove = asyncHandlder(
     async (req: Request, res: Response) => {
       const { userId } = req.params;
-     const updatedUser= await removeProfilePicUrl(userId, dbRepositoryUser);
+      const updatedUser = await removeProfilePicUrl(userId, dbRepositoryUser);
 
       res.status(HttpStatusCodes.OK).json({
         success: true,
         message: "user profile image removed successfully",
-        updatedUser
+        updatedUser,
       });
     }
   );
+
+  const followUser = asyncHandlder(
+    async (req: ExtendedRequest, res: Response) => {
+      const { _id } = req.user as CreateUserInterface;
+      const { followUserId } = req.params;
+      await handleFollowUser(_id, followUserId, dbRepositoryUser);
+
+      res.status(HttpStatusCodes.OK).json({
+        success: true,
+        message: "Added User To Follow List",
+      });
+    }
+  );
+
+  const unFollowUser = asyncHandlder(
+    async (req: ExtendedRequest, res: Response) => {
+      const { _id } = req.user as CreateUserInterface;
+      const { followUserId } = req.params;
+      await handleUnfollowUser(_id, followUserId, dbRepositoryUser);
+
+      res.status(HttpStatusCodes.OK).json({
+        success: true,
+        message: "Added User To Follow List",
+      });
+    }
+  );
+
 
   return {
     handleGetUserProfile,
@@ -170,6 +200,9 @@ const userController = (
     handleProfileImageUpdate,
     handleUserPasswordUpdate,
     handleProfilePicRemove,
+    followUser,
+    unFollowUser
+
   };
 };
 

@@ -41,6 +41,10 @@ const userRouter = () => {
     controller.handleUserNameCheck
   );
 
+  router.patch("/follow-user/:followUserId",controller.followUser)
+  router.patch("/un-follow/:id",controller.unFollowUser)
+  // router.get("my-posts",controller)
+
   return router;
 };
 

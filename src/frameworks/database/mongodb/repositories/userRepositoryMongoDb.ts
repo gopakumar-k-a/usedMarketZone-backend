@@ -6,6 +6,10 @@ import { UserEntityType } from "../../../../entities/user";
 import { UserInterface } from "../../../../types/userInterface";
 import { OtpEntityType } from "../../../../entities/otp";
 import { CreateUserInterface } from "../../../../types/userInterface";
+import AppError from "../../../../utils/appError";
+import { HttpStatusCodes } from "../../../../types/httpStatusCodes";
+// import { Document } from 'mongoose';
+// interface UserDocument extends UserInterface, Document {}
 
 export const userRepositoryMongoDb = () => {
   const getUserByEmail = async (email: string) => {
@@ -56,10 +60,10 @@ export const userRepositoryMongoDb = () => {
     return user;
   };
 
-  const getUserWithOutPass=async(userId:string)=>{
-    const user = await User.findById(userId).select("-password")
-    return user
-  }
+  const getUserWithOutPass = async (userId: string) => {
+    const user = await User.findById(userId).select("-password");
+    return user;
+  };
   const updateUserProfile = async (userData: UserInterface, userId: string) => {
     console.log("inside mongog update user profile ", userData, userId);
     const updatedUser = await User.findByIdAndUpdate(
@@ -124,6 +128,46 @@ export const userRepositoryMongoDb = () => {
     return updatedUser;
   };
 
+  const followUser = async (userId: string, userToFollowId: string) => {
+    const userToFollow = await User.findById(userToFollowId);
+
+    if (!userToFollow) {
+      throw new AppError("userToFollow not found", HttpStatusCodes.NOT_FOUND);
+    }
+
+    Promise.all([
+      User.findByIdAndUpdate(userId, {
+        $addToSet: { following: userToFollow._id },
+      }),
+      User.findByIdAndUpdate(userToFollow, {
+        $addToSet: { followers: userId },
+      }),
+    ]).then(() => {
+      return;
+    });
+  };
+
+  const unFollowUser = async (userId: string, userToUnFollowId: string) => {
+    const userToUnFollow = await User.findById(userToUnFollowId);
+
+    if (!userToUnFollow) {
+      throw new AppError("userToFollow", HttpStatusCodes.NOT_FOUND);
+    }
+
+    Promise.all([
+      User.findByIdAndUpdate(userId, {
+        $pull: { following: userToUnFollow._id },
+      }),
+      User.findByIdAndUpdate(userToUnFollow, {
+        $pull: { followers: userId },
+      }),
+    ]).then(() => {
+      return;
+    });
+  };
+
+ 
+
   return {
     addUser,
     getUserByEmail,
@@ -137,7 +181,9 @@ export const userRepositoryMongoDb = () => {
     getAllUsers,
     modifyUserAccess,
     updateUserPassword,
-    removeProfilePicUrl
+    removeProfilePicUrl,
+    followUser,
+    unFollowUser,
   };
 };
 

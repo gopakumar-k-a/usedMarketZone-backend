@@ -79,6 +79,41 @@ const productSchema: Schema = new mongoose.Schema(
       enum: ["draft", "active", "deactivated"],
       default: "draft",
     },
+    isBidding: {
+      type: Boolean,
+      default: false,
+    },
+
+    bidHistory: [
+      {
+        bidderId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+        },
+        bidAmount: {
+          type: Number,
+        },
+        bidTime: {
+          type: Date,
+          default: () => Date.now(),
+        },
+      },
+    ],
+    isAdminAccepted: {
+      type: Boolean,
+      default: false,
+    },
+    bidAcceptedTime: {
+      type: Date,
+    },
+    bidDuration: {
+      day: { type: Number},
+      hour: { type: Number },
+      minute: { type: Number },
+    },
+    bidEndTime:{
+      type:Date
+    }
   },
   {
     timestamps: true,

@@ -104,4 +104,24 @@ export const removeProfilePicUrl = async (
   }
   const removedSensitiveFields = await removeSensitiveFields(updatedUser);
   return removedSensitiveFields;
-}; 
+};
+
+export const handleFollowUser = async (
+  userId: string,
+  userToFollowId: string,
+  dbRepositoryUser: ReturnType<UserDbInterface>
+) => {
+  await dbRepositoryUser.followUser(userId, userToFollowId);
+  return;
+};
+
+export const handleUnfollowUser = async (
+  userId: string,
+  userToUnFollowId: string,
+  dbRepositoryUser: ReturnType<UserDbInterface>
+) => {
+  await dbRepositoryUser.unFollowUser(userId, userToUnFollowId);
+  return;
+};
+
+

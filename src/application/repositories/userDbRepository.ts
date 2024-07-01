@@ -35,6 +35,10 @@ export const userDbRepository = (
 
   const removeProfilePicUrl = async (userId: string) =>
     await repository.removeProfilePicUrl(userId);
+  const followUser = async (userId: string, userToFollowId: string) =>
+    await repository.followUser(userId, userToFollowId);
+  const unFollowUser = async (userId: string, userToUnFollowId: string) =>
+    await repository.unFollowUser(userId, userToUnFollowId);
   return {
     addUser,
     getUserByEmail,
@@ -48,7 +52,9 @@ export const userDbRepository = (
     modifyUserAccess,
     updateUserPassword,
     removeProfilePicUrl,
-    getUserWithOutPass
+    getUserWithOutPass,
+    followUser,
+    unFollowUser,
   };
 };
 

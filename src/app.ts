@@ -1,26 +1,26 @@
-import express, { Application,NextFunction } from 'express';
-import connectDB from './frameworks/database/mongodb/connection';
-import http from 'http'
-import serverConfig from './frameworks/webserver/server';
-import expressConfig from './frameworks/webserver/express';
-import routes from './frameworks/webserver/routes';
-import AppError from './utils/appError';
-import errorHandlingMiddleware from './frameworks/webserver/middlewares/errorHandling';
+import express, { Application, NextFunction } from "express";
+import connectDB from "./frameworks/database/mongodb/connection";
+import http from "http";
+import serverConfig from "./frameworks/webserver/server";
+import expressConfig from "./frameworks/webserver/express";
+import routes from "./frameworks/webserver/routes";
+import AppError from "./utils/appError";
+import errorHandlingMiddleware from "./frameworks/webserver/middlewares/errorHandling";
 
-const app: Application = express()
+const app: Application = express();
 
-const server = http.createServer(app)
+const server = http.createServer(app);
 
-connectDB()
+connectDB();
 
-expressConfig(app)
+expressConfig(app);
 
-routes(app)
-app.use(errorHandlingMiddleware);
+routes(app);
 
 // catch 404 and forward to error handler
+app.use(errorHandlingMiddleware);
 app.all("*", (req, res, next: NextFunction) => {
-    next(new AppError("Not found", 404));
+  next(new AppError("Not found", 404));
 });
 
-serverConfig(server).startServer()
+serverConfig(server).startServer();
