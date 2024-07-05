@@ -49,8 +49,8 @@ const userSchema: Schema = new Schema(
       type: String,
       default: "",
     },
-    followers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
-    following: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+    followers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User',default:[] }],
+    following: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User',default:[] }],
   },
   { timestamps: true }
 );

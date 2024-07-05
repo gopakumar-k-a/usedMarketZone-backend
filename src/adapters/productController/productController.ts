@@ -30,6 +30,7 @@ import { PostReportDbInterface } from "../../application/repositories/postReport
 import { PostReportRepositoryMongoDb } from "../../frameworks/database/mongodb/repositories/postReportRepositoryMongoDb";
 import { CommentDbInterface } from "../../application/repositories/commentRepository";
 import { CommentRepositoryMongoDb } from "../../frameworks/database/mongodb/repositories/commentRepositoryMongoDb";
+import { handleDeleteComment } from "../../application/user-cases/product/delete";
 
 // import { BookmarkRepositoryMongoDb } from "../../frameworks/database/mongodb/repositories/bookmarkRepositoryMongoDb";
 
@@ -248,6 +249,16 @@ export const productController = (
     }
   );
 
+  const deleteComment=asyncHandler(async(req:ExtendedRequest,res:Response)=>{
+
+      await handleDeleteComment(req.body,dbRepositoryComment)
+
+      res.status(HttpStatusCodes.OK).json({
+        success: true,
+        message: "comment deleted successfully",
+      });
+  })
+
 
 
   return {
@@ -260,7 +271,8 @@ export const productController = (
     addComment,
     getAllPostComments,
     replyComment,
-    getCommentReply
+    getCommentReply,
+    deleteComment
     // productBidPost
     // removeFromBookmark,
   };

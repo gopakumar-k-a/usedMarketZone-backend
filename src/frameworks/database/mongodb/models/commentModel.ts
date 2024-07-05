@@ -1,4 +1,4 @@
-import mongoose, { Document, Schema } from "mongoose";
+import mongoose, { Document, Model, Schema } from "mongoose";
 
 export interface IComment extends Document {
     content: string;
@@ -40,5 +40,5 @@ const commentSchema: Schema = new mongoose.Schema(
   { timestamps: true }
 );
 
-const Comment = mongoose.model("Comment", commentSchema);
+const Comment:Model<IComment> = mongoose.model<IComment>("Comment", commentSchema);
 export default Comment

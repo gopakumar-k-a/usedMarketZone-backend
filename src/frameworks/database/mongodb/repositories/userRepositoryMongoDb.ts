@@ -1,20 +1,53 @@
 import User from "../models/userModel";
 
 import Otp from "../models/otpSchema";
-
 import { UserEntityType } from "../../../../entities/user";
 import { UserInterface } from "../../../../types/userInterface";
 import { OtpEntityType } from "../../../../entities/otp";
 import { CreateUserInterface } from "../../../../types/userInterface";
 import AppError from "../../../../utils/appError";
 import { HttpStatusCodes } from "../../../../types/httpStatusCodes";
+import mongoose from "mongoose";
+const { ObjectId } = mongoose.Types;
 // import { Document } from 'mongoose';
 // interface UserDocument extends UserInterface, Document {}
 
 export const userRepositoryMongoDb = () => {
   const getUserByEmail = async (email: string) => {
-    const user: CreateUserInterface | null = await User.findOne({ email });
-    return user;
+    // const user: CreateUserInterface | null = await User.findOne({ email });
+    // return user;
+    const userData = await User.aggregate([
+      { $match: { email: email } },
+      {
+        $addFields: {
+          numOfFollowers: { $size: "$followers" },
+          numOfFollowing: { $size: "$following" },
+        },
+      },
+    ]);
+    console.log("user data ", userData);
+
+    return userData[0];
+  };
+
+  const getNumOfFollowById = async (userId: string) => {
+    const numOfFollow = await User.aggregate([
+      { $match: { _id: new ObjectId(userId) } },
+      {
+        $addFields: {
+          numOfFollowers: { $size: "$followers" },
+          numOfFollowing: { $size: "$following" },
+        },
+      },
+      {
+        $project: {
+          numOfFollowers: 1,
+          numOfFollowing: 1,
+        },
+      },
+    ]);
+
+    return numOfFollow[0];
   };
 
   const addUser = async (user: UserEntityType) => {
@@ -56,8 +89,20 @@ export const userRepositoryMongoDb = () => {
   };
 
   const getUserById = async (userId: string) => {
-    const user = await User.findById(userId);
-    return user;
+    // const user = await User.findById(userId);
+
+    const userData = await User.aggregate([
+      { $match: { _id: new ObjectId(userId) } },
+      {
+        $addFields: {
+          numOfFollowers: { $size: "$followers" },
+          numOfFollowing: { $size: "$following" },
+        },
+      },
+    ]);
+    console.log("user data ", userData);
+
+    return userData[0];
   };
 
   const getUserWithOutPass = async (userId: string) => {
@@ -130,43 +175,117 @@ export const userRepositoryMongoDb = () => {
 
   const followUser = async (userId: string, userToFollowId: string) => {
     const userToFollow = await User.findById(userToFollowId);
+    console.log("userto follow ", userToFollow);
 
     if (!userToFollow) {
       throw new AppError("userToFollow not found", HttpStatusCodes.NOT_FOUND);
     }
 
-    Promise.all([
+    await Promise.all([
       User.findByIdAndUpdate(userId, {
         $addToSet: { following: userToFollow._id },
       }),
       User.findByIdAndUpdate(userToFollow, {
         $addToSet: { followers: userId },
       }),
-    ]).then(() => {
-      return;
-    });
+    ]);
+    return;
   };
 
   const unFollowUser = async (userId: string, userToUnFollowId: string) => {
+    console.log("user id,userToUnFollow id ", userId, userToUnFollowId);
+
     const userToUnFollow = await User.findById(userToUnFollowId);
+
+    console.log("user to unfollow ", userToUnFollow);
 
     if (!userToUnFollow) {
       throw new AppError("userToFollow", HttpStatusCodes.NOT_FOUND);
     }
 
-    Promise.all([
+    await Promise.all([
       User.findByIdAndUpdate(userId, {
         $pull: { following: userToUnFollow._id },
       }),
       User.findByIdAndUpdate(userToUnFollow, {
         $pull: { followers: userId },
       }),
-    ]).then(() => {
-      return;
-    });
+    ]);
+    return;
   };
 
- 
+  const getSuggestedUsers = async (userId: string) => {
+    const user = await User.findById(userId);
+    if (!user) {
+      throw new AppError(
+        "invalid user id no user found to get suggested users",
+        HttpStatusCodes.BAD_REQUEST
+      );
+    }
+
+    const followers = user.followers;
+
+    const suggestedUsers = await User.find(
+      { _id: { $nin: followers } },
+      { userName: 1, imageUrl: 1 }
+    )
+      .sort({ createdAt: -1 })
+      .limit(10);
+    console.log("suggested user s ", suggestedUsers);
+
+    return suggestedUsers;
+  };
+
+  const getFollowersById = async (userId: string) => {
+
+    console.log('followers ');
+    
+    const followerUsers = await User.aggregate([
+      {
+        $match: { _id: new ObjectId(userId) },
+      },
+      {
+        $lookup: {
+          from: "users",
+          foreignField: "_id",
+          localField: "followers",
+          as: "followers",
+        },
+      },
+      { $unwind: "$followers" },
+      {$project:{
+        imageUrl:1,
+        userName:1,
+        createdAt:1
+      }}
+    ]);
+    console.log("followers ", followerUsers);
+    return followerUsers
+  };
+  const getFollowingById = async (userId: string) => {
+    const followingUser= await User.aggregate([
+      {
+        $match: { _id: new ObjectId(userId) },
+      },
+      {
+        $lookup: {
+          from: "users",
+          foreignField: "_id",
+          localField: "following",
+          as: "following",
+        },
+      },
+      { $unwind: "$following" },
+      {$project:{
+        imageUrl:1,
+        userName:1,
+        createdAt:1
+      }}
+    ]);
+
+    console.log('usersFollowing ',followingUser);
+    return followingUser
+  };
 
   return {
     addUser,
@@ -184,6 +303,10 @@ export const userRepositoryMongoDb = () => {
     removeProfilePicUrl,
     followUser,
     unFollowUser,
+    getSuggestedUsers,
+    getNumOfFollowById,
+    getFollowersById,
+    getFollowingById,
   };
 };
 

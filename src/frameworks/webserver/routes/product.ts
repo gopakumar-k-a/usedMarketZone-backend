@@ -32,6 +32,7 @@ const productRouter = () => {
   router.patch("/reply-comment",controller.replyComment)
   router.get("/get-post-comments/:postId",controller.getAllPostComments)
   router.get("/get-comment-reply/:commentId",controller.getCommentReply)
+  router.delete("/delete-comment",controller.deleteComment)
 //   router.patch("/bookmark-post/remove/:postId", controller.removeFromBookmark);
 
   return router;

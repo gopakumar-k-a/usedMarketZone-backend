@@ -379,6 +379,8 @@ export const productRepositoryMongoDb = () => {
     }
     return products
   }
+
+
   return {
     postProduct,
     getAllProductPost,
@@ -391,7 +393,7 @@ export const productRepositoryMongoDb = () => {
     updateAdminAcceptBidStatus,
     getAllUserPosts,
     getOwnerPostsImageList,
-    getUserPostDetails
+    getUserPostDetails,
   };
 };
 

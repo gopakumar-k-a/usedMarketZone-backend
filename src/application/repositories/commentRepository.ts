@@ -6,15 +6,23 @@ export const commentDbRepository = (
 ) => {
   const addNewComment = async (commentEntity: CommentEntityType) =>
     repository.addNewComment(commentEntity);
-  const getAllComments=async(postId:string)=>repository.getAllComments(postId)
-  const getReplyData = async (parentCommentId: string) =>repository.getReplyData(parentCommentId)
-  const submitReplyComment = async (commentEntity: CommentEntityType) =>repository.submitReplyComment(commentEntity)
+  const getAllComments = async (postId: string) =>
+    repository.getAllComments(postId);
+  const getReplyData = async (parentCommentId: string) =>
+    repository.getReplyData(parentCommentId);
+  const submitReplyComment = async (commentEntity: CommentEntityType) =>
+    repository.submitReplyComment(commentEntity);
+  const deleteComment = async (
+    commentId: string,
+    parentCommentId: string | null = null
+  ) => await repository.deleteComment(commentId, parentCommentId);
 
   return {
     addNewComment,
     getReplyData,
     getAllComments,
-    submitReplyComment
+    submitReplyComment,
+    deleteComment
   };
 };
 

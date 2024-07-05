@@ -39,6 +39,11 @@ export const userDbRepository = (
     await repository.followUser(userId, userToFollowId);
   const unFollowUser = async (userId: string, userToUnFollowId: string) =>
     await repository.unFollowUser(userId, userToUnFollowId);
+  const getSuggestedUsers=async(userId:string)=>repository.getSuggestedUsers(userId)
+  const getNumOfFollowById = async (userId: string) =>repository.getNumOfFollowById(userId)
+  const getFollowersById = async (userId: string) =>repository.getFollowersById(userId)
+  const getFollowingById = async (userId: string) =>repository.getFollowingById(userId)
+
   return {
     addUser,
     getUserByEmail,
@@ -55,6 +60,10 @@ export const userDbRepository = (
     getUserWithOutPass,
     followUser,
     unFollowUser,
+    getSuggestedUsers,
+    getNumOfFollowById,
+    getFollowersById,
+    getFollowingById
   };
 };
 

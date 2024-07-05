@@ -13,7 +13,7 @@ const bookmarkSchema: Schema = new mongoose.Schema({
   }],
 }, { timestamps: true });
 
-// Check if the model already exists before defining it
+
 const Bookmark = mongoose.models.Bookmark || mongoose.model("Bookmark", bookmarkSchema);
 
 export default Bookmark;

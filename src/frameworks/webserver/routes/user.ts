@@ -40,9 +40,13 @@ const userRouter = () => {
     "/username-check/:userName/:userId",
     controller.handleUserNameCheck
   );
+  router.get("/suggested-users", controller.suggestedUsers);
 
-  router.patch("/follow-user/:followUserId",controller.followUser)
-  router.patch("/un-follow/:id",controller.unFollowUser)
+  router.patch("/follow-user/:followUserId", controller.followUser);
+  router.patch("/un-follow-user/:unFollowUserId", controller.unFollowUser);
+  router.get("/num-of-follow/:userId",controller.getNumberOfFollowById)
+  router.get("/followers",controller.getFollowers)
+  router.get("/following",controller.getFollowing)
   // router.get("my-posts",controller)
 
   return router;

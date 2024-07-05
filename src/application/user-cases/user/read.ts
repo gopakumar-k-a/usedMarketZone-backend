@@ -19,6 +19,8 @@ export async function removeSensitiveFields(object: any) {
     isActive,
     followers,
     following,
+    numOfFollowers,
+    numOfFollowing
   } = object;
 
   
@@ -42,6 +44,8 @@ export async function removeSensitiveFields(object: any) {
     isActive,
     followers,
     following,
+    numOfFollowers,
+    numOfFollowing
   };
 }
 
@@ -122,3 +126,32 @@ export const handleGetUserPostDetails = async (
 
   return postDetails;
 };
+
+export const handleGetSuggestedUsers=async(userId:string,    userRepository: ReturnType<UserDbInterface>
+)=>{
+  const suggestedUsers=await userRepository.getSuggestedUsers(userId)
+  return suggestedUsers
+}
+
+export const handleGetNumOfFollowById=async(userId:string,    userRepository: ReturnType<UserDbInterface>)=>{
+  const numOfFollow=await userRepository.getNumOfFollowById(userId)
+
+  if(!numOfFollow){
+    throw new AppError("cant find number of follow check user id ",HttpStatusCodes.BAD_GATEWAY)
+  }
+
+  return numOfFollow
+}
+
+export const handleGetFollowersById=async(userId:string, userRepository: ReturnType<UserDbInterface>)=>{
+
+  const followerUsers=userRepository.getFollowersById(userId)
+
+  return followerUsers
+}
+export const handleGetFollowingById=async(userId:string, userRepository: ReturnType<UserDbInterface>)=>{
+
+  const followingUsers=userRepository.getFollowingById(userId)
+
+  return followingUsers
+}

@@ -7,6 +7,10 @@ import { CreateUserInterface, UserInterface } from "../../types/userInterface";
 import {
   getUserProfile,
   checkUserNameAvailabilty,
+  handleGetSuggestedUsers,
+  handleGetNumOfFollowById,
+  handleGetFollowersById,
+  handleGetFollowingById,
 } from "../../application/user-cases/user/read";
 import {
   updateUserProfile,
@@ -166,6 +170,23 @@ const userController = (
     }
   );
 
+  const suggestedUsers = asyncHandlder(
+    async (req: ExtendedRequest, res: Response) => {
+      const { _id } = req.user as CreateUserInterface;
+
+      const suggestedUsers = await handleGetSuggestedUsers(
+        _id,
+        dbRepositoryUser
+      );
+
+      res.status(HttpStatusCodes.OK).json({
+        success: true,
+        message: "Suggested User Data Retrived successfully",
+        suggestedUsers,
+      });
+    }
+  );
+
   const followUser = asyncHandlder(
     async (req: ExtendedRequest, res: Response) => {
       const { _id } = req.user as CreateUserInterface;
@@ -182,8 +203,8 @@ const userController = (
   const unFollowUser = asyncHandlder(
     async (req: ExtendedRequest, res: Response) => {
       const { _id } = req.user as CreateUserInterface;
-      const { followUserId } = req.params;
-      await handleUnfollowUser(_id, followUserId, dbRepositoryUser);
+      const { unFollowUserId } = req.params;
+      await handleUnfollowUser(_id, unFollowUserId, dbRepositoryUser);
 
       res.status(HttpStatusCodes.OK).json({
         success: true,
@@ -192,6 +213,48 @@ const userController = (
     }
   );
 
+  const getNumberOfFollowById = asyncHandlder(
+    async (req: ExtendedRequest, res: Response) => {
+      const { userId } = req.params;
+
+      const numOfFollow = await handleGetNumOfFollowById(
+        userId,
+        dbRepositoryUser
+      );
+      res.status(HttpStatusCodes.OK).json({
+        success: true,
+        message: "number of followers retrived successfully",
+        numOfFollow,
+      });
+    }
+  );
+
+  const getFollowers = asyncHandlder(
+    async (req: ExtendedRequest, res: Response) => {
+      const { _id } = req.user as CreateUserInterface;
+
+      const followerUsers=await handleGetFollowersById(_id, dbRepositoryUser);
+
+      res.status(HttpStatusCodes.OK).json({
+        success: true,
+        message: "followers fetched successfully",
+        followerUsers
+      });
+    }
+  );
+  const getFollowing = asyncHandlder(
+    async (req: ExtendedRequest, res: Response) => {
+      const { _id } = req.user as CreateUserInterface;
+
+      const followingUsers=await handleGetFollowingById(_id, dbRepositoryUser);
+
+      res.status(HttpStatusCodes.OK).json({
+        success: true,
+        message: "followers fetched successfully",
+        followingUsers
+      });
+    }
+  );
 
   return {
     handleGetUserProfile,
@@ -201,8 +264,11 @@ const userController = (
     handleUserPasswordUpdate,
     handleProfilePicRemove,
     followUser,
-    unFollowUser
-
+    unFollowUser,
+    suggestedUsers,
+    getNumberOfFollowById,
+    getFollowers,
+    getFollowing
   };
 };
 

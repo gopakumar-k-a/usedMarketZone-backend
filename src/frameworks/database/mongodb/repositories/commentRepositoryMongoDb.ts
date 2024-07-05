@@ -46,7 +46,6 @@ export const commentRepositoryMongoDb = () => {
   };
 
   const getAllComments = async (postId: string) => {
-   
     const commentData = await Comment.aggregate([
       {
         $match: {
@@ -87,7 +86,6 @@ export const commentRepositoryMongoDb = () => {
     return commentData;
   };
   const getReplyData = async (parentCommentId: string) => {
-   
     const replyData = await Comment.aggregate([
       {
         $match: {
@@ -142,21 +140,76 @@ export const commentRepositoryMongoDb = () => {
     });
 
     await newComment.save();
-
-    const updatedCommentData = await Comment.findByIdAndUpdate(
+    await Comment.findByIdAndUpdate(
       parentCommentId,
       { $push: { replies: newComment._id } },
       { new: true }
     );
-    console.log("updatedCommentData submitReplyComment", updatedCommentData);
-    return updatedCommentData;
+    console.log(" submitReplyComment", newComment);
+
+    const newReply = await Comment.aggregate([
+      {
+        $match: {
+          _id: newComment._id,
+        },
+      },
+      {
+        $lookup: {
+          from: "users",
+          foreignField: "_id",
+          localField: "authorId",
+          as: "userData",
+        },
+      },
+      {
+        $unwind: "$userData",
+      },
+      {
+        $project: {
+          imageUrl: "$userData.imageUrl",
+          userName: "$userData.userName",
+          content: 1,
+          authorId: 1,
+          createdAt: 1,
+          parentCommentId:1
+        },
+      },
+    ]);
+
+    console.log("newReply ", newReply);
+
+    return newReply;
+  };
+
+  const deleteComment = async (
+    commentId: string,
+    parentCommentId: string | null = null
+  ) => {
+    console.log("parentCommentId commentId", parentCommentId, " ", commentId);
+
+    //delete child comment from parent
+    if (parentCommentId) {
+      await Comment.findByIdAndUpdate(parentCommentId, {
+        $pull: { replies: commentId },
+      });
+    } else {
+      //delete parent comment
+      const parentDocument = await Comment.findOne({ _id: commentId });
+      if (parentDocument && parentDocument.replies.length > 0) {
+        await Comment.deleteMany({ _id: { $in: parentDocument.replies } });
+      }
+    }
+    await Comment.deleteOne({ _id: commentId });
+
+    return;
   };
 
   return {
     addNewComment,
     getAllComments,
     submitReplyComment,
-    getReplyData
+    getReplyData,
+    deleteComment,
   };
 };
 
