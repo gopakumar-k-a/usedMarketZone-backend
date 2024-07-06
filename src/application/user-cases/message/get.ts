@@ -1,11 +1,11 @@
 import { ConversationDbRepository } from "../../repositories/conversationRepository";
 
 export const handleGetChat = async (
-  sendId: string,
+  recieverId: string,
   userToChatId: string,
   conversationRepository: ConversationDbRepository
 ) => {
-  const chat=await conversationRepository.getMessages(sendId, userToChatId);
+  const chats=await conversationRepository.getMessages(recieverId, userToChatId);
 
-  return chat
+  return chats
 };

@@ -5,7 +5,7 @@ export const conversationRepository=(repository:ReturnType<ConversationRepositor
   const createConversation = async (
     conversationEntity: CreateConversationEntityType
   ) =>await repository.createConversation(conversationEntity)
-  const getMessages = async (sendId: string, userToChatId: string) =>repository.getMessages(sendId,userToChatId) 
+  const getMessages = async (recieverId: string, userToChatId: string) =>repository.getMessages(recieverId,userToChatId) 
 
       return{
         createConversation,

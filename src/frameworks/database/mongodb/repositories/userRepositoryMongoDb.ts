@@ -247,22 +247,25 @@ export const userRepositoryMongoDb = () => {
       {
         $lookup: {
           from: "users",
-          foreignField: "_id",
           localField: "followers",
+          foreignField: "_id",
           as: "followers",
         },
       },
       { $unwind: "$followers" },
       {$project:{
-        imageUrl:1,
-        userName:1,
-        createdAt:1
+        'followers.imageUrl':1,
+        'followers.userName':1,
+        'followers.createdAt':1,
+        'followers._id':1
       }}
     ]);
     console.log("followers ", followerUsers);
     return followerUsers
   };
   const getFollowingById = async (userId: string) => {
+
+    
     const followingUser= await User.aggregate([
       {
         $match: { _id: new ObjectId(userId) },
@@ -277,9 +280,10 @@ export const userRepositoryMongoDb = () => {
       },
       { $unwind: "$following" },
       {$project:{
-        imageUrl:1,
-        userName:1,
-        createdAt:1
+        'following.imageUrl':1,
+        'following.userName':1,
+        'following.createdAt':1,
+        'following._id':1
       }}
     ]);
 

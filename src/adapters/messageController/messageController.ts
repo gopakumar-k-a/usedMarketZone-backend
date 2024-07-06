@@ -45,16 +45,19 @@ export const messageController = (
 
   const getChat = asyncHandler(async (req: ExtendedRequest, res: Response) => {
     const { _id } = req.user as CreateUserInterface;
-    const { userId: senderId } = req.params;
+    const { userId: recieverId } = req.params;
 
     console.log("inside get chat");
 
-    const chat = await handleGetChat(_id, senderId, dbRepositoryConversation);
+    const chats = await handleGetChat(_id, recieverId, dbRepositoryConversation);
+
+    console.log('chats ',chats);
+    
 
     res.status(HttpStatusCodes.OK).json({
       success: true,
       message: "chat retrived successfully",
-      chat,
+      chats,
     });
   });
 

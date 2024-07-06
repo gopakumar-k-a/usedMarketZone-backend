@@ -29,15 +29,15 @@ export const conversationRepositoryMongoDb = () => {
     }
   };
 
-  const getMessages = async (sendId: string, userToChatId: string) => {
+  const getMessages = async (recieverId: string, userToChatId: string) => {
 
-    console.log('sendId userToChatId',sendId,' ',userToChatId);
+    console.log('sendId userToChatId',recieverId,' ',userToChatId);
     
     const chats = await Conversation.aggregate([
       {
         $match: {
           participants: {
-            $all: [new ObjectId(sendId) , new ObjectId(userToChatId)],
+            $all: [new ObjectId(recieverId) , new ObjectId(userToChatId)],
           },
         },
       },
@@ -51,10 +51,11 @@ export const conversationRepositoryMongoDb = () => {
       },
       {$unwind:'$chat'},
       {$project:{
-        'chat.message':1,
-        'chat.senderId':1,
-        'chat.recieverId':1,
-        'chat.createdAt':1
+        _id:0,
+        message:'$chat.message',
+        senderId:'$chat.senderId',
+        recieverId:'$chat.recieverId',
+        createdAt:'$chat.createdAt'
       },},{
         $sort:{
             createdAt:1
