@@ -372,7 +372,7 @@ export const productRepositoryMongoDb = () => {
         },
       },
     ]);
-    console.log('products ',products);
+    // console.log('products ',products);
 
     if(!products){
       throw new AppError("invalid product id ",HttpStatusCodes.BAD_REQUEST)

@@ -5,6 +5,9 @@ import { ConversationDbRepository } from "../../repositories/conversationReposit
 import { MessageDbRepository } from "../../repositories/messageRepository";
 import AppError from "../../../utils/appError";
 import { HttpStatusCodes } from "../../../types/httpStatusCodes";
+import { getRecieverSocketId } from "../../../frameworks/webSocket/socket";
+import { io } from "../../../app";
+// import socketConfig from "../../../frameworks/webSocket/socket";
 
 export const handleSendNewMessage = async (
   senderId: string,
@@ -28,8 +31,15 @@ export const handleSendNewMessage = async (
     newMessage._id as Types.ObjectId
   );
 
+  // const recieverId=socketConfig.getRecieverId()
   await conversationRepository.createConversation(conversationEntity);
 
-  return newMessage;
+  const recieverSocketId = getRecieverSocketId(recieverId);
+  console.log("recieverSocketId ", recieverSocketId);
 
+  if (recieverSocketId) {
+    io.to(recieverSocketId).emit("newMessage", newMessage);
+  }
+
+  return newMessage;
 };

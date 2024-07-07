@@ -1,7 +1,7 @@
 import { Conversation } from "../models/conversationModel";
 import { CreateConversationEntityType } from "../../../../entities/createConversationEntity";
 import mongoose from "mongoose";
-const {ObjectId}=mongoose.Types
+const { ObjectId } = mongoose.Types;
 export const conversationRepositoryMongoDb = () => {
   const createConversation = async (
     conversationEntity: CreateConversationEntityType
@@ -30,42 +30,43 @@ export const conversationRepositoryMongoDb = () => {
   };
 
   const getMessages = async (recieverId: string, userToChatId: string) => {
+    console.log("sendId userToChatId", recieverId, " ", userToChatId);
 
-    console.log('sendId userToChatId',recieverId,' ',userToChatId);
-    
     const chats = await Conversation.aggregate([
       {
         $match: {
           participants: {
-            $all: [new ObjectId(recieverId) , new ObjectId(userToChatId)],
+            $all: [new ObjectId(recieverId), new ObjectId(userToChatId)],
           },
         },
       },
       {
-        $lookup:{
-            from:'messages',
-            localField:'messages',
-            foreignField:'_id',
-            as:'chat'
-        }
+        $lookup: {
+          from: "messages",
+          localField: "messages",
+          foreignField: "_id",
+          as: "chat",
+        },
       },
-      {$unwind:'$chat'},
-      {$project:{
-        _id:0,
-        message:'$chat.message',
-        senderId:'$chat.senderId',
-        recieverId:'$chat.recieverId',
-        createdAt:'$chat.createdAt'
-      },},{
-        $sort:{
-            createdAt:1
-        }
-      }
+      { $unwind: "$chat" },
+      {
+        $project: {
+          _id: 0,
+          message: "$chat.message",
+          senderId: "$chat.senderId",
+          recieverId: "$chat.recieverId",
+          createdAt: "$chat.createdAt",
+        },
+      },
+      {
+        $sort: {
+          createdAt: 1,
+        },
+      },
     ]);
 
-    console.log('chats ',chats);
-    return chats
-    
+    console.log("chats ", chats);
+    return chats;
   };
   return {
     createConversation,
