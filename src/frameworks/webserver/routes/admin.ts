@@ -6,10 +6,11 @@ import { productDbRepository } from "../../../application/repositories/productDb
 import { productRepositoryMongoDb } from "../../database/mongodb/repositories/productRepositoryMongoDb";
 import { adminBidRequestDb } from "../../../application/repositories/adminBidRequestDbRepository";
 import { adminBidRequestMongoDb } from "../../database/mongodb/repositories/adminBidRequestRepositoryMongoDb";
-
+import { bidDbRepository } from "../../../application/repositories/bidRepository";
+import { bidRepositoryMongoDb } from "../../database/mongodb/repositories/bidRepositoryMongoDb";
 const adminRouter = () => {
   const router = express.Router();
-  const controller = adminController(userDbRepository, userRepositoryMongoDb,productDbRepository,productRepositoryMongoDb,adminBidRequestDb,adminBidRequestMongoDb);
+  const controller = adminController(userDbRepository, userRepositoryMongoDb,productDbRepository,productRepositoryMongoDb,adminBidRequestDb,adminBidRequestMongoDb,bidDbRepository,bidRepositoryMongoDb);
 
   router.get("/get-all-users/:page/:limit", controller.handleGetUsers);
   router.get("/block-user/:userId", controller.handleModifyUserAccess);

@@ -1,7 +1,41 @@
-import mongoose, { Schema } from "mongoose";
+import mongoose, { Schema, Document, Model } from "mongoose";
 
-// Normal Product Schema
-const productSchema: Schema = new mongoose.Schema(
+// Interface for bid duration
+interface BidDuration {
+  day: number;
+  hour: number;
+  minute: number;
+}
+
+// Interface for the product
+export interface IProduct extends Document {
+  productName: string;
+  basePrice: number;
+  userId: mongoose.Schema.Types.ObjectId;
+  productImageUrls: string[];
+  category: string;
+  subCategory: string;
+  phone: number;
+  description: string;
+  createdAt: Date;
+  productCondition: string;
+  productAge: string;
+  address: string;
+  bookmarkedUsers: mongoose.Schema.Types.ObjectId[];
+  bookmarkedCount: number;
+  isBlocked: boolean;
+  isSold: boolean;
+  isOtpVerified: boolean;
+  postStatus: "draft" | "active" | "deactivated";
+  isBidding: boolean;
+  isAdminAccepted: boolean;
+  bidAcceptedTime: Date;
+  bidDuration: BidDuration;
+  bidEndTime: Date;
+}
+
+// Schema definition for product
+const productSchema: Schema = new Schema(
   {
     productName: {
       type: String,
@@ -83,22 +117,6 @@ const productSchema: Schema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
-
-    bidHistory: [
-      {
-        bidderId: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "User",
-        },
-        bidAmount: {
-          type: Number,
-        },
-        bidTime: {
-          type: Date,
-          default: () => Date.now(),
-        },
-      },
-    ],
     isAdminAccepted: {
       type: Boolean,
       default: false,
@@ -107,19 +125,19 @@ const productSchema: Schema = new mongoose.Schema(
       type: Date,
     },
     bidDuration: {
-      day: { type: Number},
+      day: { type: Number },
       hour: { type: Number },
       minute: { type: Number },
     },
-    bidEndTime:{
-      type:Date
-    }
+    bidEndTime: {
+      type: Date,
+    },
   },
   {
     timestamps: true,
   }
 );
 
-const Product = mongoose.model("Product", productSchema);
-
+// Create and export the model
+const Product: Model<IProduct> = mongoose.model<IProduct>("Product", productSchema);
 export default Product;

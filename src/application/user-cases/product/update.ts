@@ -1,6 +1,6 @@
 import { BidDuration, ProductPostForm } from "../../../types/product";
 import postEntity from "../../../entities/createProductPostEntity";
-import bidEntity from "../../../entities/createBidPostEntity";
+import bidPostEntity from "../../../entities/createBidPostEntity";
 import { ProductDbInterface } from "../../repositories/productDbRepository";
 import { BookMarkDbInterface } from "../../repositories/bookmarkDbRepository";
 // import {BookMarkDbInterface}  from "../../repositories/bookmarkDbRepository";
@@ -9,6 +9,9 @@ import AppError from "../../../utils/appError";
 import { HttpStatusCodes } from "../../../types/httpStatusCodes";
 import { CommentDbRepository } from "../../repositories/commentRepository";
 import { commentEntity } from "../../../entities/createCommentEntity";
+import { BidRepository } from "../../repositories/bidRepository";
+import { createBidEntity } from "../../../entities/bidding/createBidEntity";
+import mongoose from "mongoose";
 export const handlePostProduct = async (
   postData: ProductPostForm,
   userId: string,
@@ -50,7 +53,8 @@ export const handleProductBidPost = async (
   bidData: ProductPostForm,
   userId: string,
   productRepository: ReturnType<ProductDbInterface>,
-  adminBidRequestRepository: ReturnType<AdminBidRequestDbInterface>
+  adminBidRequestRepository: ReturnType<AdminBidRequestDbInterface>,
+  // bidRepository: BidRepository
 ) => {
   const {
     productName,
@@ -66,7 +70,7 @@ export const handleProductBidPost = async (
     bidDuration,
   } = bidData;
 
-  const createBidEntity = bidEntity(
+  const createBidPostEntity = bidPostEntity(
     productName,
     basePrice,
     userId,
@@ -81,14 +85,27 @@ export const handleProductBidPost = async (
     bidDuration
   );
 
-  console.log("createPostEntity ", createBidEntity);
+  console.log("createPostEntity ", bidPostEntity);
 
-  const newBid = await productRepository.postBid(createBidEntity);
+  const newBidPost = await productRepository.postBid(createBidPostEntity);
+  // productId: mongoose.Schema.Types.ObjectId,
+  // userId: mongoose.Schema.Types.ObjectId,
+  // baseBidPrice: string,
+  // // currentHighestBid: number,
+  // bidEndTime: string
+
+  if (!newBidPost) {
+    throw new AppError("failed to post ", HttpStatusCodes.BAD_GATEWAY);
+  }
+
+  // const newBidData=await bidRepository.addBidAfterAdminAccept()
   // console.log(newBid.userId, newBid._id);
-  const newBidRequest=await adminBidRequestRepository.createBidRequestAdmin(newBid._id as string,newBid.userId as string)
+  const newBidRequest = await adminBidRequestRepository.createBidRequestAdmin(
+    String(newBidPost._id),
+    String(newBidPost.userId)
+  );
 
   // console.log('new bid request ',newBidRequest);
-  
 
   return;
 };
@@ -135,29 +152,49 @@ export const handleAddOrRemoveBookmark = async (
   }
 };
 
+export const handleAdminAcceptedBid = async (
+  bidProductId: string,
+  bidDuration: BidDuration,
+  productRepository: ReturnType<ProductDbInterface>,
+  bidRepository:BidRepository
+) => {
+  const updatedBidProduct = await productRepository.updateAdminAcceptBidStatus(
+    bidProductId,
+    bidDuration
+  );
 
-export const handleAdminAcceptedBid=async(bidProductId:string, bidDuration:BidDuration, productRepository: ReturnType<ProductDbInterface>)=>{
-
-  const updatedBidProduct=await productRepository.updateAdminAcceptBidStatus(bidProductId,bidDuration)
- 
-  if(!updatedBidProduct){
-    throw new AppError("check bid product Id , no Product Found ",HttpStatusCodes.BAD_GATEWAY)
+  if (!updatedBidProduct) {
+    throw new AppError(
+      "check bid product Id , no Product Found ",
+      HttpStatusCodes.BAD_GATEWAY
+    );
   }
+  // const newBidEntity=createBidEntity(productId: updatedBidProduct._id as mongoose.Schema.Types.ObjectId ,userId:updatedBidProduct.userId as mongoose.Schema.Types.ObjectId,baseBidPrice:updatedBidProduct.basePrice,bidEndTime:String(updatedBidProduct.bidAcceptedTime)   )
+  const newBidEntity = createBidEntity(
+    updatedBidProduct._id as mongoose.Schema.Types.ObjectId,
+    updatedBidProduct.userId as mongoose.Schema.Types.ObjectId,
+    String(updatedBidProduct.basePrice),
+    String(updatedBidProduct.bidAcceptedTime)
+  );
 
-  return true
-}
+  console.log('new bid entity ',newBidEntity);
+  
+
+  await bidRepository.addBidAfterAdminAccept(newBidEntity)
+
+  return true;
+};
 export const handleReplyComment = async (
   commentData: {
     content: string;
     postId: string;
-    parentCommentId:string;
+    parentCommentId: string;
   },
   authorId: string,
   commentRepository: CommentDbRepository
 ) => {
+  console.log("comment data handleReplyComment", commentData);
 
-  console.log('comment data handleReplyComment',commentData);
-  
   // content:string,
   // authorId:string,
   // postId:string,
@@ -168,10 +205,10 @@ export const handleReplyComment = async (
     commentData.postId,
     commentData.parentCommentId
   );
- 
-  
 
-  const newComment = await commentRepository.submitReplyComment(createCommentEntity);
+  const newComment = await commentRepository.submitReplyComment(
+    createCommentEntity
+  );
 
   return newComment;
 };

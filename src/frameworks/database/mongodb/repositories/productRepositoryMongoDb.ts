@@ -1,6 +1,6 @@
 import Product from "../models/productModel";
 import { PostEntityType } from "../../../../entities/createProductPostEntity";
-import { BidEntityType } from "../../../../entities/createBidPostEntity";
+import { BidPostEntityType } from "../../../../entities/createBidPostEntity";
 import mongoose from "mongoose";
 import { BidDuration } from "../../../../types/product";
 import { HttpStatusCodes } from "../../../../types/httpStatusCodes";
@@ -32,7 +32,7 @@ export const productRepositoryMongoDb = () => {
 
     return newProduct;
   };
-  const postBid = async (bid: BidEntityType) => {
+  const postBid = async (bid: BidPostEntityType) => {
     console.log("bid duration in mongo ", bid.getBidDuration());
 
     const bidData = {

@@ -3,7 +3,7 @@ interface BidDuration{
     hour:number,
     minute:number
 }
-export default function bidEntity(
+export default function bidPostEntity(
     productName:string,
     basePrice:string,
     userId:string,
@@ -36,4 +36,4 @@ export default function bidEntity(
 
 }
 
-export type BidEntityType=ReturnType<typeof bidEntity>
+export type BidPostEntityType=ReturnType<typeof bidPostEntity>

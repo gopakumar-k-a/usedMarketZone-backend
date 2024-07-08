@@ -1,6 +1,6 @@
 import { ProductRepositoryMongoDb } from "../../frameworks/database/mongodb/repositories/productRepositoryMongoDb";
 import { PostEntityType } from "../../entities/createProductPostEntity";
-import { BidEntityType } from "../../entities/createBidPostEntity";
+import { BidPostEntityType } from "../../entities/createBidPostEntity";
 import { BidDuration } from "../../types/product";
 
 export const productDbRepository = (
@@ -8,7 +8,7 @@ export const productDbRepository = (
 ) => {
   const postProduct = async (product: PostEntityType) =>
     await repository.postProduct(product);
-  const postBid = async (bid: BidEntityType) => repository.postBid(bid)
+  const postBid = async (bid: BidPostEntityType) => repository.postBid(bid)
   const getAllProductPost = async (userId:string) => await repository.getAllProductPost(userId);
   const updateProductBookmarkCount = async (
     productId: string,

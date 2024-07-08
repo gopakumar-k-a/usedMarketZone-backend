@@ -16,6 +16,8 @@ import { AdminBidRequestDbInterface } from "../../application/repositories/admin
 import { AdminBidRequestMongoDb } from "../../frameworks/database/mongodb/repositories/adminBidRequestRepositoryMongoDb";
 import { handleGetBidRequests } from "../../application/user-cases/bid/get";
 import { handleAdminAcceptedBid } from "../../application/user-cases/product/update";
+import { BidInterface } from "../../application/repositories/bidRepository";
+import { BidRepositoryMongoDb } from "../../frameworks/database/mongodb/repositories/bidRepositoryMongoDb";
 
 const adminController = (
   userDbRepository: UserDbInterface,
@@ -23,11 +25,14 @@ const adminController = (
   productDbRepository: ProductDbInterface,
   productDbImpl: ProductRepositoryMongoDb,
   adminBidRequestDbRepository:AdminBidRequestDbInterface,
-  adminBidRequestDbImpl:AdminBidRequestMongoDb
+  adminBidRequestDbImpl:AdminBidRequestMongoDb,
+  bidRepository: BidInterface,
+  bidRepositoryImpl: BidRepositoryMongoDb
 ) => {
   const dbRepositoryUser = userDbRepository(userDbImpl());
   const dbRepositoryProduct = productDbRepository(productDbImpl());
   const dbRepositoryAdminBidRequest=adminBidRequestDbRepository(adminBidRequestDbImpl())
+  const dbBidRepository=bidRepository(bidRepositoryImpl())
 
   const handleGetUsers = asyncHandler(async (req: Request, res: Response) => {
     // console.log("inside admin controller ", req.params);
@@ -133,7 +138,8 @@ const adminController = (
         const isUpdated = await handleAdminAcceptedBid(
           bidProductId,
           bidDuration,
-          dbRepositoryProduct
+          dbRepositoryProduct,
+          dbBidRepository
         );
   
         res.status(HttpStatusCodes.OK).json({
