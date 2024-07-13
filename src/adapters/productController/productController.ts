@@ -31,6 +31,7 @@ import { PostReportRepositoryMongoDb } from "../../frameworks/database/mongodb/r
 import { CommentDbInterface } from "../../application/repositories/commentRepository";
 import { CommentRepositoryMongoDb } from "../../frameworks/database/mongodb/repositories/commentRepositoryMongoDb";
 import { handleDeleteComment } from "../../application/user-cases/product/delete";
+import { handleGetBookmarkImageList } from "../../application/user-cases/bookmarks/get";
 
 // import { BookmarkRepositoryMongoDb } from "../../frameworks/database/mongodb/repositories/bookmarkRepositoryMongoDb";
 
@@ -260,6 +261,19 @@ export const productController = (
   })
 
 
+  const getBookmarkImageList=asyncHandler(async(req:ExtendedRequest,res:Response)=>{
+    const {_id} = req.user as CreateUserInterface;
+
+    // await handleDeleteComment(req.body,dbRepositoryComment)
+    const bookmarkImageList=await handleGetBookmarkImageList(_id,dbRepositoryBookmark)
+
+    res.status(HttpStatusCodes.OK).json({
+      success: true,
+      message: "bookmark image List Retrived successfully",
+      bookmarkImageList
+    });
+})
+
 
   return {
     productPost,
@@ -272,7 +286,8 @@ export const productController = (
     getAllPostComments,
     replyComment,
     getCommentReply,
-    deleteComment
+    deleteComment,
+    getBookmarkImageList
     // productBidPost
     // removeFromBookmark,
   };

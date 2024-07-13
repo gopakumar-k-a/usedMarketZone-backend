@@ -1,12 +1,49 @@
+import { HttpStatusCodes } from "../../../../types/httpStatusCodes";
+import AppError from "../../../../utils/appError";
 import Bookmark from "../models/bookmarkModel";
 
 export const bookmarkRepositoryMongoDb = () => {
-  const findUserBookmarks = async (userId: string) => {
-    const bookmarkDoc = await Bookmark.findOne({ userId });
+  const findUserBookmarks = async (ownerId: string) => {
+    const bookmarkDoc = await Bookmark.findOne({ ownerId });
 
-    if (!bookmarkDoc) return { userId, postIds: [] };
+    if (!bookmarkDoc) return { ownerId, postIds: [] };
 
     return bookmarkDoc;
+  };
+
+  const getOwnerBookmarkImageList = async (ownerId: string) => {
+    const bookmarkListImages = await Bookmark.aggregate([
+      {
+        $match: {
+          userId: ownerId,
+        },
+      },
+      {
+        $lookup: {
+          from: "products",
+          localField: "postIds",
+          foreignField: "_id",
+          as: "postData",
+        },
+      },
+      {
+        $unwind: "$postData",
+      },
+      {
+        $project: {
+          postId: "$postData._id",
+          bookmarkImageUrls: "$postData.productImageUrls",
+        },
+      },
+    ]);
+
+    console.log("bookmarkListImages ", bookmarkListImages);
+
+    if (!bookmarkListImages) {
+      throw new AppError("Invalid Post Id", HttpStatusCodes.BAD_GATEWAY);
+    }
+
+    return bookmarkListImages;
   };
 
   const addPostToUserBookmarks = async (userId: string, postId: string) => {
@@ -22,7 +59,10 @@ export const bookmarkRepositoryMongoDb = () => {
     return true;
   };
 
-  const removePostFromUserBookmarks = async (userId: string, postId: string) => {
+  const removePostFromUserBookmarks = async (
+    userId: string,
+    postId: string
+  ) => {
     const bookmark = await Bookmark.findOne({ userId });
 
     if (bookmark) {
@@ -36,7 +76,8 @@ export const bookmarkRepositoryMongoDb = () => {
     findUserBookmarks,
     addPostToUserBookmarks,
     removePostFromUserBookmarks,
+    getOwnerBookmarkImageList,
   };
 };
 
-export type BookmarkRepositoryMongoDb=typeof bookmarkRepositoryMongoDb
+export type BookmarkRepositoryMongoDb = typeof bookmarkRepositoryMongoDb;

@@ -1,6 +1,7 @@
 import { HttpStatusCodes } from "../../../types/httpStatusCodes";
 import AppError from "../../../utils/appError";
 import { CommentDbInterface } from "../../repositories/commentRepository";
+import { PostReportDbRepository } from "../../repositories/postReportRepository";
 import { ProductDbInterface } from "../../repositories/productDbRepository";
 
 export const handleGetAllPosts = async (
@@ -56,4 +57,11 @@ export const handleGetCommentReplies = async (
 ) => {
   const replyData = await commentRepository.getReplyData(parentCommentId);
   return replyData;
+};
+
+export const handleGetPostReports = async (
+  reportRepository: PostReportDbRepository
+) => {
+  const postReportData = await reportRepository.getReports();
+  return postReportData;
 };

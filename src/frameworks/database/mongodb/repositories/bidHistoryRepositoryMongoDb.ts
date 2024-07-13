@@ -5,16 +5,17 @@ import mongoose from "mongoose";
 export const bidHistoryRepositoryMongoDb = () => {
   const createNewBidHistory = async (
     createBidHistoryEntity: CreateBidHistoryEntityType
-  ):Promise<IBidHistory|null> => {
-    // await
+  ): Promise<IBidHistory | null> => {
+
     const newBidHistory = await BidHistory.create({
       bidderId: createBidHistoryEntity.getBidderId(),
       bidAmount: createBidHistoryEntity.getBidAmount(),
       bidTime: createBidHistoryEntity.getBidTime(),
+      bidData: createBidHistoryEntity.getBidData(),
+      productId: createBidHistoryEntity.getProductId(),
     });
 
-    console.log('newBidHistory ',newBidHistory);
-    
+    console.log("newBidHistory ", newBidHistory);
 
     return newBidHistory;
   };
@@ -30,7 +31,7 @@ export const bidHistoryRepositoryMongoDb = () => {
 
   return {
     createNewBidHistory,
-    getHighestBid
+    getHighestBid,
   };
 };
 

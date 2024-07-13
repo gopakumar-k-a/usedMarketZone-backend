@@ -27,6 +27,7 @@ const productRouter = () => {
   router.patch("/bookmark-post/:postId", controller.addOrRemoveBookmark);
   router.post("/report-post",controller.reportPost)
   router.get("/owner/get-image-list",controller.getOwnerPostsImageList)
+  router.get("/owner/get-bookmark-list",controller.getBookmarkImageList)
   router.get("/get-post-details/:postId",controller.getPostDetails)
   router.post("/add-comment",controller.addComment)
   router.patch("/reply-comment",controller.replyComment)

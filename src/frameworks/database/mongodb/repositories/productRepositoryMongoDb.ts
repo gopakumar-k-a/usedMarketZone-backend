@@ -1,4 +1,4 @@
-import Product from "../models/productModel";
+import Product, { IProduct } from "../models/productModel";
 import { PostEntityType } from "../../../../entities/createProductPostEntity";
 import { BidPostEntityType } from "../../../../entities/createBidPostEntity";
 import mongoose from "mongoose";
@@ -84,6 +84,26 @@ export const productRepositoryMongoDb = () => {
         },
       },
       {
+        $lookup:{
+          from:"bids",
+          localField:"bidData",
+          foreignField:"_id",
+          as:"bidDetails"
+        }
+      },
+      {
+        $unwind: {
+          path: "$bidDetails",
+          preserveNullAndEmptyArrays: true // Preserve products without bids
+        },
+      },
+
+      {
+        $addFields:{
+          currentHighestBid:"$bidDetails.currentHighestBid"
+        }
+      },
+      {
         $project: {
           _id: 1,
           productName: 1,
@@ -105,6 +125,7 @@ export const productRepositoryMongoDb = () => {
           isBidding: 1,
           bidEndTime: 1,
           bidAcceptedTime: 1,
+          currentHighestBid:1
     
         },
       },
@@ -379,6 +400,30 @@ export const productRepositoryMongoDb = () => {
     }
     return products
   }
+  const updateProduct=async(productId: string, update:IProduct)=> {
+    const updatedProduct = await Product.findByIdAndUpdate(productId, update, { new: true });
+    return updatedProduct;
+  }
+
+
+  const blockProductByAdmin=async(productId:string)=>{
+    // const blockProduct=await Product.findByIdAndUpdate(productId,{isBlocked:!isBlocked})
+    const product = await Product.findById(productId);
+
+    if (!product) {
+      throw new AppError("Invalid Product Id ",HttpStatusCodes.BAD_REQUEST)
+    }
+
+    const updatedProduct = await Product.findByIdAndUpdate(
+      productId,
+      { isBlocked: !product.isBlocked },
+      { new: true } 
+    );
+
+    return updatedProduct?.isBlocked;
+  }
+
+
 
 
   return {
@@ -394,6 +439,8 @@ export const productRepositoryMongoDb = () => {
     getAllUserPosts,
     getOwnerPostsImageList,
     getUserPostDetails,
+    updateProduct,
+    blockProductByAdmin
   };
 };
 

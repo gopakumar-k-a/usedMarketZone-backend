@@ -6,7 +6,11 @@ import { MessageRepositoryInterface } from "../../application/repositories/messa
 import { MessageRepositoryMongoDb } from "../../frameworks/database/mongodb/repositories/messageRepositoryMongoDb";
 import { ConversationInterface } from "../../application/repositories/conversationRepository";
 import { ConversationRepositoryMongoDb } from "../../frameworks/database/mongodb/repositories/conversationRepositoryMongoDb";
-import { handleSendNewMessage } from "../../application/user-cases/message/create";
+import {
+  handlePostReplyAsMessage,
+  handleSendNewMessage,
+  handleSendPostAsMessage,
+} from "../../application/user-cases/message/create";
 import { HttpStatusCodes } from "../../types/httpStatusCodes";
 import { handleGetChat } from "../../application/user-cases/message/get";
 
@@ -43,16 +47,44 @@ export const messageController = (
     }
   );
 
+  const sendPostAsMessage = asyncHandler(
+    async (req: ExtendedRequest, res: Response) => {
+      const { _id } = req.user as CreateUserInterface;
+      const { userId: recieverId } = req.params;
+      const { productId } = req.body;
+      // export const handleSendPostAsMessage = async (
+      //   senderId: string,
+      //   recieverId: string,
+      //   productId: string,
+      const newMessage = await handleSendPostAsMessage(
+        _id,
+        recieverId,
+        productId,
+        dbRepositoryMessage,
+        dbRepositoryConversation
+      );
+
+      res.status(HttpStatusCodes.OK).json({
+        success: true,
+        message: "post sended successfully",
+        newMessage,
+      });
+    }
+  );
+
   const getChat = asyncHandler(async (req: ExtendedRequest, res: Response) => {
     const { _id } = req.user as CreateUserInterface;
     const { userId: recieverId } = req.params;
 
     console.log("inside get chat");
 
-    const chats = await handleGetChat(_id, recieverId, dbRepositoryConversation);
+    const chats = await handleGetChat(
+      _id,
+      recieverId,
+      dbRepositoryConversation
+    );
 
-    console.log('chats ',chats);
-    
+    console.log("chats ", chats);
 
     res.status(HttpStatusCodes.OK).json({
       success: true,
@@ -61,5 +93,28 @@ export const messageController = (
     });
   });
 
-  return { sendNewMessage, getChat };
+  const postReplyAsMessage = asyncHandler(
+    async (req: ExtendedRequest, res: Response) => {
+      const { _id } = req.user as CreateUserInterface;
+      const { userId: recieverId } = req.params;
+      const { productId,message } = req.body;
+
+      const newMessage = await handlePostReplyAsMessage(
+        _id,
+        recieverId,
+        productId,
+        message,
+        dbRepositoryMessage,
+        dbRepositoryConversation
+      );
+
+      res.status(HttpStatusCodes.OK).json({
+        success: true,
+        message: "Reply message To Post Send Successfully",
+        newMessage,
+      });
+    }
+  );
+
+  return { sendNewMessage, sendPostAsMessage, getChat, postReplyAsMessage };
 };

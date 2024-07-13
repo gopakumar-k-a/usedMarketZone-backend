@@ -15,24 +15,37 @@ import { ProductRepositoryMongoDb } from "../../frameworks/database/mongodb/repo
 import { AdminBidRequestDbInterface } from "../../application/repositories/adminBidRequestDbRepository";
 import { AdminBidRequestMongoDb } from "../../frameworks/database/mongodb/repositories/adminBidRequestRepositoryMongoDb";
 import { handleGetBidRequests } from "../../application/user-cases/bid/get";
-import { handleAdminAcceptedBid } from "../../application/user-cases/product/update";
+import {
+  handleAdminAcceptedBid,
+  handleBlockProductByAdmin,
+} from "../../application/user-cases/product/update";
 import { BidInterface } from "../../application/repositories/bidRepository";
 import { BidRepositoryMongoDb } from "../../frameworks/database/mongodb/repositories/bidRepositoryMongoDb";
+import { handleGetPostReports } from "../../application/user-cases/product/get";
+import { PostReportDbInterface } from "../../application/repositories/postReportRepository";
+import { PostReportRepositoryMongoDb } from "../../frameworks/database/mongodb/repositories/postReportRepositoryMongoDb";
 
 const adminController = (
   userDbRepository: UserDbInterface,
   userDbImpl: UserRepositoryMongoDb,
   productDbRepository: ProductDbInterface,
   productDbImpl: ProductRepositoryMongoDb,
-  adminBidRequestDbRepository:AdminBidRequestDbInterface,
-  adminBidRequestDbImpl:AdminBidRequestMongoDb,
+  adminBidRequestDbRepository: AdminBidRequestDbInterface,
+  adminBidRequestDbImpl: AdminBidRequestMongoDb,
   bidRepository: BidInterface,
-  bidRepositoryImpl: BidRepositoryMongoDb
+  bidRepositoryImpl: BidRepositoryMongoDb,
+  postReportRepository: PostReportDbInterface,
+  postReportRepositoryImpl: PostReportRepositoryMongoDb
 ) => {
   const dbRepositoryUser = userDbRepository(userDbImpl());
   const dbRepositoryProduct = productDbRepository(productDbImpl());
-  const dbRepositoryAdminBidRequest=adminBidRequestDbRepository(adminBidRequestDbImpl())
-  const dbBidRepository=bidRepository(bidRepositoryImpl())
+  const dbRepositoryAdminBidRequest = adminBidRequestDbRepository(
+    adminBidRequestDbImpl()
+  );
+  const dbBidRepository = bidRepository(bidRepositoryImpl());
+  const dbRepositoryPostReport = postReportRepository(
+    postReportRepositoryImpl()
+  );
 
   const handleGetUsers = asyncHandler(async (req: Request, res: Response) => {
     // console.log("inside admin controller ", req.params);
@@ -95,7 +108,7 @@ const adminController = (
     const userPosts = await handleGetUserPosts(userId, dbRepositoryProduct);
 
     res.status(HttpStatusCodes.OK).json({
-      success:true,
+      success: true,
       message: "user posts retrived successfully",
       userPosts,
     });
@@ -104,52 +117,70 @@ const adminController = (
   const getUserPostDetails = asyncHandler(
     async (req: Request, res: Response) => {
       const { postId } = req.params;
-      const postDetails=await handleGetUserPostDetails(postId,dbRepositoryProduct)
+      const postDetails = await handleGetUserPostDetails(
+        postId,
+        dbRepositoryProduct
+      );
 
       res.status(HttpStatusCodes.OK).json({
-        success:true,
+        success: true,
         message: "user post details retrived successfully",
-        postDetails
+        postDetails,
       });
     }
   );
 
-  const getBidRequests= asyncHandler(
-    async (req: Request, res: Response) => {
- 
-     const bidRequests= await handleGetBidRequests(dbRepositoryAdminBidRequest)
+  const getBidRequests = asyncHandler(async (req: Request, res: Response) => {
+    const bidRequests = await handleGetBidRequests(dbRepositoryAdminBidRequest);
 
-     console.log('bid requests from mongo ',bidRequests);
-     
+    console.log("bid requests from mongo ", bidRequests);
 
-     res.status(HttpStatusCodes.OK).json({
-      success:true,
+    res.status(HttpStatusCodes.OK).json({
+      success: true,
       message: "bid Requests retrived successfully",
-      bidRequests
+      bidRequests,
     });
-    })
+  });
 
-    const acceptBidRequest = asyncHandler(
-      async (req: Request, res: Response) => {
-        const { bidProductId } = req.params;
-        const {bidDuration}=req.body
-  console.log(req.body ,'acceptBidRequest req.body ');
-  
-        const isUpdated = await handleAdminAcceptedBid(
-          bidProductId,
-          bidDuration,
-          dbRepositoryProduct,
-          dbBidRepository
-        );
-  
-        res.status(HttpStatusCodes.OK).json({
-          success: true,
-          message: "bid accept success",
-          isUpdated,
-        });
-      }
+  const acceptBidRequest = asyncHandler(async (req: Request, res: Response) => {
+    const { bidProductId } = req.params;
+    const { bidDuration } = req.body;
+    console.log(req.body, "acceptBidRequest req.body ");
+
+    const isUpdated = await handleAdminAcceptedBid(
+      bidProductId,
+      bidDuration,
+      dbRepositoryProduct,
+      dbBidRepository
     );
 
+    res.status(HttpStatusCodes.OK).json({
+      success: true,
+      message: "bid accept success",
+      isUpdated,
+    });
+  });
+
+  const getPostReports = asyncHandler(async (req: Request, res: Response) => {
+    const postReports = await handleGetPostReports(dbRepositoryPostReport);
+
+    res.status(HttpStatusCodes.OK).json({
+      success: true,
+      message: "post reports retrived success",
+      postReports,
+    });
+  });
+
+  const adminBlockPost = asyncHandler(async (req: Request, res: Response) => {
+    const { productId } = req.params;
+
+    const productIsBlocked=await handleBlockProductByAdmin(productId, dbRepositoryProduct);
+    res.status(HttpStatusCodes.OK).json({
+      success: true,
+      message: `post ${productIsBlocked?'blocked':'un-blocked'} successfully`,
+      productIsBlocked
+    });
+  });
   return {
     handleGetUsers,
     handleModifyUserAccess,
@@ -157,7 +188,9 @@ const adminController = (
     getUserPosts,
     getUserPostDetails,
     getBidRequests,
-    acceptBidRequest
+    acceptBidRequest,
+    getPostReports,
+    adminBlockPost,
   };
 };
 

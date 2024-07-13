@@ -9,6 +9,8 @@ const messageRouter = () => {
   const controller = messageController(messageRepository,messageRepositoryMongoDb,conversationRepository,conversationRepositoryMongoDb);
 
   router.post("/send-message/:userId",controller.sendNewMessage);
+  router.post("/send-post/:userId",controller.sendPostAsMessage)
+  router.post("/reply-post/:userId",controller.postReplyAsMessage)
   router.get("/get-chat/:userId",controller.getChat)
 
   return router;

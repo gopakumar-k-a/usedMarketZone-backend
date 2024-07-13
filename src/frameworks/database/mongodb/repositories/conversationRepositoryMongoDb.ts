@@ -50,12 +50,43 @@ export const conversationRepositoryMongoDb = () => {
       },
       { $unwind: "$chat" },
       {
+        $lookup: {
+          from: "products",
+          localField: "chat.postId",
+          foreignField: "_id",
+          as: "post",
+        },
+      },
+      {
+        $unwind: { path: "$post", preserveNullAndEmptyArrays: true },
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "post.userId",
+          foreignField: "_id",
+          as: "user",
+        },
+      },
+      {
+        $unwind: { path: "$user", preserveNullAndEmptyArrays: true },
+      },
+      {
         $project: {
           _id: 0,
           message: "$chat.message",
           senderId: "$chat.senderId",
           recieverId: "$chat.recieverId",
           createdAt: "$chat.createdAt",
+          isPost: "$chat.isPost",
+          postId: "$post._id",
+          postImageUrl: "$post.productImageUrls",
+          postDescription:"$post.description",
+          postIsBidding:"$post.isBidding",
+          postCreatedAt:"$post.createdAt",
+          postOwnerId:"$user._id",
+          postOwnerUserName:"$user.userName",
+          isPostReply:'$chat.isPostReply'
         },
       },
       {

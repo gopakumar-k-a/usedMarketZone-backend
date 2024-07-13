@@ -9,7 +9,17 @@ const bidHistorySchema: Schema = new Schema(
     bidderId: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
-      ref: "Users",
+      ref: "User",
+    },
+    bidData: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true, 
+      ref: "bid",
+    },
+    productId: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true,
+      ref: "Product",
     },
     bidAmount: {
       type: Number,

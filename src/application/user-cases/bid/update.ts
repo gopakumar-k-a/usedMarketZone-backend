@@ -38,12 +38,32 @@ export const handlePlaceBid = async (
       HttpStatusCodes.BAD_REQUEST
     );
   }
+  const isBidEnded = (endTime: Date) => {
+    const currentTime = new Date().getTime();
+
+    const bidEndTime = endTime.getTime();
+
+    return currentTime < bidEndTime;
+  };
+
+  if (isBidEnded(bid.bidEndTime)) {
+    throw new AppError(
+      "Cant Bid The bid Have Ended ",
+      HttpStatusCodes.BAD_REQUEST
+    );
+  }
   console.log("bid is ", bid);
 
   const currentDate = new Date(Date.now());
   if (bid.bidHistory.length === 0) {
     const newBidHistoryEntity: CreateBidHistoryEntityType =
-      createBidHistoryEntity(bidderId, bidAmount, currentDate);
+      createBidHistoryEntity(
+        bidderId,
+        String(bid._id),
+        bidProductId,
+        bidAmount,
+        currentDate
+      );
 
     console.log("newBidHistoryEntity ", newBidHistoryEntity);
     const newBidHistory = (await bidHistoryRepositoryDb.createNewBidHistory(
@@ -75,7 +95,13 @@ export const handlePlaceBid = async (
       );
     }
     const newBidHistoryEntity: CreateBidHistoryEntityType =
-      createBidHistoryEntity(bidderId, bidAmount, currentDate);
+      createBidHistoryEntity(
+        bidderId,
+        String(bid._id),
+        bidProductId,
+        bidAmount,
+        currentDate
+      );
     const newBidHistory = await bidHistoryRepositoryDb.createNewBidHistory(
       newBidHistoryEntity
     );

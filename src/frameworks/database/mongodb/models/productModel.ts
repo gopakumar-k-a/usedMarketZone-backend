@@ -32,6 +32,7 @@ export interface IProduct extends Document {
   bidAcceptedTime: Date;
   bidDuration: BidDuration;
   bidEndTime: Date;
+  bidData:mongoose.Types.ObjectId;
 }
 
 // Schema definition for product
@@ -132,6 +133,10 @@ const productSchema: Schema = new Schema(
     bidEndTime: {
       type: Date,
     },
+    bidData:{
+      type:mongoose.Schema.Types.ObjectId,
+      ref:'bid'
+    }
   },
   {
     timestamps: true,

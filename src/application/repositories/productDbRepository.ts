@@ -2,6 +2,7 @@ import { ProductRepositoryMongoDb } from "../../frameworks/database/mongodb/repo
 import { PostEntityType } from "../../entities/createProductPostEntity";
 import { BidPostEntityType } from "../../entities/createBidPostEntity";
 import { BidDuration } from "../../types/product";
+import { IProduct } from "../../frameworks/database/mongodb/models/productModel";
 
 export const productDbRepository = (
   repository: ReturnType<ProductRepositoryMongoDb>
@@ -27,6 +28,8 @@ export const productDbRepository = (
   const getAllUserPosts = async () => repository.getAllUserPosts()
   const getOwnerPostsImageList = async (ownerId: string) => await repository.getOwnerPostsImageList(ownerId)
   const getUserPostDetails=async(userId:string,postId:string)=>await repository.getUserPostDetails(userId,postId)
+  const updateProduct=async(productId: string, update:IProduct)=>await repository.updateProduct(productId,update)
+  const blockProductByAdmin=async(productId:string)=>repository.blockProductByAdmin(productId)
 
   return {
     postProduct,
@@ -40,7 +43,9 @@ export const productDbRepository = (
     updateAdminAcceptBidStatus,
     getAllUserPosts,
     getOwnerPostsImageList,
-    getUserPostDetails
+    getUserPostDetails,
+    updateProduct,
+    blockProductByAdmin
   };
 };
 

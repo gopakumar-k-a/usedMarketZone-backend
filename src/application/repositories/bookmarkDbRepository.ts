@@ -9,11 +9,13 @@ export const bookmarkDbRepository = (
     await repository.addPostToUserBookmarks(userId, postId);
   const removePostFromUserBookmarks = async (userId: string, postId: string) =>
     await repository.removePostFromUserBookmarks(userId, postId);
+  const getOwnerBookmarkImageList = async (ownerId: string) =>repository.getOwnerBookmarkImageList(ownerId)
 
   return {
     findUserBookmarks,
     addPostToUserBookmarks,
     removePostFromUserBookmarks,
+    getOwnerBookmarkImageList
   };
 };
 

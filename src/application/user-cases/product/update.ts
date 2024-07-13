@@ -1,7 +1,10 @@
 import { BidDuration, ProductPostForm } from "../../../types/product";
 import postEntity from "../../../entities/createProductPostEntity";
 import bidPostEntity from "../../../entities/createBidPostEntity";
-import { ProductDbInterface } from "../../repositories/productDbRepository";
+import {
+  ProductDbInterface,
+  productDbRepository,
+} from "../../repositories/productDbRepository";
 import { BookMarkDbInterface } from "../../repositories/bookmarkDbRepository";
 // import {BookMarkDbInterface}  from "../../repositories/bookmarkDbRepository";
 import { AdminBidRequestDbInterface } from "../../repositories/adminBidRequestDbRepository";
@@ -53,7 +56,7 @@ export const handleProductBidPost = async (
   bidData: ProductPostForm,
   userId: string,
   productRepository: ReturnType<ProductDbInterface>,
-  adminBidRequestRepository: ReturnType<AdminBidRequestDbInterface>,
+  adminBidRequestRepository: ReturnType<AdminBidRequestDbInterface>
   // bidRepository: BidRepository
 ) => {
   const {
@@ -156,7 +159,7 @@ export const handleAdminAcceptedBid = async (
   bidProductId: string,
   bidDuration: BidDuration,
   productRepository: ReturnType<ProductDbInterface>,
-  bidRepository:BidRepository
+  bidRepository: BidRepository
 ) => {
   const updatedBidProduct = await productRepository.updateAdminAcceptBidStatus(
     bidProductId,
@@ -177,10 +180,11 @@ export const handleAdminAcceptedBid = async (
     String(updatedBidProduct.bidAcceptedTime)
   );
 
-  console.log('new bid entity ',newBidEntity);
-  
-
-  await bidRepository.addBidAfterAdminAccept(newBidEntity)
+  const newlyAddedBid = await bidRepository.addBidAfterAdminAccept(
+    newBidEntity
+  );
+  updatedBidProduct.bidData = newlyAddedBid._id;
+  await productRepository.updateProduct(bidProductId, updatedBidProduct);
 
   return true;
 };
@@ -211,4 +215,15 @@ export const handleReplyComment = async (
   );
 
   return newComment;
+};
+
+export const handleBlockProductByAdmin = async (
+  productId: string,
+  productRepository: ReturnType<ProductDbInterface>
+) => {
+  const currentProductStatus = await productRepository.blockProductByAdmin(
+    productId
+  );
+
+  return currentProductStatus;
 };
