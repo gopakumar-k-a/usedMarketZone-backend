@@ -227,3 +227,16 @@ export const handleBlockProductByAdmin = async (
 
   return currentProductStatus;
 };
+
+export const handleDeactivateSellProductPost = async (
+  userId: string,
+  productId: string,
+  productRepository: ReturnType<ProductDbInterface>
+) => {
+  const productActiveStatus = await productRepository.deactivateProductSellPost(
+    userId,
+    productId
+  );
+
+  return productActiveStatus;
+};

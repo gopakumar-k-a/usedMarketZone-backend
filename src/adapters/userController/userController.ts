@@ -24,15 +24,21 @@ import AppError from "../../utils/appError";
 import { AuthService } from "../../frameworks/services/authService";
 import { AuthServiceInterface } from "../../application/services/authServiceInterface";
 import { ExtendedRequest } from "../../types/extendedRequest";
+import { KycRepositoryMongoDB } from "../../frameworks/database/mongodb/repositories/kycRepositoryMongoDB";
+import { KycInterface } from "../../application/repositories/kycDbRepository";
+import { handleCreateNewKycRequest } from "../../application/user-cases/user/create";
 
 const userController = (
   userDbRepository: UserDbInterface,
   userDbImpl: UserRepositoryMongoDb,
   authServiceInterface: AuthServiceInterface,
-  authService: AuthService
+  authService: AuthService,
+  kycDbRepository: KycInterface,
+  kycRepositoryImpl: KycRepositoryMongoDB
 ) => {
   const dbRepositoryUser = userDbRepository(userDbImpl());
   const userService = authServiceInterface(authService());
+  const dbRepositoryKyc = kycDbRepository(kycRepositoryImpl());
 
   const handleGetUserProfile = asyncHandlder(
     async (req: Request, res: Response) => {
@@ -233,12 +239,12 @@ const userController = (
     async (req: ExtendedRequest, res: Response) => {
       const { _id } = req.user as CreateUserInterface;
 
-      const followerUsers=await handleGetFollowersById(_id, dbRepositoryUser);
+      const followerUsers = await handleGetFollowersById(_id, dbRepositoryUser);
 
       res.status(HttpStatusCodes.OK).json({
         success: true,
         message: "followers fetched successfully",
-        followerUsers
+        followerUsers,
       });
     }
   );
@@ -246,16 +252,32 @@ const userController = (
     async (req: ExtendedRequest, res: Response) => {
       const { _id } = req.user as CreateUserInterface;
 
-      const followingUsers=await handleGetFollowingById(_id, dbRepositoryUser);
+      const followingUsers = await handleGetFollowingById(
+        _id,
+        dbRepositoryUser
+      );
 
       res.status(HttpStatusCodes.OK).json({
         success: true,
         message: "followers fetched successfully",
-        followingUsers
+        followingUsers,
       });
     }
   );
 
+  const addNewKycRequest = asyncHandlder(
+    async (req: ExtendedRequest, res: Response) => {
+      const { _id: userId } = req.user as CreateUserInterface;
+      console.log("req body addNewKycRequest", req.body);
+
+      await handleCreateNewKycRequest(userId, req.body, dbRepositoryKyc);
+
+      res.status(HttpStatusCodes.OK).json({
+        success: true,
+        message: "Kyc Request Added Successfully",
+      });
+    }
+  );
   return {
     handleGetUserProfile,
     handleUserNameCheck,
@@ -268,7 +290,8 @@ const userController = (
     suggestedUsers,
     getNumberOfFollowById,
     getFollowers,
-    getFollowing
+    getFollowing,
+    addNewKycRequest
   };
 };
 

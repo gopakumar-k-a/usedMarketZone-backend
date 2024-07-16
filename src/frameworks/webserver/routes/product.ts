@@ -8,6 +8,10 @@ import { postReportRepositoryMongoDb } from "../../database/mongodb/repositories
 import { postReportDbRepository } from "../../../application/repositories/postReportRepository";
 import { commentRepositoryMongoDb } from "../../database/mongodb/repositories/commentRepositoryMongoDb";
 import { commentDbRepository } from "../../../application/repositories/commentRepository";
+import { bidHistoryRepository } from "../../../application/repositories/bidHistoryRepository";
+import { bidHistoryRepositoryMongoDb } from "../../database/mongodb/repositories/bidHistoryRepositoryMongoDb";
+import { bidDbRepository } from "../../../application/repositories/bidRepository";
+import { bidRepositoryMongoDb } from "../../database/mongodb/repositories/bidRepositoryMongoDb";
 const productRouter = () => {
   const router = express.Router();
   const controller = productController(
@@ -18,7 +22,11 @@ const productRouter = () => {
     postReportDbRepository,
     postReportRepositoryMongoDb,
     commentDbRepository,
-    commentRepositoryMongoDb
+    commentRepositoryMongoDb,
+    bidHistoryRepository,
+    bidHistoryRepositoryMongoDb,
+    bidDbRepository,
+    bidRepositoryMongoDb
   );
 
   router.post("/post-product", controller.productPost);
@@ -34,6 +42,7 @@ const productRouter = () => {
   router.get("/get-post-comments/:postId",controller.getAllPostComments)
   router.get("/get-comment-reply/:commentId",controller.getCommentReply)
   router.delete("/delete-comment",controller.deleteComment)
+  router.patch("/deactivate-post/:postId",controller.deActivatePost)
 //   router.patch("/bookmark-post/remove/:postId", controller.removeFromBookmark);
 
   return router;

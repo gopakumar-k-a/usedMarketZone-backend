@@ -9,6 +9,7 @@ import {
   handleAddOrRemoveBookmark,
   handleProductBidPost,
   handleReplyComment,
+  handleDeactivateSellProductPost,
   // handleAddToBookmark,
   // handleRemoveFromBookmark,
 } from "../../application/user-cases/product/update";
@@ -32,7 +33,10 @@ import { CommentDbInterface } from "../../application/repositories/commentReposi
 import { CommentRepositoryMongoDb } from "../../frameworks/database/mongodb/repositories/commentRepositoryMongoDb";
 import { handleDeleteComment } from "../../application/user-cases/product/delete";
 import { handleGetBookmarkImageList } from "../../application/user-cases/bookmarks/get";
-
+import { BidHistoryInterface } from "../../application/repositories/bidHistoryRepository";
+import { BidHistoryRepositoryMongoDb } from "../../frameworks/database/mongodb/repositories/bidHistoryRepositoryMongoDb";
+import { BidInterface } from "../../application/repositories/bidRepository";
+import { BidRepositoryMongoDb } from "../../frameworks/database/mongodb/repositories/bidRepositoryMongoDb";
 // import { BookmarkRepositoryMongoDb } from "../../frameworks/database/mongodb/repositories/bookmarkRepositoryMongoDb";
 
 // interface ExtendedRequest extends Request {
@@ -46,12 +50,18 @@ export const productController = (
   productReportRepository: PostReportDbInterface,
   productReportDbImpl: PostReportRepositoryMongoDb,
   commentRepository: CommentDbInterface,
-  commentDbImpl: CommentRepositoryMongoDb
+  commentDbImpl: CommentRepositoryMongoDb,
+  bidHistoryRepository:BidHistoryInterface,
+  bidHistoryImpl:BidHistoryRepositoryMongoDb,
+  bidRepository:BidInterface,
+  bidImpl:BidRepositoryMongoDb
 ) => {
   const dbRepositoryProduct = productDbRepository(productDbImpl());
   const dbRepositoryBookmark = bookmarkRepository(bookmarkDbImpl());
   const dbProductReport = productReportRepository(productReportDbImpl());
   const dbRepositoryComment = commentRepository(commentDbImpl());
+  const dbBidHistory=bidHistoryRepository(bidHistoryImpl())
+  const dbBid=bidRepository(bidImpl())
 
   const productPost = asyncHandler(
     async (req: ExtendedRequest, res: Response) => {
@@ -175,7 +185,9 @@ export const productController = (
       const postDetails = await handleGetPostDetails(
         _id,
         postId,
-        dbRepositoryProduct
+        dbRepositoryProduct,
+        dbBidHistory,
+        dbBid
       );
 
       res.status(HttpStatusCodes.OK).json({
@@ -193,11 +205,15 @@ export const productController = (
       // authorId:string,
       // postId:string,
       // parentCommentId:string|null=null
-      const newCommentData=await handleAddComment(req.body, _id, dbRepositoryComment);
+      const newCommentData = await handleAddComment(
+        req.body,
+        _id,
+        dbRepositoryComment
+      );
       res.status(HttpStatusCodes.OK).json({
         success: true,
         message: "comment added successfully",
-        newCommentData
+        newCommentData,
       });
     }
   );
@@ -208,13 +224,17 @@ export const productController = (
       // authorId:string,
       // postId:string,
       // parentCommentId:string|null=null
-      console.log('req. body replyComment' , req.body);
-      
-      const newCommentData=await handleReplyComment(req.body, _id, dbRepositoryComment);
+      console.log("req. body replyComment", req.body);
+
+      const newCommentData = await handleReplyComment(
+        req.body,
+        _id,
+        dbRepositoryComment
+      );
       res.status(HttpStatusCodes.OK).json({
         success: true,
         message: "comment replied successfully",
-        newCommentData
+        newCommentData,
       });
     }
   );
@@ -250,30 +270,55 @@ export const productController = (
     }
   );
 
-  const deleteComment=asyncHandler(async(req:ExtendedRequest,res:Response)=>{
-
-      await handleDeleteComment(req.body,dbRepositoryComment)
+  const deleteComment = asyncHandler(
+    async (req: ExtendedRequest, res: Response) => {
+      await handleDeleteComment(req.body, dbRepositoryComment);
 
       res.status(HttpStatusCodes.OK).json({
         success: true,
         message: "comment deleted successfully",
       });
-  })
+    }
+  );
 
+  const getBookmarkImageList = asyncHandler(
+    async (req: ExtendedRequest, res: Response) => {
+      const { _id } = req.user as CreateUserInterface;
 
-  const getBookmarkImageList=asyncHandler(async(req:ExtendedRequest,res:Response)=>{
-    const {_id} = req.user as CreateUserInterface;
+      // await handleDeleteComment(req.body,dbRepositoryComment)
+      const bookmarkImageList = await handleGetBookmarkImageList(
+        _id,
+        dbRepositoryBookmark
+      );
 
-    // await handleDeleteComment(req.body,dbRepositoryComment)
-    const bookmarkImageList=await handleGetBookmarkImageList(_id,dbRepositoryBookmark)
+      res.status(HttpStatusCodes.OK).json({
+        success: true,
+        message: "bookmark image List Retrived successfully",
+        bookmarkImageList,
+      });
+    }
+  );
 
-    res.status(HttpStatusCodes.OK).json({
-      success: true,
-      message: "bookmark image List Retrived successfully",
-      bookmarkImageList
-    });
-})
+  const deActivatePost = asyncHandler(
+    async (req: ExtendedRequest, res: Response) => {
+      const { _id: userId } = req.user as CreateUserInterface;
 
+      const { postId } = req.params;
+      const isDeactivatedPost = await handleDeactivateSellProductPost(
+        userId,
+        postId,
+        dbRepositoryProduct
+      );
+
+      res.status(HttpStatusCodes.OK).json({
+        success: true,
+        message: `product ${
+          isDeactivatedPost ? "de-activated" : "activated"
+        } successfully`,
+        isDeactivatedPost
+      });
+    }
+  );
 
   return {
     productPost,
@@ -287,7 +332,8 @@ export const productController = (
     replyComment,
     getCommentReply,
     deleteComment,
-    getBookmarkImageList
+    getBookmarkImageList,
+    deActivatePost,
     // productBidPost
     // removeFromBookmark,
   };

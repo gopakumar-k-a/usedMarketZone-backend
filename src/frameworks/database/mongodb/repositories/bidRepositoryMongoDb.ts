@@ -3,6 +3,7 @@ import { Bid, IBid } from "../models/bidModel";
 import { CreateBidEntityType } from "../../../../entities/bidding/createBidEntity";
 import AppError from "../../../../utils/appError";
 import { HttpStatusCodes } from "../../../../types/httpStatusCodes";
+import { Types } from "mongoose";
 
 export const bidRepositoryMongoDb = () => {
   const addBidAfterAdminAccept = async (
@@ -18,7 +19,7 @@ export const bidRepositoryMongoDb = () => {
     return createdBid;
   };
 
-  const getBidDetails = async (productId: string):Promise<IBid | null> => {
+  const getBidDetails = async (productId: string): Promise<IBid | null> => {
     const bidData: IBid | null = await Bid.findOne({ productId });
     if (!bidData) {
       throw new AppError("invalid product id ", HttpStatusCodes.BAD_GATEWAY);
@@ -36,34 +37,72 @@ export const bidRepositoryMongoDb = () => {
       );
     }
 
-    console.log('bidProduct .highest bidder id ',bidProduct.highestBidderId);
-    
+    console.log("bidProduct .highest bidder id ", bidProduct.highestBidderId);
 
     return bidProduct.highestBidderId ? bidProduct.highestBidderId : false;
   };
 
-  const getBidById=async(bidId: string):Promise<IBid >  =>{
+  const getBidById = async (bidId: string): Promise<IBid> => {
     const bid = await Bid.findById(bidId);
-    console.log('bid history ',bid?.bidHistory)
+    console.log("bid history ", bid?.bidHistory);
 
-
-    
     if (!bid) {
       throw new AppError("invalid product id ", HttpStatusCodes.BAD_GATEWAY);
     }
 
     return bid;
-  }
+  };
 
-  const updateBid=async(bidId: string, update:IBid)=> {
-    const updatedBid = await Bid.findByIdAndUpdate(bidId, update, { new: true });
+  const updateBid = async (bidId: string, update: IBid) => {
+    const updatedBid = await Bid.findByIdAndUpdate(bidId, update, {
+      new: true,
+    });
     return updatedBid;
-  }
-  // const getHighestBidderDetails=async(productId:string)=>{
-  //   const customerDetails``
-  // }
+  };
 
-  return { addBidAfterAdminAccept, getBidDetails, getHighestBidderDetails,getBidById,updateBid };
+  const placeBid = async (
+    bidHistoryId: Types.ObjectId,
+    bidId: Types.ObjectId,
+    currentHighestBid: number,
+    highestBidderId: Types.ObjectId
+  ) => {
+    console.log(
+      `inside place bid mongo db bidHistoryId,bidId,currentHighestBid,highestBidderId`,
+      bidHistoryId,
+      bidId,
+      currentHighestBid,
+      highestBidderId
+    );
+
+    //add current highest bid, highest bidder id push bid history id to bid
+    //set "highestBidderHistoryId" as bid history id
+    const updatedBid = await Bid.updateOne(
+      { _id: bidId },
+      {
+        $push: { bidHistory: bidHistoryId },
+        $set: {
+          highestBidderHistoryId: bidHistoryId,
+          currentHighestBid: currentHighestBid,
+          highestBidderId: highestBidderId,
+        },
+      },
+      { new: true }
+    );
+
+    return placeBid;
+  };
+
+
+
+  return {
+    addBidAfterAdminAccept,
+    getBidDetails,
+    getHighestBidderDetails,
+    getBidById,
+    updateBid,
+    placeBid,
+    // addHighestBidHistoryIdToBid
+  };
 };
 
 export type BidRepositoryMongoDb = typeof bidRepositoryMongoDb;

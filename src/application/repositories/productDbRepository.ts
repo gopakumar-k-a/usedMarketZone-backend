@@ -9,8 +9,9 @@ export const productDbRepository = (
 ) => {
   const postProduct = async (product: PostEntityType) =>
     await repository.postProduct(product);
-  const postBid = async (bid: BidPostEntityType) => repository.postBid(bid)
-  const getAllProductPost = async (userId:string) => await repository.getAllProductPost(userId);
+  const postBid = async (bid: BidPostEntityType) => repository.postBid(bid);
+  const getAllProductPost = async (userId: string) =>
+    await repository.getAllProductPost(userId);
   const updateProductBookmarkCount = async (
     productId: string,
     action: string
@@ -22,14 +23,25 @@ export const productDbRepository = (
     productId: string
   ) => repository.removeUserFromProductBookmark(userId, productId);
 
-  const getUserPosts=async(userId:string)=>await repository.getUserPosts(userId)
-  const getUserPostDetailsAdmin=async(postId:string)=>await repository.getUserPostDetailsAdmin(postId)
-  const updateAdminAcceptBidStatus = async (bidProductId: string,bidDuration:BidDuration) =>await repository.updateAdminAcceptBidStatus(bidProductId,bidDuration)
-  const getAllUserPosts = async () => repository.getAllUserPosts()
-  const getOwnerPostsImageList = async (ownerId: string) => await repository.getOwnerPostsImageList(ownerId)
-  const getUserPostDetails=async(userId:string,postId:string)=>await repository.getUserPostDetails(userId,postId)
-  const updateProduct=async(productId: string, update:IProduct)=>await repository.updateProduct(productId,update)
-  const blockProductByAdmin=async(productId:string)=>repository.blockProductByAdmin(productId)
+  const getUserPosts = async (userId: string) =>
+    await repository.getUserPosts(userId);
+  const getUserPostDetailsAdmin = async (postId: string) =>
+    await repository.getUserPostDetailsAdmin(postId);
+  const updateAdminAcceptBidStatus = async (
+    bidProductId: string,
+    bidDuration: BidDuration
+  ) => await repository.updateAdminAcceptBidStatus(bidProductId, bidDuration);
+  const getAllUserPosts = async () => repository.getAllUserPosts();
+  const getOwnerPostsImageList = async (ownerId: string) =>
+    await repository.getOwnerPostsImageList(ownerId);
+  const getUserPostDetails = async (userId: string, postId: string) =>
+    await repository.getUserPostDetails(userId, postId);
+  const updateProduct = async (productId: string, update: IProduct) =>
+    await repository.updateProduct(productId, update);
+  const blockProductByAdmin = async (productId: string) =>
+    repository.blockProductByAdmin(productId);
+  const deactivateProductSellPost = async (userId: string, productId: string) =>
+    await repository.deactivateProductSellPost(userId, productId);
 
   return {
     postProduct,
@@ -45,7 +57,8 @@ export const productDbRepository = (
     getOwnerPostsImageList,
     getUserPostDetails,
     updateProduct,
-    blockProductByAdmin
+    blockProductByAdmin,
+    deactivateProductSellPost
   };
 };
 

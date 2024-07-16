@@ -84,24 +84,24 @@ export const productRepositoryMongoDb = () => {
         },
       },
       {
-        $lookup:{
-          from:"bids",
-          localField:"bidData",
-          foreignField:"_id",
-          as:"bidDetails"
-        }
+        $lookup: {
+          from: "bids",
+          localField: "bidData",
+          foreignField: "_id",
+          as: "bidDetails",
+        },
       },
       {
         $unwind: {
           path: "$bidDetails",
-          preserveNullAndEmptyArrays: true // Preserve products without bids
+          preserveNullAndEmptyArrays: true, // Preserve products without bids
         },
       },
 
       {
-        $addFields:{
-          currentHighestBid:"$bidDetails.currentHighestBid"
-        }
+        $addFields: {
+          currentHighestBid: "$bidDetails.currentHighestBid",
+        },
       },
       {
         $project: {
@@ -125,8 +125,7 @@ export const productRepositoryMongoDb = () => {
           isBidding: 1,
           bidEndTime: 1,
           bidAcceptedTime: 1,
-          currentHighestBid:1
-    
+          currentHighestBid: 1,
         },
       },
       {
@@ -244,10 +243,8 @@ export const productRepositoryMongoDb = () => {
 
   const getUserPostDetailsAdmin = async (postId: string) => {
     const postDetails = await Product.findOne({ _id: postId });
-    console.log('post Details getUserPostDetails',postDetails);
-    
+    console.log("post Details getUserPostDetails", postDetails);
 
-    
     if (!postDetails) {
       return false;
     }
@@ -296,6 +293,7 @@ export const productRepositoryMongoDb = () => {
           createdAt: 1,
           bidEndTime: 1,
           isBidding: 1,
+          isDeactivatedPost:1
         },
       },
       {
@@ -322,10 +320,10 @@ export const productRepositoryMongoDb = () => {
         },
       },
       {
-        $sort:{
-          createdAt:-1
-        }
-      }
+        $sort: {
+          createdAt: -1,
+        },
+      },
     ]);
 
     if (!postsListImages) {
@@ -335,15 +333,14 @@ export const productRepositoryMongoDb = () => {
     return postsListImages;
   };
 
-  const getUserPostDetails=async(userId:string,postId:string)=>{
-    console.log('user id ',userId);
-    console.log('product id ',postId);
-    
-    
-    const products = await Product.aggregate([
+  const getUserPostDetails = async (userId: string, postId: string) => {
+    console.log("user id ", userId);
+    console.log("product id ", postId);
+
+    const products:IProduct[] = await Product.aggregate<IProduct>([
       {
         $match: {
-          _id:new ObjectId(postId),
+          _id: new ObjectId(postId),
           isAdminAccepted: true,
         },
       },
@@ -385,6 +382,7 @@ export const productRepositoryMongoDb = () => {
           isBidding: 1,
           bidEndTime: 1,
           bidAcceptedTime: 1,
+          isDeactivatedPost:1
         },
       },
       {
@@ -395,36 +393,55 @@ export const productRepositoryMongoDb = () => {
     ]);
     // console.log('products ',products);
 
-    if(!products){
-      throw new AppError("invalid product id ",HttpStatusCodes.BAD_REQUEST)
+    if (!products) {
+      throw new AppError("invalid product id ", HttpStatusCodes.BAD_REQUEST);
     }
-    return products
-  }
-  const updateProduct=async(productId: string, update:IProduct)=> {
-    const updatedProduct = await Product.findByIdAndUpdate(productId, update, { new: true });
+    return products;
+  };
+  const updateProduct = async (productId: string, update: IProduct) => {
+    const updatedProduct = await Product.findByIdAndUpdate(productId, update, {
+      new: true,
+    });
     return updatedProduct;
-  }
+  };
 
-
-  const blockProductByAdmin=async(productId:string)=>{
+  const blockProductByAdmin = async (productId: string) => {
     // const blockProduct=await Product.findByIdAndUpdate(productId,{isBlocked:!isBlocked})
     const product = await Product.findById(productId);
 
     if (!product) {
-      throw new AppError("Invalid Product Id ",HttpStatusCodes.BAD_REQUEST)
+      throw new AppError("Invalid Product Id ", HttpStatusCodes.BAD_REQUEST);
     }
 
     const updatedProduct = await Product.findByIdAndUpdate(
       productId,
       { isBlocked: !product.isBlocked },
-      { new: true } 
+      { new: true }
     );
 
     return updatedProduct?.isBlocked;
-  }
+  };
 
+  const deactivateProductSellPost = async (
+    userId: string,
+    productId: string
+  ) => {
+    const productSellPost = await Product.findOne({
+      _id: productId,
+      userId,
+      isBidding: false,
+    });
+    if (!productSellPost) {
+      throw new AppError(
+        "no Product Found Check the Product Id",
+        HttpStatusCodes.BAD_REQUEST
+      );
+    }
+    productSellPost.isDeactivatedPost = !productSellPost.isDeactivatedPost;
 
-
+    await productSellPost.save();
+    return productSellPost.isDeactivatedPost;
+  };
 
   return {
     postProduct,
@@ -440,7 +457,8 @@ export const productRepositoryMongoDb = () => {
     getOwnerPostsImageList,
     getUserPostDetails,
     updateProduct,
-    blockProductByAdmin
+    blockProductByAdmin,
+    deactivateProductSellPost
   };
 };
 

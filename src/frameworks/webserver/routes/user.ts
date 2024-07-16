@@ -1,12 +1,11 @@
 import express from "express";
 import { userDbRepository } from "../../../application/repositories/userDbRepository";
-import {
-  UserRepositoryMongoDb,
-  userRepositoryMongoDb,
-} from "../../database/mongodb/repositories/userRepositoryMongoDb";
+import { userRepositoryMongoDb } from "../../database/mongodb/repositories/userRepositoryMongoDb";
 import { authService } from "../../services/authService";
 import { authServiceInterface } from "../../../application/services/authServiceInterface";
 import userController from "../../../adapters/userController/userController";
+import { kycDbRepository } from "../../../application/repositories/kycDbRepository";
+import { kycRepositoryMongoDB } from "../../database/mongodb/repositories/kycRepositoryMongoDB";
 
 const userRouter = () => {
   const router = express.Router();
@@ -15,7 +14,9 @@ const userRouter = () => {
     userDbRepository,
     userRepositoryMongoDb,
     authServiceInterface,
-    authService
+    authService,
+    kycDbRepository,
+    kycRepositoryMongoDB
   );
 
   router.route("/profile/:userId").get(controller.handleGetUserProfile);
@@ -44,9 +45,10 @@ const userRouter = () => {
 
   router.patch("/follow-user/:followUserId", controller.followUser);
   router.patch("/un-follow-user/:unFollowUserId", controller.unFollowUser);
-  router.get("/num-of-follow/:userId",controller.getNumberOfFollowById)
-  router.get("/followers",controller.getFollowers)
-  router.get("/following",controller.getFollowing)
+  router.get("/num-of-follow/:userId", controller.getNumberOfFollowById);
+  router.get("/followers", controller.getFollowers);
+  router.get("/following", controller.getFollowing);
+  router.post("/kyc-request", controller.addNewKycRequest);
   // router.get("my-posts",controller)
 
   return router;

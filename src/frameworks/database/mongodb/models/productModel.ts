@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document, Model } from "mongoose";
+import mongoose, { Schema, Document, Model, Types } from "mongoose";
 
 // Interface for bid duration
 interface BidDuration {
@@ -32,7 +32,8 @@ export interface IProduct extends Document {
   bidAcceptedTime: Date;
   bidDuration: BidDuration;
   bidEndTime: Date;
-  bidData:mongoose.Types.ObjectId;
+  bidData: mongoose.Types.ObjectId;
+  isDeactivatedPost: boolean;
 }
 
 // Schema definition for product
@@ -101,6 +102,10 @@ const productSchema: Schema = new Schema(
       type: Boolean,
       default: false,
     },
+    isDeactivatedPost: {
+      type: Boolean,
+      default: false,
+    },
     isSold: {
       type: Boolean,
       default: false,
@@ -133,10 +138,10 @@ const productSchema: Schema = new Schema(
     bidEndTime: {
       type: Date,
     },
-    bidData:{
-      type:mongoose.Schema.Types.ObjectId,
-      ref:'bid'
-    }
+    bidData: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "bid",
+    },
   },
   {
     timestamps: true,
@@ -144,5 +149,8 @@ const productSchema: Schema = new Schema(
 );
 
 // Create and export the model
-const Product: Model<IProduct> = mongoose.model<IProduct>("Product", productSchema);
+const Product: Model<IProduct> = mongoose.model<IProduct>(
+  "Product",
+  productSchema
+);
 export default Product;

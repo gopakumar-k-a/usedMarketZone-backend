@@ -64,10 +64,10 @@ export const bidController = (
 
   const placeBid = asyncHandler(async (req: ExtendedRequest, res: Response) => {
     const { _id } = req.user as CreateUserInterface;
-    const {  bidAmount } = req.body;
-    const {bidProductId}=req.params
+    const { bidAmount } = req.body;
+    const { bidProductId } = req.params;
 
-    await handlePlaceBid(
+    const totalBidAmount=await handlePlaceBid(
       _id,
       bidProductId,
       bidAmount,
@@ -78,6 +78,7 @@ export const bidController = (
     res.status(HttpStatusCodes.OK).json({
       success: true,
       message: "bid placed successfully",
+      totalBidAmount
     });
   });
 
