@@ -3,6 +3,7 @@ import { PostEntityType } from "../../entities/createProductPostEntity";
 import { BidPostEntityType } from "../../entities/createBidPostEntity";
 import { BidDuration } from "../../types/product";
 import { IProduct } from "../../frameworks/database/mongodb/models/productModel";
+import { Types } from "mongoose";
 
 export const productDbRepository = (
   repository: ReturnType<ProductRepositoryMongoDb>
@@ -42,6 +43,7 @@ export const productDbRepository = (
     repository.blockProductByAdmin(productId);
   const deactivateProductSellPost = async (userId: string, productId: string) =>
     await repository.deactivateProductSellPost(userId, productId);
+  const searchProduct = async (query: string, isBidding: boolean,userId:Types.ObjectId) =>await repository.searchProduct(query,isBidding,userId)
 
   return {
     postProduct,
@@ -58,7 +60,8 @@ export const productDbRepository = (
     getUserPostDetails,
     updateProduct,
     blockProductByAdmin,
-    deactivateProductSellPost
+    deactivateProductSellPost,
+    searchProduct
   };
 };
 

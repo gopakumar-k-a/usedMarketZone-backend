@@ -4,7 +4,7 @@ import Bookmark from "../models/bookmarkModel";
 
 export const bookmarkRepositoryMongoDb = () => {
   const findUserBookmarks = async (ownerId: string) => {
-    const bookmarkDoc = await Bookmark.findOne({ ownerId });
+    const bookmarkDoc = await Bookmark.findOne({userId: ownerId });
 
     if (!bookmarkDoc) return { ownerId, postIds: [] };
 

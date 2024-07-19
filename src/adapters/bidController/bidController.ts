@@ -20,6 +20,7 @@ import { BidRepositoryMongoDb } from "../../frameworks/database/mongodb/reposito
 import { BidHistoryInterface } from "../../application/repositories/bidHistoryRepository";
 import { BidHistoryRepositoryMongoDb } from "../../frameworks/database/mongodb/repositories/bidHistoryRepositoryMongoDb";
 import { handlePlaceBid } from "../../application/user-cases/bid/update";
+import { handleGetBidDetailsOfUserOnProduct } from "../../application/user-cases/bid/get";
 export const bidController = (
   productDbRepository: ProductDbInterface,
   productDbImpl: ProductRepositoryMongoDb,
@@ -67,7 +68,7 @@ export const bidController = (
     const { bidAmount } = req.body;
     const { bidProductId } = req.params;
 
-    const totalBidAmount=await handlePlaceBid(
+    const totalBidAmount = await handlePlaceBid(
       _id,
       bidProductId,
       bidAmount,
@@ -78,12 +79,32 @@ export const bidController = (
     res.status(HttpStatusCodes.OK).json({
       success: true,
       message: "bid placed successfully",
-      totalBidAmount
+      totalBidAmount,
     });
   });
+
+  const getBidDetailsOfUserOnProduct = asyncHandler(
+    async (req: ExtendedRequest, res: Response) => {
+      const { _id } = req.user as CreateUserInterface;
+      const { bidProductId } = req.params;
+
+     const bidHistory= await handleGetBidDetailsOfUserOnProduct(
+        _id,
+        bidProductId,
+        dbBidHistoryRepository
+      );
+
+      res.status(HttpStatusCodes.OK).json({
+        success: true,
+        message: "bid History Retrived successfully",
+        bidHistory
+      });
+    }
+  );
 
   return {
     productBidPost,
     placeBid,
+    getBidDetailsOfUserOnProduct
   };
 };

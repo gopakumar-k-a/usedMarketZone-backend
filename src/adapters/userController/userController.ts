@@ -27,6 +27,12 @@ import { ExtendedRequest } from "../../types/extendedRequest";
 import { KycRepositoryMongoDB } from "../../frameworks/database/mongodb/repositories/kycRepositoryMongoDB";
 import { KycInterface } from "../../application/repositories/kycDbRepository";
 import { handleCreateNewKycRequest } from "../../application/user-cases/user/create";
+import { ProductDbInterface } from "../../application/repositories/productDbRepository";
+import {
+  productRepositoryMongoDb,
+  ProductRepositoryMongoDb,
+} from "../../frameworks/database/mongodb/repositories/productRepositoryMongoDb";
+import { handleSearchOnApp } from "../../application/user-cases/search/get";
 
 const userController = (
   userDbRepository: UserDbInterface,
@@ -34,11 +40,14 @@ const userController = (
   authServiceInterface: AuthServiceInterface,
   authService: AuthService,
   kycDbRepository: KycInterface,
-  kycRepositoryImpl: KycRepositoryMongoDB
+  kycRepositoryImpl: KycRepositoryMongoDB,
+  productDbRepository: ProductDbInterface,
+  productRepositoryImpl: ProductRepositoryMongoDb
 ) => {
   const dbRepositoryUser = userDbRepository(userDbImpl());
   const userService = authServiceInterface(authService());
   const dbRepositoryKyc = kycDbRepository(kycRepositoryImpl());
+  const dbRepositoryProduct = productDbRepository(productRepositoryMongoDb());
 
   const handleGetUserProfile = asyncHandlder(
     async (req: Request, res: Response) => {
@@ -278,6 +287,35 @@ const userController = (
       });
     }
   );
+
+  const searchOnApp = asyncHandlder(
+    async (req: ExtendedRequest, res: Response) => {
+      const { _id: userId } = req.user as CreateUserInterface;
+      const { query, filter, subFilter } = req.query as {
+        query: string;
+        filter: string;
+        subFilter: string;
+      };
+      console.log("inside search on app");
+
+      console.log("req.query search on app ", req.query);
+
+      const results=await handleSearchOnApp(
+        dbRepositoryUser,
+        dbRepositoryProduct,
+        userId,
+        query,
+        filter,
+        subFilter
+      );
+
+      res.status(HttpStatusCodes.OK).json({
+        success: true,
+        message: "search Results retrived successfully",
+        results
+      });
+    }
+  );
   return {
     handleGetUserProfile,
     handleUserNameCheck,
@@ -291,7 +329,8 @@ const userController = (
     getNumberOfFollowById,
     getFollowers,
     getFollowing,
-    addNewKycRequest
+    addNewKycRequest,
+    searchOnApp,
   };
 };
 

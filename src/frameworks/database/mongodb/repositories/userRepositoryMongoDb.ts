@@ -1,4 +1,4 @@
-import User from "../models/userModel";
+import { User } from "../models/userModel";
 
 import Otp from "../models/otpSchema";
 import { UserEntityType } from "../../../../entities/user";
@@ -224,9 +224,10 @@ export const userRepositoryMongoDb = () => {
     }
 
     const followers = user.followers;
+    const excludedIds = [...followers, new mongoose.Types.ObjectId(userId)];
 
     const suggestedUsers = await User.find(
-      { _id: { $nin: followers } },
+      { _id: { $nin: excludedIds } },
       { userName: 1, imageUrl: 1 }
     )
       .sort({ createdAt: -1 })
@@ -237,9 +238,8 @@ export const userRepositoryMongoDb = () => {
   };
 
   const getFollowersById = async (userId: string) => {
+    console.log("followers ");
 
-    console.log('followers ');
-    
     const followerUsers = await User.aggregate([
       {
         $match: { _id: new ObjectId(userId) },
@@ -253,20 +253,20 @@ export const userRepositoryMongoDb = () => {
         },
       },
       { $unwind: "$followers" },
-      {$project:{
-        'followers.imageUrl':1,
-        'followers.userName':1,
-        'followers.createdAt':1,
-        'followers._id':1
-      }}
+      {
+        $project: {
+          "followers.imageUrl": 1,
+          "followers.userName": 1,
+          "followers.createdAt": 1,
+          "followers._id": 1,
+        },
+      },
     ]);
     console.log("followers ", followerUsers);
-    return followerUsers
+    return followerUsers;
   };
   const getFollowingById = async (userId: string) => {
-
-    
-    const followingUser= await User.aggregate([
+    const followingUser = await User.aggregate([
       {
         $match: { _id: new ObjectId(userId) },
       },
@@ -279,16 +279,43 @@ export const userRepositoryMongoDb = () => {
         },
       },
       { $unwind: "$following" },
-      {$project:{
-        'following.imageUrl':1,
-        'following.userName':1,
-        'following.createdAt':1,
-        'following._id':1
-      }}
+      {
+        $project: {
+          "following.imageUrl": 1,
+          "following.userName": 1,
+          "following.createdAt": 1,
+          "following._id": 1,
+        },
+      },
     ]);
 
-    console.log('usersFollowing ',followingUser);
-    return followingUser
+    console.log("usersFollowing ", followingUser);
+    return followingUser;
+  };
+
+  const searchUser = async (query: string) => {
+    const regex = new RegExp(query, "i");
+
+    const results = await User.find(
+      {
+        role: "user",
+        $or: [
+          { firstName: { $regex: regex } },
+          { lastName: { $regex: regex } },
+          { userName: { $regex: regex } },
+        ],
+      },
+      {
+        firstName: 1,
+        lastName: 1,
+        userName: 1,
+        imageUrl: 1,
+      }
+    );
+
+    console.log("search user results ", results);
+
+    return results;
   };
 
   return {
@@ -311,6 +338,7 @@ export const userRepositoryMongoDb = () => {
     getNumOfFollowById,
     getFollowersById,
     getFollowingById,
+    searchUser,
   };
 };
 

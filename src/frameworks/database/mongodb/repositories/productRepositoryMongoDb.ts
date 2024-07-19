@@ -1,7 +1,7 @@
 import Product, { IProduct } from "../models/productModel";
 import { PostEntityType } from "../../../../entities/createProductPostEntity";
 import { BidPostEntityType } from "../../../../entities/createBidPostEntity";
-import mongoose from "mongoose";
+import mongoose, { Types } from "mongoose";
 import { BidDuration } from "../../../../types/product";
 import { HttpStatusCodes } from "../../../../types/httpStatusCodes";
 import AppError from "../../../../utils/appError";
@@ -293,7 +293,7 @@ export const productRepositoryMongoDb = () => {
           createdAt: 1,
           bidEndTime: 1,
           isBidding: 1,
-          isDeactivatedPost:1
+          isDeactivatedPost: 1,
         },
       },
       {
@@ -337,7 +337,7 @@ export const productRepositoryMongoDb = () => {
     console.log("user id ", userId);
     console.log("product id ", postId);
 
-    const products:IProduct[] = await Product.aggregate<IProduct>([
+    const products: IProduct[] = await Product.aggregate<IProduct>([
       {
         $match: {
           _id: new ObjectId(postId),
@@ -382,7 +382,7 @@ export const productRepositoryMongoDb = () => {
           isBidding: 1,
           bidEndTime: 1,
           bidAcceptedTime: 1,
-          isDeactivatedPost:1
+          isDeactivatedPost: 1,
         },
       },
       {
@@ -443,6 +443,136 @@ export const productRepositoryMongoDb = () => {
     return productSellPost.isDeactivatedPost;
   };
 
+  const searchProduct = async (
+    query: string,
+    isBidding: boolean,
+    userId: Types.ObjectId
+  ) => {
+    console.log(`    query: ${query},
+    isBidding: ${isBidding},`);
+    
+    const regex = new RegExp(query.trim(), "i");
+    // const results = await Product.find(
+    //   {
+    //     isBidding: isBidding,
+    //     $or: [
+    //       { description: regex },
+    //       { productName: regex },
+    //       { category: regex },
+    //       { subCategory: regex },
+    //     ],
+    //     // role: "user",
+    //     isAdminAccepted: true,
+
+    //   },
+    //   {
+    //     productName: 1,
+    //     basePrice: 1,
+    //     userId: 1,
+    //     isSold: 1,
+    //     isBlocked: 1,
+    //     category: 1,
+    //     subCategory: 1,
+    //     productImageUrls: 1,
+    //     address: 1,
+    //     createdAt: 1,
+    //     bidEndTime: 1,
+    //     isBidding: 1,
+    //     isDeactivatedPost: 1,
+    //   }
+    // )
+
+    const results = await Product.aggregate([
+      {
+        $match: {
+          isBidding: isBidding,
+          $or: [
+            { description: regex },
+            { productName: regex },
+            { category: regex },
+            { subCategory: regex },
+          ],
+          // role: "user",
+          isAdminAccepted: true,
+        },
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "userId",
+          foreignField: "_id",
+          as: "userDetails",
+        },
+      },
+      {
+        $unwind: "$userDetails",
+      },
+      {
+        $addFields: {
+          isBookmarked: { $in: [userId, "$bookmarkedUsers"] },
+        },
+      },
+      {
+        $lookup: {
+          from: "bids",
+          localField: "bidData",
+          foreignField: "_id",
+          as: "bidDetails",
+        },
+      },
+      {
+        $unwind: {
+          path: "$bidDetails",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $addFields: {
+          currentHighestBid: "$bidDetails.currentHighestBid",
+        },
+      },
+      {
+        $project: {
+          _id: 1,
+          productName: 1,
+          basePrice: 1,
+          userId: 1,
+          productImageUrls: 1,
+          category: 1,
+          subCategory: 1,
+          phone: 1,
+          description: 1,
+          productCondition: 1,
+          productAge: 1,
+          bookmarkedCount: 1,
+          address: 1,
+          "userDetails.userName": 1,
+          "userDetails.imageUrl": 1,
+          isBookmarked: 1,
+          createdAt: 1,
+          isBidding: 1,
+          bidEndTime: 1,
+          bidAcceptedTime: 1,
+          currentHighestBid: 1,
+          isSold: 1,
+          isBlocked: 1,
+          isDeactivatedPost: 1,
+        },
+      },
+      {
+        $sort: {
+          createdAt: -1,
+        },
+      },
+    ]);
+
+    console.log("searchProduct results ", results);
+    // console.log("produts ", products);
+
+    // return products;
+    return results;
+  };
+
   return {
     postProduct,
     getAllProductPost,
@@ -458,7 +588,8 @@ export const productRepositoryMongoDb = () => {
     getUserPostDetails,
     updateProduct,
     blockProductByAdmin,
-    deactivateProductSellPost
+    deactivateProductSellPost,
+    searchProduct,
   };
 };
 

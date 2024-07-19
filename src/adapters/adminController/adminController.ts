@@ -14,7 +14,10 @@ import { ProductDbInterface } from "../../application/repositories/productDbRepo
 import { ProductRepositoryMongoDb } from "../../frameworks/database/mongodb/repositories/productRepositoryMongoDb";
 import { AdminBidRequestDbInterface } from "../../application/repositories/adminBidRequestDbRepository";
 import { AdminBidRequestMongoDb } from "../../frameworks/database/mongodb/repositories/adminBidRequestRepositoryMongoDb";
-import { handleGetBidRequests } from "../../application/user-cases/bid/get";
+import {
+  handleAdminGetBidHistoryOfProduct,
+  handleGetBidRequests,
+} from "../../application/user-cases/bid/get";
 import {
   handleAdminAcceptedBid,
   handleBlockProductByAdmin,
@@ -24,6 +27,8 @@ import { BidRepositoryMongoDb } from "../../frameworks/database/mongodb/reposito
 import { handleGetPostReports } from "../../application/user-cases/product/get";
 import { PostReportDbInterface } from "../../application/repositories/postReportRepository";
 import { PostReportRepositoryMongoDb } from "../../frameworks/database/mongodb/repositories/postReportRepositoryMongoDb";
+import { BidHistoryInterface } from "../../application/repositories/bidHistoryRepository";
+import { BidHistoryRepositoryMongoDb } from "../../frameworks/database/mongodb/repositories/bidHistoryRepositoryMongoDb";
 
 const adminController = (
   userDbRepository: UserDbInterface,
@@ -35,7 +40,9 @@ const adminController = (
   bidRepository: BidInterface,
   bidRepositoryImpl: BidRepositoryMongoDb,
   postReportRepository: PostReportDbInterface,
-  postReportRepositoryImpl: PostReportRepositoryMongoDb
+  postReportRepositoryImpl: PostReportRepositoryMongoDb,
+  bidHistoryRepository: BidHistoryInterface,
+  bidHistoryImpl: BidHistoryRepositoryMongoDb
 ) => {
   const dbRepositoryUser = userDbRepository(userDbImpl());
   const dbRepositoryProduct = productDbRepository(productDbImpl());
@@ -46,6 +53,7 @@ const adminController = (
   const dbRepositoryPostReport = postReportRepository(
     postReportRepositoryImpl()
   );
+  const dbBidHistory = bidHistoryRepository(bidHistoryImpl());
 
   const handleGetUsers = asyncHandler(async (req: Request, res: Response) => {
     // console.log("inside admin controller ", req.params);
@@ -174,13 +182,35 @@ const adminController = (
   const adminBlockPost = asyncHandler(async (req: Request, res: Response) => {
     const { productId } = req.params;
 
-    const productIsBlocked=await handleBlockProductByAdmin(productId, dbRepositoryProduct);
+    const productIsBlocked = await handleBlockProductByAdmin(
+      productId,
+      dbRepositoryProduct
+    );
     res.status(HttpStatusCodes.OK).json({
       success: true,
-      message: `post ${productIsBlocked?'blocked':'un-blocked'} successfully`,
-      productIsBlocked
+      message: `post ${
+        productIsBlocked ? "blocked" : "un-blocked"
+      } successfully`,
+      productIsBlocked,
     });
   });
+
+  const getBidHistoryOfProduct = asyncHandler(
+    async (req: Request, res: Response) => {
+      const { bidProductId } = req.params;
+
+      const bidHistory = await handleAdminGetBidHistoryOfProduct(
+        bidProductId,
+        dbBidHistory
+      );
+
+      res.status(HttpStatusCodes.OK).json({
+        success: true,
+        message: "bid history retrieved succesfully",
+        bidHistory,
+      });
+    }
+  );
   return {
     handleGetUsers,
     handleModifyUserAccess,
@@ -191,6 +221,7 @@ const adminController = (
     acceptBidRequest,
     getPostReports,
     adminBlockPost,
+    getBidHistoryOfProduct,
   };
 };
 

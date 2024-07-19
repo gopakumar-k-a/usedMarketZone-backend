@@ -10,6 +10,8 @@ import { bidDbRepository } from "../../../application/repositories/bidRepository
 import { bidRepositoryMongoDb } from "../../database/mongodb/repositories/bidRepositoryMongoDb";
 import { postReportDbRepository } from "../../../application/repositories/postReportRepository";
 import { postReportRepositoryMongoDb } from "../../database/mongodb/repositories/postReportRepositoryMongoDb";
+import { bidHistoryRepository } from "../../../application/repositories/bidHistoryRepository";
+import { bidHistoryRepositoryMongoDb } from "../../database/mongodb/repositories/bidHistoryRepositoryMongoDb";
 const adminRouter = () => {
   const router = express.Router();
   const controller = adminController(
@@ -22,7 +24,9 @@ const adminRouter = () => {
     bidDbRepository,
     bidRepositoryMongoDb,
     postReportDbRepository,
-    postReportRepositoryMongoDb
+    postReportRepositoryMongoDb,
+    bidHistoryRepository,
+    bidHistoryRepositoryMongoDb
   );
 
   router.get("/get-all-users/:page/:limit", controller.handleGetUsers);
@@ -34,6 +38,7 @@ const adminRouter = () => {
   router.patch("/accept-bid/:bidProductId", controller.acceptBidRequest);
   router.get("/get-post-reports", controller.getPostReports);
   router.patch("/block-post/:productId",controller.adminBlockPost)
+  router.get("/bid-history/:bidProductId",controller.getBidHistoryOfProduct)
 
   return router;
 };

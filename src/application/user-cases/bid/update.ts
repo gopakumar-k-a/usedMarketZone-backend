@@ -86,7 +86,7 @@ export const handlePlaceBid = async (
 
     if (bid.baseBidPrice >= totalBidAmount) {
       throw new AppError(
-        "Bid Amount Must be greater that Base Bid Price ",
+        `Bid Amount Must be greater that Base Bid Price current base bid price is  ${bid.baseBidPrice}`,
         HttpStatusCodes.BAD_REQUEST
       );
     }
@@ -105,53 +105,21 @@ export const handlePlaceBid = async (
       newBidHistoryEntity
     )) as IBidHistory;
 
-    // bid.currentHighestBid = parseInt(bidAmount);
-    // bid.highestBidderId = new mongoose.Types.ObjectId(bidderId);
-
-    // if (newBidHistory) {
-    // bid.highestBidderHistoryId = new mongoose.Types.ObjectId(
-    //   newBidHistory?._id as string
-    // );
-    // bid.bidHistory.push(
-    //   new mongoose.Types.ObjectId(newBidHistory?._id as string)
-    // );
-
-    //add current highest bid, highest bidder id push bid history id to bid
-    //set "highestBidderHistoryId" as bid history id
-
-    // bidHistoryId: Types.ObjectId,
-    // bidId: Types.ObjectId,
-    // currentHighestBid:number,
-    // highestBidderId:Types.ObjectId,
-    const UpdatedBid = await bidRepositoryDb.placeBid(
+    await bidRepositoryDb.placeBid(
       new mongoose.Types.ObjectId(newBidHistory?._id as string),
       bid._id,
       totalBidAmount,
       (bid.highestBidderId = new mongoose.Types.ObjectId(bidderId))
     );
-    // }
-
-    // await bidRepositoryDb.updateBid(bid._id.toString(), bid);
-
-    // return newBidHistory;
 
     return totalBidAmount;
   } else {
-    // const currentHighestBid = bid.currentHighestBid;
-    // let amountToBid=bidAmount
-    // const bidderPreviousBidSumOnProduct=await bidHistoryRepositoryDb.getUserPreviousBidsSumOnProduct(
-    //   new mongoose.Types.ObjectId(bidderId),
-    //   new mongoose.Types.ObjectId(bidProductId)
-    // )
-
-    // console.log('bidderPreviousBidSumOnProduct ',bidderPreviousBidSumOnProduct);
-    // bidderPreviousBidSumOnProduct.length>0?amountToBid+=bidderPreviousBidSumOnProduct[0].previousBidSumOfUser:amountToBid=amountToBid
-
+    //if there is bid history that means people have already bidded on the product
     //already have a bid history entity so check weather the bid amount is greater than the current highest bid
     // if not throw error
     if (totalBidAmount <= currentHighestBid) {
       throw new AppError(
-        "Your bid must be higher than the current highest bid.",
+        `Your bid must be higher than the current highest bid. current highest bid is ${currentHighestBid}`,
         HttpStatusCodes.BAD_REQUEST
       );
     }
@@ -170,26 +138,8 @@ export const handlePlaceBid = async (
       newBidHistoryEntity
     );
 
-    // //add current highest bid amount on the bid document
-    // bid.currentHighestBid = parseInt(bidAmount);
-    // //add current highest bidder id to bid document
-    // bid.highestBidderId = new mongoose.Types.ObjectId(bidderId);
-
-    // //push bid history document id to bid document
-    // if (newBidHistory) {
-    //   bid.highestBidderHistoryId = new mongoose.Types.ObjectId(
-    //     newBidHistory?._id as string
-    //   );
-    //   bid.bidHistory.push(
-    //     new mongoose.Types.ObjectId(newBidHistory?._id as string)
-    //   );
-    // }
-    // //update the current bid history document
-    // await bidRepositoryDb.updateBid(bid._id.toString(), bid);
-
-    const UpdatedBid = await bidRepositoryDb.placeBid(
+    await bidRepositoryDb.placeBid(
       new mongoose.Types.ObjectId(newBidHistory?._id as string),
-      // newBidHistory._id,
       bid._id,
       totalBidAmount,
       (bid.highestBidderId = new mongoose.Types.ObjectId(bidderId))

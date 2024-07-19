@@ -6,6 +6,8 @@ import { authServiceInterface } from "../../../application/services/authServiceI
 import userController from "../../../adapters/userController/userController";
 import { kycDbRepository } from "../../../application/repositories/kycDbRepository";
 import { kycRepositoryMongoDB } from "../../database/mongodb/repositories/kycRepositoryMongoDB";
+import { productDbRepository } from "../../../application/repositories/productDbRepository";
+import { productRepositoryMongoDb } from "../../database/mongodb/repositories/productRepositoryMongoDb";
 
 const userRouter = () => {
   const router = express.Router();
@@ -16,7 +18,9 @@ const userRouter = () => {
     authServiceInterface,
     authService,
     kycDbRepository,
-    kycRepositoryMongoDB
+    kycRepositoryMongoDB,
+    productDbRepository,
+    productRepositoryMongoDb
   );
 
   router.route("/profile/:userId").get(controller.handleGetUserProfile);
@@ -49,6 +53,7 @@ const userRouter = () => {
   router.get("/followers", controller.getFollowers);
   router.get("/following", controller.getFollowing);
   router.post("/kyc-request", controller.addNewKycRequest);
+  router.get("/search",controller.searchOnApp)
   // router.get("my-posts",controller)
 
   return router;

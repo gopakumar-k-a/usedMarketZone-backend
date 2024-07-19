@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import AdminBidRequest from "../models/adminBidRequestModel";
 
 export const adminBidRequestMongoDb = () => {
@@ -56,6 +57,7 @@ export const adminBidRequestMongoDb = () => {
           "productData.bidDuration": 1,
           "productData.subCategory": 1,
           "productData.isAdminAccepted":1,
+          "productData.bidEndTime":1,
           "userData.firstName": 1,
           "userData.lastName": 1,
           "userData.email": 1,
@@ -81,6 +83,8 @@ export const adminBidRequestMongoDb = () => {
 //   await AdminBidRequest.findByIdAndUpdate(requestId,{$set:{isAccepted:true}})
  
 //  }
+
+
 
   return {
     createBidRequestAdmin,

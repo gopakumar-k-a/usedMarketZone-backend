@@ -1,7 +1,7 @@
 import { BidHistory } from "../models/bidHistoryModel";
 import { IBidHistory } from "../models/bidHistoryModel";
 import { CreateBidHistoryEntityType } from "../../../../entities/bidding/createBidHistory";
-import mongoose, { Types } from "mongoose";
+import mongoose, { mongo, Types } from "mongoose";
 export const bidHistoryRepositoryMongoDb = () => {
   const createNewBidHistory = async (
     createBidHistoryEntity: CreateBidHistoryEntityType
@@ -65,10 +65,107 @@ export const bidHistoryRepositoryMongoDb = () => {
     return previousBidSumOfUser;
   };
 
+  const getUserBidHistoryOnProduct = async (
+    userId: mongoose.Types.ObjectId,
+    productId: mongoose.Types.ObjectId
+  ) => {
+    const bidHistory = await BidHistory.aggregate([
+      {
+        $match: {
+          bidderId: userId,
+          productId: productId,
+        },
+      },
+      {
+        $project: {
+          bidTime: 1,
+          bidAmount: 1,
+        },
+      },
+    ]);
+
+    console.log("bidHistory ", bidHistory);
+
+    return bidHistory;
+  };
+
+  const getProductBidHistoryAdmin = async (
+    bidProductId: mongoose.Types.ObjectId
+  ) => {
+    //   bidder
+    //   Bid Amount
+    //   Bid Total Amount
+    //   Time
+
+
+    const bidHistory = await BidHistory.aggregate([
+      {
+        $lookup: {
+          from: "users",
+          localField: "bidderId",
+          foreignField: "_id",
+          as: "bidderDetails",
+        },
+      },
+
+      {
+        $unwind: "$bidderDetails",
+      },
+
+      {
+        $group: {
+          _id: "$bidderId",
+          bidderName: { $first: "$bidderDetails.userName" },
+          bids: {
+            $push: {
+              bidAmount: "$bidAmount",
+              bidTime: "$bidTime",
+            },
+          },
+          totalBidAmount: { $sum: "$bidAmount" },
+        },
+      },
+
+      {
+        $addFields: {
+          lastBidDate: {
+            $arrayElemAt: [
+              {
+                $map: {
+                  input: { $reverseArray: "$bids" },
+                  as: "bid",
+                  in: "$$bid.bidTime",
+                },
+              },
+              0,
+            ],
+          },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          bidderId: "$_id",
+          bidderName: 1,
+          bids: 1,
+          totalBidAmount: 1,
+          lastBidDate: 1,
+        },
+      },
+      {
+        $sort:{lastBidDate:-1}
+      }
+    ]);
+    console.log("bidHistory ", bidHistory);
+    return bidHistory;
+  };
+
   return {
     createNewBidHistory,
     getHighestBid,
     getUserPreviousBidsSumOnProduct,
+    getUserBidHistoryOnProduct,
+    getProductBidHistoryAdmin,
   };
 };
 

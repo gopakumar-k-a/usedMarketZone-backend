@@ -1,6 +1,22 @@
-import { kMaxLength } from "buffer";
-import mongoose, { Schema, model } from "mongoose";
+import mongoose, { Schema, Document, model } from "mongoose";
 
+// Define the interface for the User document
+interface IUser extends Document {
+  firstName: string;
+  lastName: string;
+  userName: string;
+  email: string;
+  phone: number;
+  password: string;
+  role: string;
+  isActive: boolean;
+  bio: string;
+  imageUrl: string;
+  followers: mongoose.Types.ObjectId[];
+  following: mongoose.Types.ObjectId[];
+}
+
+// Define the schema for the User document
 const userSchema: Schema = new Schema(
   {
     firstName: {
@@ -15,8 +31,8 @@ const userSchema: Schema = new Schema(
     },
     userName: {
       type: String,
-      trim:true,
-      maxlength:32
+      trim: true,
+      maxlength: 32,
     },
     email: {
       type: String,
@@ -49,11 +65,12 @@ const userSchema: Schema = new Schema(
       type: String,
       default: "",
     },
-    followers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User',default:[] }],
-    following: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User',default:[] }],
+    followers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User', default: [] }],
+    following: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User', default: [] }],
   },
   { timestamps: true }
 );
 
-const User = model("User", userSchema);
-export default User;
+// Create and export the User model
+const User = model<IUser>("User", userSchema);
+export { User, IUser };
