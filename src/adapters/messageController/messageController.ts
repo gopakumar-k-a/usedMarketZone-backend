@@ -13,17 +13,22 @@ import {
 } from "../../application/user-cases/message/create";
 import { HttpStatusCodes } from "../../types/httpStatusCodes";
 import { handleGetChat } from "../../application/user-cases/message/get";
+import { NotificationInterface } from "../../application/repositories/notificationRepository";
+import { NotificationRepositoryMongoDB } from "../../frameworks/database/mongodb/repositories/notificationRepositoryMongoDB";
 
 export const messageController = (
   messageDbRepository: MessageRepositoryInterface,
   messageDbImpl: MessageRepositoryMongoDb,
   conversationDbRepository: ConversationInterface,
-  conversationDbImpl: ConversationRepositoryMongoDb
+  conversationDbImpl: ConversationRepositoryMongoDb,
+  notificationDbRepository:NotificationInterface,
+  notificationDbImpl:NotificationRepositoryMongoDB
 ) => {
   const dbRepositoryMessage = messageDbRepository(messageDbImpl());
   const dbRepositoryConversation = conversationDbRepository(
     conversationDbImpl()
   );
+  const dbNotification=notificationDbRepository(notificationDbImpl())
 
   const sendNewMessage = asyncHandler(
     async (req: ExtendedRequest, res: Response) => {
@@ -36,7 +41,8 @@ export const messageController = (
         recieverId,
         message,
         dbRepositoryMessage,
-        dbRepositoryConversation
+        dbRepositoryConversation,
+        dbNotification
       );
 
       res.status(HttpStatusCodes.OK).json({
@@ -61,7 +67,8 @@ export const messageController = (
         recieverId,
         productId,
         dbRepositoryMessage,
-        dbRepositoryConversation
+        dbRepositoryConversation,
+        dbNotification
       );
 
       res.status(HttpStatusCodes.OK).json({
@@ -105,7 +112,8 @@ export const messageController = (
         productId,
         message,
         dbRepositoryMessage,
-        dbRepositoryConversation
+        dbRepositoryConversation,
+        dbNotification
       );
 
       res.status(HttpStatusCodes.OK).json({

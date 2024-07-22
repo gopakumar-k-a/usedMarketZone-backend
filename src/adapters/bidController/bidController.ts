@@ -20,7 +20,10 @@ import { BidRepositoryMongoDb } from "../../frameworks/database/mongodb/reposito
 import { BidHistoryInterface } from "../../application/repositories/bidHistoryRepository";
 import { BidHistoryRepositoryMongoDb } from "../../frameworks/database/mongodb/repositories/bidHistoryRepositoryMongoDb";
 import { handlePlaceBid } from "../../application/user-cases/bid/update";
-import { handleGetBidDetailsOfUserOnProduct } from "../../application/user-cases/bid/get";
+import {
+  handleGetBidDetailsOfUserOnProduct,
+  handleGetUserWiseBidRequests,
+} from "../../application/user-cases/bid/get";
 export const bidController = (
   productDbRepository: ProductDbInterface,
   productDbImpl: ProductRepositoryMongoDb,
@@ -88,7 +91,7 @@ export const bidController = (
       const { _id } = req.user as CreateUserInterface;
       const { bidProductId } = req.params;
 
-     const bidHistory= await handleGetBidDetailsOfUserOnProduct(
+      const bidHistory = await handleGetBidDetailsOfUserOnProduct(
         _id,
         bidProductId,
         dbBidHistoryRepository
@@ -97,7 +100,24 @@ export const bidController = (
       res.status(HttpStatusCodes.OK).json({
         success: true,
         message: "bid History Retrived successfully",
-        bidHistory
+        bidHistory,
+      });
+    }
+  );
+
+  const getUserBids = asyncHandler(
+    async (req: ExtendedRequest, res: Response) => {
+      const { _id: userId } = req.user as CreateUserInterface;
+      const userBids = await handleGetUserWiseBidRequests(
+        userId,
+        dbRepositoryAdminBidRequest,
+        dbRepositoryProduct
+      );
+
+      res.status(HttpStatusCodes.OK).json({
+        success: true,
+        message: "bid Requests Retrived Successfully",
+        userBids,
       });
     }
   );
@@ -105,6 +125,7 @@ export const bidController = (
   return {
     productBidPost,
     placeBid,
-    getBidDetailsOfUserOnProduct
+    getBidDetailsOfUserOnProduct,
+    getUserBids
   };
 };

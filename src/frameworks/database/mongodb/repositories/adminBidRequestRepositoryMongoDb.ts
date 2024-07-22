@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose, { Types } from "mongoose";
 import AdminBidRequest from "../models/adminBidRequestModel";
 
 export const adminBidRequestMongoDb = () => {
@@ -49,15 +49,15 @@ export const adminBidRequestMongoDb = () => {
           bidProductId: 1,
           createdAt: 1,
           updatedAt: 1,
-          "productData._id":1,
+          "productData._id": 1,
           "productData.productName": 1,
           "productData.basePrice": 1,
           "productData.productImageUrls": 1,
           "productData.category": 1,
           "productData.bidDuration": 1,
           "productData.subCategory": 1,
-          "productData.isAdminAccepted":1,
-          "productData.bidEndTime":1,
+          "productData.isAdminAccepted": 1,
+          "productData.bidEndTime": 1,
           "userData.firstName": 1,
           "userData.lastName": 1,
           "userData.email": 1,
@@ -65,10 +65,10 @@ export const adminBidRequestMongoDb = () => {
         },
       },
       {
-        $sort:{
-          createdAt:-1
-        }
-      }
+        $sort: {
+          createdAt: -1,
+        },
+      },
     ]);
 
     console.log(bidRequests);
@@ -78,17 +78,80 @@ export const adminBidRequestMongoDb = () => {
     return bidRequests;
   };
 
-//  const acceptBidRequest=async(requestId:string)=>{
- 
-//   await AdminBidRequest.findByIdAndUpdate(requestId,{$set:{isAccepted:true}})
- 
-//  }
+  const getUserWiseBidRequests = async (userId: Types.ObjectId) => {
+    console.log('user id getUserWiseBidRequests',userId)
+    const userBidRequests = await AdminBidRequest.aggregate([
+      {
+        $match: {
+          bidderId: userId,
+        },
+      },
+      {
+        $lookup: {
+          from: "products",
+          localField: "bidProductId",
+          foreignField: "_id",
+          as: "productData",
+        },
+      },
+      {
+        $unwind: "$productData",
+      },
+      // {
+      //   $lookup: {
+      //     from: "users",
+      //     localField: "bidderId",
+      //     foreignField: "_id",
+      //     as: "userData",
+      //   },
+      // },
+      // {
+      //   $unwind: "$userData",
+      // },
+      {
+        $project: {
+          _id: 1,
+          bidderId: 1,
+          bidProductId: 1,
+          createdAt: 1,
+          updatedAt: 1,
+          "productData._id": 1,
+          "productData.productName": 1,
+          "productData.basePrice": 1,
+          "productData.productImageUrls": 1,
+          "productData.category": 1,
+          "productData.bidDuration": 1,
+          "productData.subCategory": 1,
+          "productData.isAdminAccepted": 1,
+          "productData.bidEndTime": 1,
+          "userData.firstName": 1,
+          // "userData.lastName": 1,
+          // "userData.email": 1,
+          // "userData.userName": 1,
+        },
+      },
+      {
+        $sort: {
+          createdAt: -1,
+        },
+      },
+    ]);
 
+    console.log("userBidRequests ", userBidRequests);
 
+    return userBidRequests;
+  };
+
+  //  const acceptBidRequest=async(requestId:string)=>{
+
+  //   await AdminBidRequest.findByIdAndUpdate(requestId,{$set:{isAccepted:true}})
+
+  //  }
 
   return {
     createBidRequestAdmin,
     getBidRequestsFromDb,
+    getUserWiseBidRequests
     // acceptBidRequest
   };
 };

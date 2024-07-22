@@ -1,3 +1,4 @@
+import { Types } from "mongoose";
 import { AdminBidRequestMongoDb } from "../../frameworks/database/mongodb/repositories/adminBidRequestRepositoryMongoDb";
 
 // import const adminBidRequestDb=()=>{
@@ -12,9 +13,11 @@ export const adminBidRequestDb =  (
     bidderId: string
   ) => await repository.createBidRequestAdmin(bidProductId, bidderId);
   const getBidRequestsFromDb = async () => await repository.getBidRequestsFromDb()
+  const getUserWiseBidRequests = async (userId: Types.ObjectId) =>await repository.getUserWiseBidRequests(userId)
   return {
     createBidRequestAdmin,
-    getBidRequestsFromDb
+    getBidRequestsFromDb,
+    getUserWiseBidRequests
   };
 };
 

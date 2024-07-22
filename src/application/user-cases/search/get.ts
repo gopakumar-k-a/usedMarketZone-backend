@@ -1,6 +1,5 @@
 import { UserDbInterface } from "../../repositories/userDbRepository";
 import { ProductDbInterface } from "../../repositories/productDbRepository";
-import { query } from "express";
 import { Types } from "mongoose";
 
 export const handleSearchOnApp = async (
@@ -16,10 +15,6 @@ export const handleSearchOnApp = async (
     results = await dbUser.searchUser(searchQuery);
   } else if (filter === "posts") {
     const isBidding = subFilter === "bidding";
-    //   results = await Post.find({
-    //     productName: new RegExp(query, 'i'),
-    //     isBidding: isBidding
-    //   });
     results = await dbProduct.searchProduct(searchQuery, isBidding,new Types.ObjectId(userId));
   }
 

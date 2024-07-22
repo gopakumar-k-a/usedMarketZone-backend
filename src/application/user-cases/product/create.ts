@@ -5,7 +5,8 @@ import { HttpStatusCodes } from "../../../types/httpStatusCodes";
 import AppError from "../../../utils/appError";
 import { CommentDbRepository } from "../../repositories/commentRepository";
 import { PostReportDbInterface } from "../../repositories/postReportRepository";
-
+import { io } from "../../../app";
+import { getRecieverSocketId } from "../../../frameworks/webSocket/socket";
 export const handlePostReportSubmit = async (
   reporterId: string,
   postData: {
@@ -64,6 +65,16 @@ export const handleAddComment = async (
   );
 
   const newComment = await commentRepository.addNewComment(createCommentEntity);
+  const recieverSocketId = getRecieverSocketId(
+    String(newComment[0].productOwnerId)
+  );
+  console.log("recieverSocketId ", recieverSocketId);
+  if (recieverSocketId) {
+    io.to(recieverSocketId).emit("notification", {
+      title: "New Comment",
+      description: "You have received a Comment On The Product",
+    });
+  }
 
   return newComment;
 };

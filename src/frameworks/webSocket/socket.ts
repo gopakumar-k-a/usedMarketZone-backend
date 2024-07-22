@@ -40,7 +40,10 @@ const socketConfig = (io: Server) => {
 
 
 };
+
+
 export const getRecieverSocketId = (reciever:string) => {
     return userSocketMap[reciever];
   };
+  
 export default socketConfig;

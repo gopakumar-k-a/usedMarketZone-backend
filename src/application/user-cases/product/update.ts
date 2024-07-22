@@ -177,7 +177,7 @@ export const handleAdminAcceptedBid = async (
     updatedBidProduct._id as mongoose.Schema.Types.ObjectId,
     updatedBidProduct.userId as mongoose.Schema.Types.ObjectId,
     String(updatedBidProduct.basePrice),
-    String(updatedBidProduct.bidAcceptedTime)
+    String(updatedBidProduct.bidEndTime)
   );
 
   const newlyAddedBid = await bidRepository.addBidAfterAdminAccept(

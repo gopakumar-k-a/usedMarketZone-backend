@@ -5,8 +5,8 @@ export interface Imessage extends Document {
   recieverId: mongoose.Types.ObjectId;
   message: string;
   postId: mongoose.Types.ObjectId;
-  isPostReply:boolean;
-  isPost:boolean;
+  isPostReply: boolean;
+  isPost: boolean;
 }
 
 const messageSchema: Schema = new Schema(
@@ -31,7 +31,10 @@ const messageSchema: Schema = new Schema(
       type: Boolean,
       default: false,
     },
-
+    isSeen: {
+      type: Boolean,
+      default: false,
+    },
     postId: {
       type: mongoose.Types.ObjectId,
       ref: "Product",

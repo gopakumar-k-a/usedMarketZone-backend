@@ -10,13 +10,15 @@ import { getRecieverSocketId } from "../../../frameworks/webSocket/socket";
 import { io } from "../../../app";
 import { createPostReplyMessageEntity } from "../../../entities/createPostReplyMessageEntity";
 // import socketConfig from "../../../frameworks/webSocket/socket";
-
+import { createNotificationEntity } from "../../../entities/createNotificationEntity";
+import { NotificationRepository } from "../../repositories/notificationRepository";
 export const handleSendNewMessage = async (
   senderId: string,
   recieverId: string,
   message: string,
   messageRepository: MessageDbRepository,
-  conversationRepository: ConversationDbRepository
+  conversationRepository: ConversationDbRepository,
+  notificationRepository: NotificationRepository
 ) => {
   const newMessageEntity = createMessageEntity(senderId, recieverId, message);
   console.log("newMessageEntity ", newMessageEntity);
@@ -39,25 +41,81 @@ export const handleSendNewMessage = async (
   const recieverSocketId = getRecieverSocketId(recieverId);
   console.log("recieverSocketId ", recieverSocketId);
 
+  const newNotificationEntity = createNotificationEntity(
+    "message",
+    senderId,
+    recieverId,
+    "unread",
+    undefined,
+    String(newMessage._id),
+    undefined,
+    undefined,
+    "medium",
+    "normal"
+  );
+
+  const newNotification = await notificationRepository.createNotification(
+    newNotificationEntity
+  );
+
   if (recieverSocketId) {
     io.to(recieverSocketId).emit("newMessage", newMessage);
+    // Server-side example
+    // io.to(recieverSocketId).emit("notification", {
+    //   title: "You have a new message ",
+    //   description: `  ${newNotification?.senderId?.userName} send a new Message To You`,
+    //   message:`${newNotification?.messageId?.message}`
+    //   type: `${newNotification.notificationType}`,
+    // });
+  }
+  // if (recieverSocketId && newNotification.length > 0) {
+  //   const notification = newNotification[0];
+  //   const { senderDetails, messageDetails, notificationType } = notification;
+
+  //   const notificationData = {
+  //     title: "You have a new message",
+  //     description: `${senderDetails.userName} sent a new message to you`,
+  //     message: messageDetails.messages,
+  //     type: notificationType,
+  //   };
+
+  //   io.to(recieverSocketId).emit("notification", notificationData);
+  // }
+  if (recieverSocketId && newNotification) {
+    const { senderId, messageId, notificationType } = newNotification;
+
+    const notificationData = {
+      title: "You have a new message",
+      //@ts-ignore
+      description: `${senderId.userName} sent a new message to you`,
+      //@ts-ignore
+      message: messageId.message,
+      type: notificationType,
+    };
+
+    io.to(recieverSocketId).emit("notification", notificationData);
   }
 
   return newMessage;
 };
-
-
 
 export const handleSendPostAsMessage = async (
   senderId: string,
   recieverId: string,
   productId: string,
   messageRepository: MessageDbRepository,
-  conversationRepository: ConversationDbRepository
+  conversationRepository: ConversationDbRepository,
+  notificationRepository: NotificationRepository
 ) => {
-  const newPostMessageEntity = createSendPostEntity(senderId, recieverId, productId);
+  const newPostMessageEntity = createSendPostEntity(
+    senderId,
+    recieverId,
+    productId
+  );
   console.log("newMessageEntity ", newPostMessageEntity);
-  const newMessagePostMessage = await messageRepository.sendPostAsMessage(newPostMessageEntity);
+  const newMessagePostMessage = await messageRepository.sendPostAsMessage(
+    newPostMessageEntity
+  );
   console.log("newMessage ", newMessagePostMessage);
 
   if (!newMessagePostMessage) {
@@ -86,15 +144,23 @@ export const handleSendPostAsMessage = async (
 export const handlePostReplyAsMessage = async (
   senderId: string,
   recieverId: string,
-  productId:string,
+  productId: string,
   message: string,
   messageRepository: MessageDbRepository,
-  conversationRepository: ConversationDbRepository
+  conversationRepository: ConversationDbRepository,
+  notificationRepository: NotificationRepository
 ) => {
   // const newMessageEntity = createMessageEntity(senderId, recieverId, message);
-  const newPostMessageReplyEntity = createPostReplyMessageEntity(senderId, recieverId,productId, message);
+  const newPostMessageReplyEntity = createPostReplyMessageEntity(
+    senderId,
+    recieverId,
+    productId,
+    message
+  );
   console.log("newPostMessageReplyEntity ", newPostMessageReplyEntity);
-  const newPostReplyMessage = await messageRepository.sendPostReplyAsMessage(newPostMessageReplyEntity);
+  const newPostReplyMessage = await messageRepository.sendPostReplyAsMessage(
+    newPostMessageReplyEntity
+  );
   console.log("newMessage ", newPostReplyMessage);
 
   if (!newPostReplyMessage) {
@@ -119,5 +185,3 @@ export const handlePostReplyAsMessage = async (
 
   return newPostReplyMessage;
 };
-
-

@@ -65,6 +65,7 @@ export const productRepositoryMongoDb = () => {
       {
         $match: {
           isAdminAccepted: true,
+          isDeactivatedPost: false,
         },
       },
       {
@@ -317,6 +318,8 @@ export const productRepositoryMongoDb = () => {
       {
         $project: {
           productImageUrls: 1,
+          createdAt:1,
+          isBidding:1
         },
       },
       {
@@ -450,7 +453,7 @@ export const productRepositoryMongoDb = () => {
   ) => {
     console.log(`    query: ${query},
     isBidding: ${isBidding},`);
-    
+
     const regex = new RegExp(query.trim(), "i");
     // const results = await Product.find(
     //   {
@@ -494,6 +497,7 @@ export const productRepositoryMongoDb = () => {
           ],
           // role: "user",
           isAdminAccepted: true,
+          isDeactivatedPost: false,
         },
       },
       {
@@ -573,6 +577,29 @@ export const productRepositoryMongoDb = () => {
     return results;
   };
 
+  const getUserBids = async (userId: Types.ObjectId) => {
+    const userBids = await Product.find(
+      {
+        userId: userId,
+        isBidding: true,
+      },
+      {
+        productName: 1,
+        basePrice: 1,
+        productImageUrls: 1,
+        category: 1,
+        bidDuration: 1,
+        subCategory: 1,
+        isAdminAccepted: 1,
+        bidEndTime: 1,
+      }
+    ).sort({ createdAt: -1 });
+
+    console.log("user bids getUserBids product mongodb", userBids);
+
+    return userBids;
+  };
+
   return {
     postProduct,
     getAllProductPost,
@@ -590,6 +617,7 @@ export const productRepositoryMongoDb = () => {
     blockProductByAdmin,
     deactivateProductSellPost,
     searchProduct,
+    getUserBids,
   };
 };
 

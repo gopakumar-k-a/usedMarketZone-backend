@@ -44,6 +44,7 @@ export const productDbRepository = (
   const deactivateProductSellPost = async (userId: string, productId: string) =>
     await repository.deactivateProductSellPost(userId, productId);
   const searchProduct = async (query: string, isBidding: boolean,userId:Types.ObjectId) =>await repository.searchProduct(query,isBidding,userId)
+  const getUserBids = async (userId: Types.ObjectId) =>await repository.getUserBids(userId)
 
   return {
     postProduct,
@@ -61,7 +62,8 @@ export const productDbRepository = (
     updateProduct,
     blockProductByAdmin,
     deactivateProductSellPost,
-    searchProduct
+    searchProduct,
+    getUserBids
   };
 };
 

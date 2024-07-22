@@ -4,9 +4,18 @@ import { messageRepository } from "../../../application/repositories/messageRepo
 import { messageRepositoryMongoDb } from "../../database/mongodb/repositories/messageRepositoryMongoDb";
 import { conversationRepository } from "../../../application/repositories/conversationRepository";
 import { conversationRepositoryMongoDb } from "../../database/mongodb/repositories/conversationRepositoryMongoDb";
+import { notificationRepository } from "../../../application/repositories/notificationRepository";
+import { notificationRepositoryMongoDB } from "../../database/mongodb/repositories/notificationRepositoryMongoDB";
 const messageRouter = () => {
   const router = express.Router();
-  const controller = messageController(messageRepository,messageRepositoryMongoDb,conversationRepository,conversationRepositoryMongoDb);
+  const controller = messageController(messageRepository,
+    messageRepositoryMongoDb,
+    conversationRepository,
+    conversationRepositoryMongoDb,
+    notificationRepository,
+    notificationRepositoryMongoDB
+
+  );
 
   router.post("/send-message/:userId",controller.sendNewMessage);
   router.post("/send-post/:userId",controller.sendPostAsMessage)

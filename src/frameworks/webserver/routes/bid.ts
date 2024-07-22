@@ -24,15 +24,17 @@ const bidRouter = () => {
     bidRepositoryMongoDb,
     bidHistoryRepository,
     bidHistoryRepositoryMongoDb
-
-
   );
 
-  router.post("/post-bid",controller.productBidPost)
-  router.post("/place-bid/:bidProductId",controller.placeBid)
-  router.get("/get-bid-history/:bidProductId",controller.getBidDetailsOfUserOnProduct)
+  router.post("/post-bid", controller.productBidPost);
+  router.post("/place-bid/:bidProductId", controller.placeBid);
+  router.get(
+    "/get-bid-history/:bidProductId",
+    controller.getBidDetailsOfUserOnProduct
+  );
+  router.get("/get-user-bids", controller.getUserBids);
 
-//   router.patch("/bookmark-post/remove/:postId", controller.removeFromBookmark);
+  //   router.patch("/bookmark-post/remove/:postId", controller.removeFromBookmark);
 
   return router;
 };

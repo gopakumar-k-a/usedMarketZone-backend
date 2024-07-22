@@ -33,6 +33,7 @@ export const bookmarkRepositoryMongoDb = () => {
         $project: {
           postId: "$postData._id",
           bookmarkImageUrls: "$postData.productImageUrls",
+          isBidding:"$postData.isBidding"
         },
       },
     ]);

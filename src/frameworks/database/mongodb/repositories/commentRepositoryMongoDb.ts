@@ -11,7 +11,16 @@ export const commentRepositoryMongoDb = () => {
     });
 
     await newComment.save();
-    const newCommentData = await Comment.aggregate([
+    type CommentData = {
+      imageUrl: string;
+      userName: string;
+      content: string;
+      authorId: string;
+      productOwnerId: string;
+      replies: string[];
+      createdAt: string;
+    };
+    const newCommentData: CommentData[] = await Comment.aggregate([
       {
         $match: {
           _id: newComment._id,
@@ -29,11 +38,23 @@ export const commentRepositoryMongoDb = () => {
         $unwind: "$userData",
       },
       {
+        $lookup: {
+          from: "products",
+          foreignField: "_id",
+          localField: "postId",
+          as: "productData",
+        },
+      },
+      {
+        $unwind: "$productData",
+      },
+      {
         $project: {
           imageUrl: "$userData.imageUrl",
           userName: "$userData.userName",
           content: 1,
           authorId: 1,
+          productOwnerId: "$productData.userId",
           replies: 1,
           createdAt: 1,
         },
@@ -171,7 +192,7 @@ export const commentRepositoryMongoDb = () => {
           content: 1,
           authorId: 1,
           createdAt: 1,
-          parentCommentId:1
+          parentCommentId: 1,
         },
       },
     ]);
