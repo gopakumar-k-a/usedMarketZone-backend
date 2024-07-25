@@ -19,79 +19,26 @@ export const notificationRepositoryMongoDB = () => {
         status: notificationEntity.getStatus(),
         additionalInfo: notificationEntity.getAdditionalInfo(),
         priority: notificationEntity.getPriority(),
-      })
+      });
 
-      const populatedNotification= await Notification.findById(newNotification._id)
-      .populate({
-        path: 'senderId',
-        select: 'userName imageUrl',
-      })
-      .populate({
-        path: 'postId',
-        select: 'productImageUrls',
-      })
-      .populate({
-        path:'messageId',
-        select:'messages'
-      })
-      .exec();
-    // const populatedNotification = await Notification.aggregate([
-    //     {
-    //       $match: { _id: newNotification._id },
-    //     },
-    //     {
-    //       $lookup: {
-    //         from: 'users',
-    //         localField: 'senderId',
-    //         foreignField: '_id',
-    //         as: 'senderDetails',
-    //       },
-    //     },
-    //     {
-    //       $unwind: '$senderDetails',
-    //     },
-    //     {
-    //       $lookup: {
-    //         from: 'posts',
-    //         localField: 'postId',
-    //         foreignField: '_id',
-    //         as: 'postDetails',
-    //       },
-    //     },
-    //     {
-    //       $unwind: {
-    //         path: '$postDetails',
-    //         preserveNullAndEmptyArrays: true,
-    //       },
-    //     },
-    //     {
-    //       $lookup: {
-    //         from: 'messages',
-    //         localField: 'messageId',
-    //         foreignField: '_id',
-    //         as: 'messageDetails',
-    //       },
-    //     },
-    //     {
-    //       $unwind: '$messageDetails',
-    //     },
-    //     {
-    //       $project: {
-    //         notificationType: 1,
-    //         status: 1,
-    //         additionalInfo: 1,
-    //         priority: 1,
-    //         createdAt: 1,
-    //         updatedAt: 1,
-    //         'senderDetails.userName': 1,
-    //         'senderDetails.imageUrl': 1,
-    //         'postDetails.productImageUrls': 1,
-    //         'messageDetails.messages': 1,
-    //       },
-    //     },
-    //   ]).exec();
+      const populatedNotification = await Notification.findById(
+        newNotification._id
+      )
+        .populate({
+          path: "senderId",
+          select: "userName imageUrl",
+        })
+        .populate({
+          path: "postId",
+          select: "productImageUrls",
+        })
+        .populate({
+          path: "messageId",
+          select: "message",
+        })
+        .exec();
 
-      console.log(populatedNotification,'populatedNotification')
+      console.log(populatedNotification, "populatedNotification");
       return populatedNotification;
     } catch (error) {
       console.error("Error creating notification:", error);
@@ -102,7 +49,49 @@ export const notificationRepositoryMongoDB = () => {
     }
   };
 
-  return { createNotification };
+  const getNotifications = async (userId: string) => {
+    const notifications = await Notification.find({ receiverId: userId })
+      .populate({
+        path: "senderId",
+        select: "userName imageUrl",
+      })
+      .populate({
+        path: "postId",
+        select: "productImageUrls",
+      })
+      .populate({
+        path: "messageId",
+        select: "message",
+      })
+      .sort({ createdAt: -1 })
+      .exec();
+
+    return notifications;
+  };
+
+  const removeFollowNotification = async (
+    senderId: string,
+    receiverId: string
+  ) => {
+    await Notification.findOneAndDelete({
+      senderId: senderId,
+      receiverId: receiverId,
+      notificationType: "follow",
+    });
+
+    return;
+  };
+
+  const changeUnreadStatusNotification = async (receiverId: string) => {
+    await Notification.updateMany({ receiverId, status: "unread" }, { status: "read" });
+    return;
+  };
+  return {
+    createNotification,
+    getNotifications,
+    removeFollowNotification,
+    changeUnreadStatusNotification,
+  };
 };
 
 export type NotificationRepositoryMongoDB =

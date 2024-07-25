@@ -11,6 +11,7 @@ import {
   handleGetNumOfFollowById,
   handleGetFollowersById,
   handleGetFollowingById,
+  handleGetKycByUserId,
 } from "../../application/user-cases/user/read";
 import {
   updateUserProfile,
@@ -19,6 +20,7 @@ import {
   removeProfilePicUrl,
   handleFollowUser,
   handleUnfollowUser,
+  handleChangeNotificationStatus,
 } from "../../application/user-cases/user/update";
 import AppError from "../../utils/appError";
 import { AuthService } from "../../frameworks/services/authService";
@@ -28,11 +30,11 @@ import { KycRepositoryMongoDB } from "../../frameworks/database/mongodb/reposito
 import { KycInterface } from "../../application/repositories/kycDbRepository";
 import { handleCreateNewKycRequest } from "../../application/user-cases/user/create";
 import { ProductDbInterface } from "../../application/repositories/productDbRepository";
-import {
-  productRepositoryMongoDb,
-  ProductRepositoryMongoDb,
-} from "../../frameworks/database/mongodb/repositories/productRepositoryMongoDb";
+import { ProductRepositoryMongoDb } from "../../frameworks/database/mongodb/repositories/productRepositoryMongoDb";
 import { handleSearchOnApp } from "../../application/user-cases/search/get";
+import { handleGetUserNotifications } from "../../application/user-cases/notifications/get";
+import { NotificationInterface } from "../../application/repositories/notificationRepository";
+import { NotificationRepositoryMongoDB } from "../../frameworks/database/mongodb/repositories/notificationRepositoryMongoDB";
 
 const userController = (
   userDbRepository: UserDbInterface,
@@ -42,12 +44,15 @@ const userController = (
   kycDbRepository: KycInterface,
   kycRepositoryImpl: KycRepositoryMongoDB,
   productDbRepository: ProductDbInterface,
-  productRepositoryImpl: ProductRepositoryMongoDb
+  productRepositoryImpl: ProductRepositoryMongoDb,
+  notificationRepository: NotificationInterface,
+  notificationImpl: NotificationRepositoryMongoDB
 ) => {
   const dbRepositoryUser = userDbRepository(userDbImpl());
   const userService = authServiceInterface(authService());
   const dbRepositoryKyc = kycDbRepository(kycRepositoryImpl());
-  const dbRepositoryProduct = productDbRepository(productRepositoryMongoDb());
+  const dbRepositoryProduct = productDbRepository(productRepositoryImpl());
+  const dbNotification = notificationRepository(notificationImpl());
 
   const handleGetUserProfile = asyncHandlder(
     async (req: Request, res: Response) => {
@@ -206,7 +211,12 @@ const userController = (
     async (req: ExtendedRequest, res: Response) => {
       const { _id } = req.user as CreateUserInterface;
       const { followUserId } = req.params;
-      await handleFollowUser(_id, followUserId, dbRepositoryUser);
+      await handleFollowUser(
+        _id,
+        followUserId,
+        dbRepositoryUser,
+        dbNotification
+      );
 
       res.status(HttpStatusCodes.OK).json({
         success: true,
@@ -219,7 +229,12 @@ const userController = (
     async (req: ExtendedRequest, res: Response) => {
       const { _id } = req.user as CreateUserInterface;
       const { unFollowUserId } = req.params;
-      await handleUnfollowUser(_id, unFollowUserId, dbRepositoryUser);
+      await handleUnfollowUser(
+        _id,
+        unFollowUserId,
+        dbRepositoryUser,
+        dbNotification
+      );
 
       res.status(HttpStatusCodes.OK).json({
         success: true,
@@ -300,7 +315,7 @@ const userController = (
 
       console.log("req.query search on app ", req.query);
 
-      const results=await handleSearchOnApp(
+      const results = await handleSearchOnApp(
         dbRepositoryUser,
         dbRepositoryProduct,
         userId,
@@ -312,7 +327,52 @@ const userController = (
       res.status(HttpStatusCodes.OK).json({
         success: true,
         message: "search Results retrived successfully",
-        results
+        results,
+      });
+    }
+  );
+
+  const getUserNotifications = asyncHandlder(
+    async (req: ExtendedRequest, res: Response) => {
+      const { _id: userId } = req.user as CreateUserInterface;
+
+      const userNotifications = await handleGetUserNotifications(
+        userId,
+        dbNotification
+      );
+
+      res.status(HttpStatusCodes.OK).json({
+        success: true,
+        message: "notifications retrived successfully",
+        userNotifications,
+      });
+    }
+  );
+
+  const changeNotificationReadStatus = asyncHandlder(
+    async (req: ExtendedRequest, res: Response) => {
+      const { _id: userId } = req.user as CreateUserInterface;
+
+      await handleChangeNotificationStatus(userId, dbNotification);
+
+      res.status(HttpStatusCodes.OK).json({
+        success: true,
+        message: "unread notification status changed to read successfully",
+      });
+    }
+  );
+
+  const getMyKycData = asyncHandlder(
+    async (req: ExtendedRequest, res: Response) => {
+      const { _id: userId } = req.user as CreateUserInterface;
+
+      const kycData = await handleGetKycByUserId(userId, dbRepositoryKyc);
+console.log('in controller ',kycData);
+
+      res.status(HttpStatusCodes.OK).json({
+        success: true,
+        message: "kyc data retrived successfully",
+        kycData,
       });
     }
   );
@@ -331,6 +391,9 @@ const userController = (
     getFollowing,
     addNewKycRequest,
     searchOnApp,
+    getUserNotifications,
+    changeNotificationReadStatus,
+    getMyKycData,
   };
 };
 

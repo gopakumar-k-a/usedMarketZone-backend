@@ -12,6 +12,8 @@ import { postReportDbRepository } from "../../../application/repositories/postRe
 import { postReportRepositoryMongoDb } from "../../database/mongodb/repositories/postReportRepositoryMongoDb";
 import { bidHistoryRepository } from "../../../application/repositories/bidHistoryRepository";
 import { bidHistoryRepositoryMongoDb } from "../../database/mongodb/repositories/bidHistoryRepositoryMongoDb";
+import { kycDbRepository } from "../../../application/repositories/kycDbRepository";
+import { kycRepositoryMongoDB } from "../../database/mongodb/repositories/kycRepositoryMongoDB";
 const adminRouter = () => {
   const router = express.Router();
   const controller = adminController(
@@ -26,7 +28,9 @@ const adminRouter = () => {
     postReportDbRepository,
     postReportRepositoryMongoDb,
     bidHistoryRepository,
-    bidHistoryRepositoryMongoDb
+    bidHistoryRepositoryMongoDb,
+    kycDbRepository,
+    kycRepositoryMongoDB
   );
 
   router.get("/get-all-users/:page/:limit", controller.handleGetUsers);
@@ -39,7 +43,8 @@ const adminRouter = () => {
   router.get("/get-post-reports", controller.getPostReports);
   router.patch("/block-post/:productId",controller.adminBlockPost)
   router.get("/bid-history/:bidProductId",controller.getBidHistoryOfProduct)
-
+  router.get("/get-kyc-requests",controller.getKycRequests)
+  router.patch("/handle-kyc-request/:kycId",controller.changeKycRequestStatus)
   return router;
 };
 

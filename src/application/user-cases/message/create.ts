@@ -12,6 +12,7 @@ import { createPostReplyMessageEntity } from "../../../entities/createPostReplyM
 // import socketConfig from "../../../frameworks/webSocket/socket";
 import { createNotificationEntity } from "../../../entities/createNotificationEntity";
 import { NotificationRepository } from "../../repositories/notificationRepository";
+import { send } from "process";
 export const handleSendNewMessage = async (
   senderId: string,
   recieverId: string,
@@ -36,7 +37,10 @@ export const handleSendNewMessage = async (
   );
 
   // const recieverId=socketConfig.getRecieverId()
-  await conversationRepository.createConversation(conversationEntity);
+  const conversationId=await conversationRepository.createConversation(conversationEntity);
+
+  console.log(`sender id ${senderId}
+    reciever Id ${recieverId}`);
 
   const recieverSocketId = getRecieverSocketId(recieverId);
   console.log("recieverSocketId ", recieverSocketId);
@@ -59,6 +63,8 @@ export const handleSendNewMessage = async (
   );
 
   if (recieverSocketId) {
+
+       
     io.to(recieverSocketId).emit("newMessage", newMessage);
     // Server-side example
     // io.to(recieverSocketId).emit("notification", {
@@ -83,14 +89,17 @@ export const handleSendNewMessage = async (
   // }
   if (recieverSocketId && newNotification) {
     const { senderId, messageId, notificationType } = newNotification;
+    console.log("notificationType ", notificationType);
 
     const notificationData = {
       title: "You have a new message",
       //@ts-ignore
       description: `${senderId.userName} sent a new message to you`,
+      senderId,
       //@ts-ignore
-      message: messageId.message,
-      type: notificationType,
+      additionalInfo: messageId.message,
+      notificationType,
+      newNotification,
     };
 
     io.to(recieverSocketId).emit("notification", notificationData);

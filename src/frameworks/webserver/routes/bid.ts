@@ -11,6 +11,8 @@ import { bidDbRepository } from "../../../application/repositories/bidRepository
 import { bidRepositoryMongoDb } from "../../database/mongodb/repositories/bidRepositoryMongoDb";
 import { bidHistoryRepository } from "../../../application/repositories/bidHistoryRepository";
 import { bidHistoryRepositoryMongoDb } from "../../database/mongodb/repositories/bidHistoryRepositoryMongoDb";
+import { kycDbRepository } from "../../../application/repositories/kycDbRepository";
+import { kycRepositoryMongoDB } from "../../database/mongodb/repositories/kycRepositoryMongoDB";
 const bidRouter = () => {
   const router = express.Router();
   const controller = bidController(
@@ -23,7 +25,9 @@ const bidRouter = () => {
     bidDbRepository,
     bidRepositoryMongoDb,
     bidHistoryRepository,
-    bidHistoryRepositoryMongoDb
+    bidHistoryRepositoryMongoDb,
+    kycDbRepository,
+    kycRepositoryMongoDB
   );
 
   router.post("/post-bid", controller.productBidPost);

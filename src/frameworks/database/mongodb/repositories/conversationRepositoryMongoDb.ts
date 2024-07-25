@@ -1,12 +1,12 @@
 import { Conversation } from "../models/conversationModel";
 import { CreateConversationEntityType } from "../../../../entities/createConversationEntity";
-import mongoose from "mongoose";
+import mongoose, { Types } from "mongoose";
 const { ObjectId } = mongoose.Types;
 export const conversationRepositoryMongoDb = () => {
   const createConversation = async (
     conversationEntity: CreateConversationEntityType
   ) => {
-    const conversation = await Conversation.findOne({
+    let conversation = await Conversation.findOne({
       participants: {
         $all: [
           conversationEntity.getSenderId(),
@@ -16,7 +16,7 @@ export const conversationRepositoryMongoDb = () => {
     });
 
     if (!conversation) {
-      await Conversation.create({
+      conversation = await Conversation.create({
         participants: [
           conversationEntity.getSenderId(),
           conversationEntity.getRecieverId(),
@@ -27,6 +27,8 @@ export const conversationRepositoryMongoDb = () => {
       conversation.messages.push(conversationEntity.getMessageId());
       await conversation.save();
     }
+
+    return conversation._id;
   };
 
   const getMessages = async (recieverId: string, userToChatId: string) => {
@@ -81,12 +83,12 @@ export const conversationRepositoryMongoDb = () => {
           isPost: "$chat.isPost",
           postId: "$post._id",
           postImageUrl: "$post.productImageUrls",
-          postDescription:"$post.description",
-          postIsBidding:"$post.isBidding",
-          postCreatedAt:"$post.createdAt",
-          postOwnerId:"$user._id",
-          postOwnerUserName:"$user.userName",
-          isPostReply:'$chat.isPostReply'
+          postDescription: "$post.description",
+          postIsBidding: "$post.isBidding",
+          postCreatedAt: "$post.createdAt",
+          postOwnerId: "$user._id",
+          postOwnerUserName: "$user.userName",
+          isPostReply: "$chat.isPostReply",
         },
       },
       {
@@ -99,9 +101,20 @@ export const conversationRepositoryMongoDb = () => {
     console.log("chats ", chats);
     return chats;
   };
+
+  const getUnreadMessages = async (conversationId: Types.ObjectId) => {
+    const unreadMessages = await Conversation.aggregate([
+      {
+        $match: {
+          _id: conversationId,
+        },
+      },
+    ]);
+  };
   return {
     createConversation,
     getMessages,
+    getUnreadMessages,
   };
 };
 

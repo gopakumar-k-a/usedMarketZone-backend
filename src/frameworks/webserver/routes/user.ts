@@ -8,7 +8,8 @@ import { kycDbRepository } from "../../../application/repositories/kycDbReposito
 import { kycRepositoryMongoDB } from "../../database/mongodb/repositories/kycRepositoryMongoDB";
 import { productDbRepository } from "../../../application/repositories/productDbRepository";
 import { productRepositoryMongoDb } from "../../database/mongodb/repositories/productRepositoryMongoDb";
-
+import { notificationRepository } from "../../../application/repositories/notificationRepository";
+import { notificationRepositoryMongoDB } from "../../database/mongodb/repositories/notificationRepositoryMongoDB";
 const userRouter = () => {
   const router = express.Router();
 
@@ -20,7 +21,9 @@ const userRouter = () => {
     kycDbRepository,
     kycRepositoryMongoDB,
     productDbRepository,
-    productRepositoryMongoDb
+    productRepositoryMongoDb,
+    notificationRepository,
+    notificationRepositoryMongoDB
   );
 
   router.route("/profile/:userId").get(controller.handleGetUserProfile);
@@ -53,7 +56,13 @@ const userRouter = () => {
   router.get("/followers", controller.getFollowers);
   router.get("/following", controller.getFollowing);
   router.post("/kyc-request", controller.addNewKycRequest);
-  router.get("/search",controller.searchOnApp)
+  router.get("/search", controller.searchOnApp);
+  router.get("/get-notifications", controller.getUserNotifications);
+  router.patch(
+    "/change-notification-status",
+    controller.changeNotificationReadStatus
+  );
+  router.get("/my-kyc", controller.getMyKycData);
   // router.get("my-posts",controller)
 
   return router;

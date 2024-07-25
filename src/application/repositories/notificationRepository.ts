@@ -8,7 +8,22 @@ export const notificationRepository = (
     notificationEntity: CreateNotificationEntityType
   ) => await respository.createNotification(notificationEntity);
 
-  return {createNotification};
+  const getNotifications = async (userId: string) =>
+    await respository.getNotifications(userId);
+
+  const removeFollowNotification = async (
+    senderId: string,
+    receiverId: string
+  ) => respository.removeFollowNotification(senderId, receiverId);
+
+  const changeUnreadStatusNotification = async (receiverId: string) =>
+    await respository.changeUnreadStatusNotification(receiverId);
+  return {
+    createNotification,
+    getNotifications,
+    removeFollowNotification,
+    changeUnreadStatusNotification,
+  };
 };
 
 export type NotificationInterface = typeof notificationRepository;

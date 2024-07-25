@@ -24,6 +24,8 @@ import {
   handleGetBidDetailsOfUserOnProduct,
   handleGetUserWiseBidRequests,
 } from "../../application/user-cases/bid/get";
+import { KycInterface } from "../../application/repositories/kycDbRepository";
+import { KycRepositoryMongoDB } from "../../frameworks/database/mongodb/repositories/kycRepositoryMongoDB";
 export const bidController = (
   productDbRepository: ProductDbInterface,
   productDbImpl: ProductRepositoryMongoDb,
@@ -34,7 +36,9 @@ export const bidController = (
   bidRepositoryDb: BidInterface,
   bidRepositoryDbImpl: BidRepositoryMongoDb,
   bidHistroryDbRepository: BidHistoryInterface,
-  bidHistoryDbImpl: BidHistoryRepositoryMongoDb
+  bidHistoryDbImpl: BidHistoryRepositoryMongoDb,
+  kycRepositoryDb:KycInterface,
+  kycRepositoryImpl:KycRepositoryMongoDB
 ) => {
   const dbRepositoryProduct = productDbRepository(productDbImpl());
   // const dbRepositoryBookmark = bookmarkRepository(bookmarkDbImpl());
@@ -44,6 +48,8 @@ export const bidController = (
 
   const dbBidRepository = bidRepositoryDb(bidRepositoryDbImpl());
   const dbBidHistoryRepository = bidHistroryDbRepository(bidHistoryDbImpl());
+
+  const dbKycRepository=kycRepositoryDb(kycRepositoryImpl())
 
   const productBidPost = asyncHandler(
     async (req: ExtendedRequest, res: Response) => {
@@ -76,7 +82,8 @@ export const bidController = (
       bidProductId,
       bidAmount,
       dbBidRepository,
-      dbBidHistoryRepository
+      dbBidHistoryRepository,
+      dbKycRepository
     );
 
     res.status(HttpStatusCodes.OK).json({

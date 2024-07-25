@@ -4,6 +4,12 @@ import { UserDbInterface } from "../../repositories/userDbRepository";
 import { AuthServiceInterface } from "../../services/authServiceInterface";
 import { UserInterface } from "../../../types/userInterface";
 import { removeSensitiveFields } from "./read";
+import { NotificationInterface } from "../../repositories/notificationRepository";
+import { io } from "../../../app";
+import { getRecieverSocketId } from "../../../frameworks/webSocket/socket";
+import { createNotificationEntity } from "../../../entities/createNotificationEntity";
+import { KycInterface } from "../../repositories/kycDbRepository";
+import { Types } from "mongoose";
 
 export const updateUserProfile = async (
   userData: UserInterface,
@@ -109,19 +115,87 @@ export const removeProfilePicUrl = async (
 export const handleFollowUser = async (
   userId: string,
   userToFollowId: string,
-  dbRepositoryUser: ReturnType<UserDbInterface>
+  dbRepositoryUser: ReturnType<UserDbInterface>,
+  dbRepositoryNotification: ReturnType<NotificationInterface>
 ) => {
-  await dbRepositoryUser.followUser(userId, userToFollowId);
+  const userToFollowUserName = await dbRepositoryUser.followUser(
+    userId,
+    userToFollowId
+  );
+  console.log(`sender ${userId}`);
+  console.log(`reciever ${userToFollowId}`);
+
+  const recieverSocketId = getRecieverSocketId(userToFollowId);
+  console.log("reciever socket id ", recieverSocketId);
+
+  const newNotificationEntity = createNotificationEntity(
+    "follow",
+    userId,
+    userToFollowId,
+    "unread",
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined
+  );
+
+  const newNotification = await dbRepositoryNotification.createNotification(
+    newNotificationEntity
+  );
+  if (recieverSocketId && userToFollowUserName) {
+    const notificationData = {
+      title: "You have a new message",
+      //@ts-ignore
+      description: `${userToFollowUserName} started following you`,
+      userToFollowId,
+      //@ts-ignore
+      // additionalInfo: messageId.message,
+      notificationType: "follow",
+      newNotification,
+    };
+
+    console.log("new notification data ", notificationData);
+
+    io.to(recieverSocketId).emit("notification", notificationData);
+  }
+
   return;
 };
 
 export const handleUnfollowUser = async (
   userId: string,
   userToUnFollowId: string,
-  dbRepositoryUser: ReturnType<UserDbInterface>
+  dbRepositoryUser: ReturnType<UserDbInterface>,
+  dbRepositoryNotification: ReturnType<NotificationInterface>
 ) => {
-  await dbRepositoryUser.unFollowUser(userId, userToUnFollowId);
+  await Promise.all([
+    dbRepositoryUser.unFollowUser(userId, userToUnFollowId),
+    dbRepositoryNotification.removeFollowNotification(userId, userToUnFollowId),
+  ]);
+
   return;
 };
 
+export const handleChangeNotificationStatus = async (
+  userId: string,
+  dbRepositoryNotification: ReturnType<NotificationInterface>
+) => {
+  await dbRepositoryNotification.changeUnreadStatusNotification(userId);
 
+  return;
+};
+
+export const handleKycRequestAdmin = async (
+  kycId: string,
+  type: "accept" | "reject",
+
+  kycRepository: ReturnType<KycInterface>
+) => {
+  const updatedKyc = await kycRepository.handleKycRequestAdmin(
+    new Types.ObjectId(kycId),
+    type
+  );
+
+  return updatedKyc;
+};

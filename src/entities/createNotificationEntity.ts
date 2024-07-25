@@ -1,7 +1,7 @@
 import { Types } from "mongoose";
 
 export const createNotificationEntity = (
-  notificationType: 'comment' | 'bid' | 'message',
+  notificationType: 'comment' | 'bid' | 'message'|'follow',
   senderId: string,
   receiverId: string,
   status: 'read' | 'unread' = 'unread',
@@ -13,7 +13,7 @@ export const createNotificationEntity = (
   messageType?: 'post' | 'normal' // Add this line for message type
 ) => {
   return {
-    getNotificationType: (): 'comment' | 'bid' | 'message' => notificationType,
+    getNotificationType: (): 'comment' | 'bid' | 'message'|'follow' => notificationType,
     getSenderId: (): Types.ObjectId => new Types.ObjectId(senderId),
     getReceiverId: (): Types.ObjectId => new Types.ObjectId(receiverId),
     getStatus: (): 'read' | 'unread' => status,

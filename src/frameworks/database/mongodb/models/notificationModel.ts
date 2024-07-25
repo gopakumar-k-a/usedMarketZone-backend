@@ -1,24 +1,42 @@
-import mongoose, { Schema, Document } from 'mongoose';
-
+import mongoose, { Schema, Document, Types } from 'mongoose';
+import { IProduct } from './productModel';
+import { Imessage } from './messageModel';
+import { IBid } from './bidModel';
+import { IUser } from './userModel';
 // Define the interface for the notification document
+// interface NotificationDocument extends Document {
+//   notificationType: 'comment' | 'bid' | 'message'; // Enum for different types of notifications
+//   postId?: mongoose.Schema.Types.ObjectId; // Optional, since not all notifications will have a postId
+//   messageId?: mongoose.Schema.Types.ObjectId; // Optional, since not all notifications will have a messageId
+//   bidId?: mongoose.Schema.Types.ObjectId; // Optional, reference to the Bid model
+//   senderId: mongoose.Schema.Types.ObjectId;
+//   receiverId: mongoose.Schema.Types.ObjectId;
+//   status: 'read' | 'unread'; // Status of the notification
+//   additionalInfo?: string; // Optional, any additional information
+//   priority?: 'low' | 'medium' | 'high'; // Priority of the notification
+// }
+
 interface NotificationDocument extends Document {
-  notificationType: 'comment' | 'bid' | 'message'; // Enum for different types of notifications
-  postId?: mongoose.Schema.Types.ObjectId; // Optional, since not all notifications will have a postId
-  messageId?: mongoose.Schema.Types.ObjectId; // Optional, since not all notifications will have a messageId
-  bidId?: mongoose.Schema.Types.ObjectId; // Optional, reference to the Bid model
-  senderId: mongoose.Schema.Types.ObjectId;
-  receiverId: mongoose.Schema.Types.ObjectId;
-  status: 'read' | 'unread'; // Status of the notification
-  additionalInfo?: string; // Optional, any additional information
-  priority?: 'low' | 'medium' | 'high'; // Priority of the notification
+  notificationType: 'comment' | 'bid' | 'message'|'follow';
+  postId?: Types.ObjectId | IProduct;
+  messageId?: Types.ObjectId | Imessage;
+  bidId?: Types.ObjectId | IBid;
+  senderId: Types.ObjectId | IUser;
+  receiverId: Types.ObjectId | IUser;
+  status: 'read' | 'unread';
+  additionalInfo?: string;
+  priority?: 'low' | 'medium' | 'high';
+  createdAt: Date;
+  updatedAt: Date;
 }
+
 
 // Create the schema for the notification
 const NotificationSchema: Schema = new Schema(
   {
     notificationType: {
       type: String,
-      enum: ['comment', 'bid', 'message'], // Enum to restrict the types of notifications
+      enum: ['comment', 'bid', 'message','follow'], // Enum to restrict the types of notifications
       required: true,
     },
     postId: {

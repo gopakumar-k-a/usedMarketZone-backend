@@ -8,19 +8,24 @@ import { notificationRepository } from "../../../application/repositories/notifi
 import { notificationRepositoryMongoDB } from "../../database/mongodb/repositories/notificationRepositoryMongoDB";
 const messageRouter = () => {
   const router = express.Router();
-  const controller = messageController(messageRepository,
+  const controller = messageController(
+    messageRepository,
     messageRepositoryMongoDb,
     conversationRepository,
     conversationRepositoryMongoDb,
     notificationRepository,
     notificationRepositoryMongoDB
-
   );
 
-  router.post("/send-message/:userId",controller.sendNewMessage);
-  router.post("/send-post/:userId",controller.sendPostAsMessage)
-  router.post("/reply-post/:userId",controller.postReplyAsMessage)
-  router.get("/get-chat/:userId",controller.getChat)
+  router.post("/send-message/:userId", controller.sendNewMessage);
+  router.post("/send-post/:userId", controller.sendPostAsMessage);
+  router.post("/reply-post/:userId", controller.postReplyAsMessage);
+  router.get("/get-chat/:userId", controller.getChat);
+  router.get("/get-unread-messages/:userId", controller.getUnreadMessages);
+  router.patch(
+    "/change-message-status/:userId",
+    controller.changeReadMessageStatus
+  );
 
   return router;
 };

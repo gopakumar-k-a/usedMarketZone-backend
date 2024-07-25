@@ -10,19 +10,28 @@ interface IKYC extends Document {
   phone: string;
   createdAt: Date;
   updatedAt: Date;
+  status: "pending" | "accepted" | "rejected";
   isAdminAccepted: boolean;
 }
-
 
 const KYCSchema: Schema = new Schema(
   {
     name: { type: String, required: true },
     userId: { type: Types.ObjectId, ref: "User", required: true },
     dob: { type: Date, required: true },
-    idType: { type: String, required: true,enum:["aadhar","passport","votersId","pan"] },
+    idType: {
+      type: String,
+      required: true,
+      enum: ["aadhar", "passport", "votersId", "pan"],
+    },
     idNumber: { type: String, required: true },
     phone: { type: String, required: true },
-    isAdminAccepted: { type: String, required: true, default: false },
+    isAdminAccepted: { type: Boolean, required: true, default: false },
+    status: {
+      type: String,
+      enum: ["pending", "accepted", "rejected"],
+      default: "pending",
+    },
   },
   {
     timestamps: true,

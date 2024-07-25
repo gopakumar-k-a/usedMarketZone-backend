@@ -12,7 +12,11 @@ import {
   handleSendPostAsMessage,
 } from "../../application/user-cases/message/create";
 import { HttpStatusCodes } from "../../types/httpStatusCodes";
-import { handleGetChat } from "../../application/user-cases/message/get";
+import {
+  handleChangeMessageSeen,
+  handleGetChat,
+  handleGetUnreadMessageCount,
+} from "../../application/user-cases/message/get";
 import { NotificationInterface } from "../../application/repositories/notificationRepository";
 import { NotificationRepositoryMongoDB } from "../../frameworks/database/mongodb/repositories/notificationRepositoryMongoDB";
 
@@ -21,19 +25,23 @@ export const messageController = (
   messageDbImpl: MessageRepositoryMongoDb,
   conversationDbRepository: ConversationInterface,
   conversationDbImpl: ConversationRepositoryMongoDb,
-  notificationDbRepository:NotificationInterface,
-  notificationDbImpl:NotificationRepositoryMongoDB
+  notificationDbRepository: NotificationInterface,
+  notificationDbImpl: NotificationRepositoryMongoDB
 ) => {
   const dbRepositoryMessage = messageDbRepository(messageDbImpl());
   const dbRepositoryConversation = conversationDbRepository(
     conversationDbImpl()
   );
-  const dbNotification=notificationDbRepository(notificationDbImpl())
+  const dbNotification = notificationDbRepository(notificationDbImpl());
 
   const sendNewMessage = asyncHandler(
     async (req: ExtendedRequest, res: Response) => {
       const { _id } = req.user as CreateUserInterface;
       const { userId: recieverId } = req.params;
+
+      console.log("sender id controller", _id);
+      console.log("reciever id controller ", recieverId);
+
       const { message } = req.body;
 
       const newMessage = await handleSendNewMessage(
@@ -104,7 +112,7 @@ export const messageController = (
     async (req: ExtendedRequest, res: Response) => {
       const { _id } = req.user as CreateUserInterface;
       const { userId: recieverId } = req.params;
-      const { productId,message } = req.body;
+      const { productId, message } = req.body;
 
       const newMessage = await handlePostReplyAsMessage(
         _id,
@@ -124,5 +132,44 @@ export const messageController = (
     }
   );
 
-  return { sendNewMessage, sendPostAsMessage, getChat, postReplyAsMessage };
+  const getUnreadMessages = asyncHandler(
+    async (req: ExtendedRequest, res: Response) => {
+      const { _id: recieverId } = req.user as CreateUserInterface;
+      const { userId: senderId } = req.params;
+
+      const unreadCount = await handleGetUnreadMessageCount(
+        senderId,
+        recieverId,
+        dbRepositoryMessage
+      );
+
+      res.status(HttpStatusCodes.OK).json({
+        success: true,
+        message: "unread messages fetched successfully",
+        unreadCount,
+      });
+    }
+  );
+  const changeReadMessageStatus = asyncHandler(
+    async (req: ExtendedRequest, res: Response) => {
+      const { _id: recieverId } = req.user as CreateUserInterface;
+      const { userId: senderId } = req.params;
+
+      await handleChangeMessageSeen(senderId, recieverId, dbRepositoryMessage);
+
+      res.status(HttpStatusCodes.OK).json({
+        success: true,
+        message: "message Status changed successfully",
+      });
+    }
+  );
+
+  return {
+    sendNewMessage,
+    sendPostAsMessage,
+    getChat,
+    postReplyAsMessage,
+    getUnreadMessages,
+    changeReadMessageStatus
+  };
 };

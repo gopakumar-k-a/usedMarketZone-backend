@@ -15,7 +15,11 @@ const socketConfig = (io: Server) => {
         userId !== "undefined" &&
         userId !== null
       ) {
+        console.log('in map adding process');
+        
         userSocketMap[userId] = socket.id; // Assign socket.id to userSocketMap using userId as key
+        console.log('user socket map ',userSocketMap);
+        
       }
 
 
@@ -43,6 +47,8 @@ const socketConfig = (io: Server) => {
 
 
 export const getRecieverSocketId = (reciever:string) => {
+  console.log('user socket map ',userSocketMap);
+  
     return userSocketMap[reciever];
   };
   

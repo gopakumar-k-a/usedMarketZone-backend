@@ -1,7 +1,5 @@
 import { BidRepository } from "../../repositories/bidRepository";
-import {
-  BidHistoryRepository,  
-} from "../../repositories/bidHistoryRepository";
+import { BidHistoryRepository } from "../../repositories/bidHistoryRepository";
 import { createBidHistoryEntity } from "../../../entities/bidding/createBidHistory";
 import { CreateBidHistoryEntityType } from "../../../entities/bidding/createBidHistory";
 import AppError from "../../../utils/appError";
@@ -10,16 +8,27 @@ import mongoose, { Types } from "mongoose";
 import { IBid } from "../../../frameworks/database/mongodb/models/bidModel";
 import { IBidHistory } from "../../../frameworks/database/mongodb/models/bidHistoryModel";
 import { io } from "../../../app";
+import { KycRepository } from "../../repositories/kycDbRepository";
 
 export const handlePlaceBid = async (
   bidderId: string,
   bidProductId: string,
   bidAmount: string,
   bidRepositoryDb: BidRepository,
-  bidHistoryRepositoryDb: BidHistoryRepository
+  bidHistoryRepositoryDb: BidHistoryRepository,
+  kycRepositoryDb: KycRepository
 ): Promise<number> => {
   console.log("Placing bid with:", { bidderId, bidProductId, bidAmount });
+  const kycDetails = await kycRepositoryDb.checkKycIsVerified(
+    new Types.ObjectId(bidderId)
+  );
 
+  if (!kycDetails) {
+    throw new AppError(
+      "Can't place bid, Update KYC in Settings Only KYC accepted by admin are allowed to place bid",
+      HttpStatusCodes.BAD_GATEWAY
+    );
+  }
   const bid = await bidRepositoryDb.getBidDetails(bidProductId);
   if (!bid) {
     throw new AppError("Bid not found", HttpStatusCodes.BAD_GATEWAY);
@@ -40,7 +49,7 @@ export const handlePlaceBid = async (
   }
 
   const currentDate = new Date(Date.now());
-  const totalBidAmount =await calculateTotalBidAmount(
+  const totalBidAmount = await calculateTotalBidAmount(
     bidAmount,
     bidderId,
     bidProductId,

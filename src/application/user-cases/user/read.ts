@@ -1,5 +1,7 @@
+import { Types } from "mongoose";
 import { HttpStatusCodes } from "../../../types/httpStatusCodes";
 import AppError from "../../../utils/appError";
+import { KycInterface } from "../../repositories/kycDbRepository";
 import { ProductDbInterface } from "../../repositories/productDbRepository";
 import { UserDbInterface } from "../../repositories/userDbRepository";
 
@@ -20,10 +22,8 @@ export async function removeSensitiveFields(object: any) {
     followers,
     following,
     numOfFollowers,
-    numOfFollowing
+    numOfFollowing,
   } = object;
-
-  
 
   // Format dates
   const formattedCreatedAt = new Date(createdAt).toLocaleString().split(",")[0];
@@ -45,7 +45,7 @@ export async function removeSensitiveFields(object: any) {
     followers,
     following,
     numOfFollowers,
-    numOfFollowing
+    numOfFollowing,
   };
 }
 
@@ -127,33 +127,63 @@ export const handleGetUserPostDetails = async (
   return postDetails;
 };
 
-export const handleGetSuggestedUsers=async(userId:string,    userRepository: ReturnType<UserDbInterface>
-)=>{
-  const suggestedUsers=await userRepository.getSuggestedUsers(userId)
-  return suggestedUsers
-}
+export const handleGetSuggestedUsers = async (
+  userId: string,
+  userRepository: ReturnType<UserDbInterface>
+) => {
+  const suggestedUsers = await userRepository.getSuggestedUsers(userId);
+  return suggestedUsers;
+};
 
-export const handleGetNumOfFollowById=async(userId:string,    userRepository: ReturnType<UserDbInterface>)=>{
-  const numOfFollow=await userRepository.getNumOfFollowById(userId)
+export const handleGetNumOfFollowById = async (
+  userId: string,
+  userRepository: ReturnType<UserDbInterface>
+) => {
+  const numOfFollow = await userRepository.getNumOfFollowById(userId);
 
-  if(!numOfFollow){
-    throw new AppError("cant find number of follow check user id ",HttpStatusCodes.BAD_GATEWAY)
+  if (!numOfFollow) {
+    throw new AppError(
+      "cant find number of follow check user id ",
+      HttpStatusCodes.BAD_GATEWAY
+    );
   }
 
-  return numOfFollow
-}
+  return numOfFollow;
+};
 
-export const handleGetFollowersById=async(userId:string, userRepository: ReturnType<UserDbInterface>)=>{
+export const handleGetFollowersById = async (
+  userId: string,
+  userRepository: ReturnType<UserDbInterface>
+) => {
+  const followerUsers = userRepository.getFollowersById(userId);
 
-  const followerUsers=userRepository.getFollowersById(userId)
+  return followerUsers;
+};
+export const handleGetFollowingById = async (
+  userId: string,
+  userRepository: ReturnType<UserDbInterface>
+) => {
+  const followingUsers = userRepository.getFollowingById(userId);
 
-  return followerUsers
-}
-export const handleGetFollowingById=async(userId:string, userRepository: ReturnType<UserDbInterface>)=>{
+  return followingUsers;
+};
 
-  const followingUsers=userRepository.getFollowingById(userId)
+export const handleGetKycByUserId = async (
+  userId: string,
+  kycRepository: ReturnType<KycInterface>
+) => {
+  const kycData = await kycRepository.getKycByUserId(
+    new Types.ObjectId(userId)
+  );
 
-  return followingUsers
-}
+  return kycData;
+};
+
+export const handleGetKycRequestsAdmin = async (
+  kycRepository: ReturnType<KycInterface>
+) => {
+  const kycData = await kycRepository.getKycAdmin();
+  return kycData;
+};
 
 

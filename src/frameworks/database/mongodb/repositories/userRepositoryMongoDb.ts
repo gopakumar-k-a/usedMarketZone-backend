@@ -189,7 +189,7 @@ export const userRepositoryMongoDb = () => {
         $addToSet: { followers: userId },
       }),
     ]);
-    return;
+    return userToFollow.userName
   };
 
   const unFollowUser = async (userId: string, userToUnFollowId: string) => {
@@ -293,16 +293,21 @@ export const userRepositoryMongoDb = () => {
     return followingUser;
   };
 
-  const searchUser = async (query: string) => {
+  const searchUser = async (query: string, userId: string) => {
     const regex = new RegExp(query, "i");
 
     const results = await User.find(
       {
         role: "user",
-        $or: [
-          { firstName: { $regex: regex } },
-          { lastName: { $regex: regex } },
-          { userName: { $regex: regex } },
+        $and: [
+          { _id: { $ne: userId } }, // Exclude current user
+          {
+            $or: [
+              { firstName: { $regex: regex } },
+              { lastName: { $regex: regex } },
+              { userName: { $regex: regex } },
+            ],
+          },
         ],
       },
       {

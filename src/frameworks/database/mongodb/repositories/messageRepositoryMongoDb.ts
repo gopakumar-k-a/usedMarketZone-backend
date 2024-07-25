@@ -2,6 +2,7 @@ import { Messages } from "../models/messageModel";
 import { CreateMessageEntityType } from "../../../../entities/createMessageEntity";
 import { CreatePostEntityType } from "../../../../entities/createSendPostEntity";
 import { CreatePostReplyMessageEntityType } from "../../../../entities/createPostReplyMessageEntity";
+import { Types } from "mongoose";
 export const messageRepositoryMongoDb = () => {
   const sendNewMessage = async (messageEntity: CreateMessageEntityType) => {
     const newMessage = new Messages({
@@ -43,10 +44,62 @@ export const messageRepositoryMongoDb = () => {
     return newPostReplyMessage;
   };
 
+  const getUnseenMessagesCount = async (
+    senderId: Types.ObjectId,
+    recieverId: Types.ObjectId
+  ) => {
+    console.log(`sender id ${senderId}
+      reciever id ${recieverId}`);
+
+    const unseenMessagesCount = await Messages.aggregate([
+      {
+        $match: {
+          senderId: senderId,
+          recieverId: recieverId,
+          isSeen: false,
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          unseenCount: {
+            $sum: 1,
+          },
+        },
+      },
+    ]);
+
+    console.log("unseen messages count", unseenMessagesCount);
+
+    return unseenMessagesCount.length > 0
+      ? unseenMessagesCount[0].unseenCount
+      : 0;
+  };
+
+  const changeUnseenStatusConversationWise = async (
+    senderId: Types.ObjectId,
+    recieverId: Types.ObjectId
+  ) => {
+    console.log(`sender id ${senderId}
+      reciever id ${recieverId}`);
+    const updateResult = await Messages.updateMany(
+      {
+        senderId: senderId,
+        recieverId: recieverId,
+        isSeen: false,
+      },
+      { $set: { isSeen: true } }
+    );
+    console.log(`Updated ${updateResult.modifiedCount} messages to seen.`);
+
+    return;
+  };
   return {
     sendNewMessage,
     sendPostAsMessage,
     sendPostReplyAsMessage,
+    getUnseenMessagesCount,
+    changeUnseenStatusConversationWise
   };
 };
 

@@ -12,7 +12,7 @@ export const handleSearchOnApp = async (
 ) => {
   let results;
   if (filter === "users") {
-    results = await dbUser.searchUser(searchQuery);
+    results = await dbUser.searchUser(searchQuery,userId);
   } else if (filter === "posts") {
     const isBidding = subFilter === "bidding";
     results = await dbProduct.searchProduct(searchQuery, isBidding,new Types.ObjectId(userId));

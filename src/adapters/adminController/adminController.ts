@@ -6,10 +6,14 @@ import { HttpStatusCodes } from "../../types/httpStatusCodes";
 import {
   getAllUsers,
   getUserProfile,
+  handleGetKycRequestsAdmin,
   handleGetUserPostDetails,
   handleGetUserPosts,
 } from "../../application/user-cases/user/read";
-import { modifyUserAccess } from "../../application/user-cases/user/update";
+import {
+  handleKycRequestAdmin,
+  modifyUserAccess,
+} from "../../application/user-cases/user/update";
 import { ProductDbInterface } from "../../application/repositories/productDbRepository";
 import { ProductRepositoryMongoDb } from "../../frameworks/database/mongodb/repositories/productRepositoryMongoDb";
 import { AdminBidRequestDbInterface } from "../../application/repositories/adminBidRequestDbRepository";
@@ -29,6 +33,11 @@ import { PostReportDbInterface } from "../../application/repositories/postReport
 import { PostReportRepositoryMongoDb } from "../../frameworks/database/mongodb/repositories/postReportRepositoryMongoDb";
 import { BidHistoryInterface } from "../../application/repositories/bidHistoryRepository";
 import { BidHistoryRepositoryMongoDb } from "../../frameworks/database/mongodb/repositories/bidHistoryRepositoryMongoDb";
+import {
+  KycInterface,
+  KycRepository,
+} from "../../application/repositories/kycDbRepository";
+import { KycRepositoryMongoDB } from "../../frameworks/database/mongodb/repositories/kycRepositoryMongoDB";
 
 const adminController = (
   userDbRepository: UserDbInterface,
@@ -42,7 +51,9 @@ const adminController = (
   postReportRepository: PostReportDbInterface,
   postReportRepositoryImpl: PostReportRepositoryMongoDb,
   bidHistoryRepository: BidHistoryInterface,
-  bidHistoryImpl: BidHistoryRepositoryMongoDb
+  bidHistoryImpl: BidHistoryRepositoryMongoDb,
+  kycRepository: KycInterface,
+  kycRepositoryDbImpl: KycRepositoryMongoDB
 ) => {
   const dbRepositoryUser = userDbRepository(userDbImpl());
   const dbRepositoryProduct = productDbRepository(productDbImpl());
@@ -54,6 +65,7 @@ const adminController = (
     postReportRepositoryImpl()
   );
   const dbBidHistory = bidHistoryRepository(bidHistoryImpl());
+  const dbKycRepository = kycRepository(kycRepositoryDbImpl());
 
   const handleGetUsers = asyncHandler(async (req: Request, res: Response) => {
     // console.log("inside admin controller ", req.params);
@@ -211,6 +223,34 @@ const adminController = (
       });
     }
   );
+
+  const getKycRequests = asyncHandler(async (req: Request, res: Response) => {
+    const kycData = await handleGetKycRequestsAdmin(dbKycRepository);
+
+    res.status(HttpStatusCodes.OK).json({
+      success: true,
+      message: "kyc data retrived success",
+      kycData,
+    });
+  });
+
+  const changeKycRequestStatus = asyncHandler(
+    async (req: Request, res: Response) => {
+      const { kycId } = req.params;
+      const { type } = req.body;
+      const kycData = await handleKycRequestAdmin(
+        kycId,
+        type,
+        dbKycRepository
+      );
+
+      res.status(HttpStatusCodes.OK).json({
+        success: true,
+        message: "kyc handled successfully",
+        kycData,
+      });
+    }
+  );
   return {
     handleGetUsers,
     handleModifyUserAccess,
@@ -222,6 +262,8 @@ const adminController = (
     getPostReports,
     adminBlockPost,
     getBidHistoryOfProduct,
+    getKycRequests,
+    changeKycRequestStatus,
   };
 };
 
