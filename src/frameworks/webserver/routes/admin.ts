@@ -14,6 +14,10 @@ import { bidHistoryRepository } from "../../../application/repositories/bidHisto
 import { bidHistoryRepositoryMongoDb } from "../../database/mongodb/repositories/bidHistoryRepositoryMongoDb";
 import { kycDbRepository } from "../../../application/repositories/kycDbRepository";
 import { kycRepositoryMongoDB } from "../../database/mongodb/repositories/kycRepositoryMongoDB";
+import { bidServiceInterface } from "../../../application/services/BidServiceInterface";
+import { bidService } from "../../services/bidService";
+import { scheduleServiceInterface } from "../../../application/services/scheduleServiceInterface";
+import { scheduleService } from "../../scheduler/scheduleService";
 const adminRouter = () => {
   const router = express.Router();
   const controller = adminController(
@@ -30,7 +34,11 @@ const adminRouter = () => {
     bidHistoryRepository,
     bidHistoryRepositoryMongoDb,
     kycDbRepository,
-    kycRepositoryMongoDB
+    kycRepositoryMongoDB,
+    bidServiceInterface,
+    bidService,
+    scheduleServiceInterface,
+    scheduleService
   );
 
   router.get("/get-all-users/:page/:limit", controller.handleGetUsers);
@@ -41,10 +49,12 @@ const adminRouter = () => {
   router.get("/get-bid-requests", controller.getBidRequests);
   router.patch("/accept-bid/:bidProductId", controller.acceptBidRequest);
   router.get("/get-post-reports", controller.getPostReports);
-  router.patch("/block-post/:productId",controller.adminBlockPost)
-  router.get("/bid-history/:bidProductId",controller.getBidHistoryOfProduct)
-  router.get("/get-kyc-requests",controller.getKycRequests)
-  router.patch("/handle-kyc-request/:kycId",controller.changeKycRequestStatus)
+  router.patch("/block-post/:productId", controller.adminBlockPost);
+  router.get("/bid-history/:bidProductId", controller.getBidHistoryOfProduct);
+  router.get("/get-kyc-requests", controller.getKycRequests);
+  router.patch("/handle-kyc-request/:kycId", controller.changeKycRequestStatus);
+  router.get("/all-product-posts", controller.getAllProductPostAdmin);
+  router.get("/get-dashboard-statistics",controller.getDashboardStatistics) 
   return router;
 };
 

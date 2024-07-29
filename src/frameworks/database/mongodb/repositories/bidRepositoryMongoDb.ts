@@ -21,11 +21,30 @@ export const bidRepositoryMongoDb = () => {
 
   const getBidDetails = async (productId: string): Promise<IBid | null> => {
     const bidData: IBid | null = await Bid.findOne({ productId });
+    // const bidData: IBid[] | null = await Bid.aggregate([
+    //   {
+    //     $match: new Types.ObjectId(productId),
+    //   },
+    //   {
+    //     $lookup: {
+    //       from: "users",
+    //       foreignField: "_id",
+    //       localField: "productId",
+    //       as: "productData",
+    //     },
+    //   },
+    //   {
+    //     $unwind: "$productData",
+    //   },
+    // ]);
+    // console.log('bid product name ',bidData[0].productData.productName);
+
     if (!bidData) {
       throw new AppError("invalid product id ", HttpStatusCodes.BAD_GATEWAY);
     }
 
-    return bidData;
+    // return bidData[0];
+    return bidData
   };
 
   const getHighestBidderDetails = async (productId: string) => {
@@ -91,8 +110,6 @@ export const bidRepositoryMongoDb = () => {
 
     return placeBid;
   };
-
-
 
   return {
     addBidAfterAdminAccept,

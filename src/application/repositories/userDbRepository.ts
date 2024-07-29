@@ -44,6 +44,7 @@ export const userDbRepository = (
   const getFollowersById = async (userId: string) =>repository.getFollowersById(userId)
   const getFollowingById = async (userId: string) =>repository.getFollowingById(userId)
   const searchUser = async (query: string,userId:string) => await repository.searchUser(query,userId)
+  const getNumberOfUsers = async () =>await repository.getNumberOfUsers()
   return {
     addUser,
     getUserByEmail,
@@ -64,7 +65,8 @@ export const userDbRepository = (
     getNumOfFollowById,
     getFollowersById,
     getFollowingById,
-    searchUser
+    searchUser,
+    getNumberOfUsers
   };
 };
 

@@ -28,7 +28,10 @@ import {
 } from "../../application/user-cases/product/update";
 import { BidInterface } from "../../application/repositories/bidRepository";
 import { BidRepositoryMongoDb } from "../../frameworks/database/mongodb/repositories/bidRepositoryMongoDb";
-import { handleGetPostReports } from "../../application/user-cases/product/get";
+import {
+  handleGetPostReports,
+  handleGetProductPostAdmin,
+} from "../../application/user-cases/product/get";
 import { PostReportDbInterface } from "../../application/repositories/postReportRepository";
 import { PostReportRepositoryMongoDb } from "../../frameworks/database/mongodb/repositories/postReportRepositoryMongoDb";
 import { BidHistoryInterface } from "../../application/repositories/bidHistoryRepository";
@@ -38,6 +41,11 @@ import {
   KycRepository,
 } from "../../application/repositories/kycDbRepository";
 import { KycRepositoryMongoDB } from "../../frameworks/database/mongodb/repositories/kycRepositoryMongoDB";
+import { handleGetAdminStatistics } from "../../application/user-cases/dashboard/get";
+import { BidService } from "../../frameworks/services/bidService";
+import { BidServiceInterface } from "../../application/services/BidServiceInterface";
+import { ScheduleServiceInterface } from "../../application/services/scheduleServiceInterface";
+import { ScheduleService } from "../../frameworks/scheduler/scheduleService";
 
 const adminController = (
   userDbRepository: UserDbInterface,
@@ -53,7 +61,12 @@ const adminController = (
   bidHistoryRepository: BidHistoryInterface,
   bidHistoryImpl: BidHistoryRepositoryMongoDb,
   kycRepository: KycInterface,
-  kycRepositoryDbImpl: KycRepositoryMongoDB
+  kycRepositoryDbImpl: KycRepositoryMongoDB,
+  bidServiceInterface:BidServiceInterface,
+  bidService:BidService,
+  scheduleServiceInterface:ScheduleServiceInterface,
+  scheduleServiceImpl:ScheduleService
+
 ) => {
   const dbRepositoryUser = userDbRepository(userDbImpl());
   const dbRepositoryProduct = productDbRepository(productDbImpl());
@@ -66,6 +79,8 @@ const adminController = (
   );
   const dbBidHistory = bidHistoryRepository(bidHistoryImpl());
   const dbKycRepository = kycRepository(kycRepositoryDbImpl());
+  const biddingService=bidServiceInterface(bidService())
+  const scheduleServie=scheduleServiceInterface(scheduleServiceImpl())
 
   const handleGetUsers = asyncHandler(async (req: Request, res: Response) => {
     // console.log("inside admin controller ", req.params);
@@ -171,7 +186,9 @@ const adminController = (
       bidProductId,
       bidDuration,
       dbRepositoryProduct,
-      dbBidRepository
+      dbBidRepository,
+      biddingService,
+      scheduleServie
     );
 
     res.status(HttpStatusCodes.OK).json({
@@ -238,16 +255,41 @@ const adminController = (
     async (req: Request, res: Response) => {
       const { kycId } = req.params;
       const { type } = req.body;
-      const kycData = await handleKycRequestAdmin(
-        kycId,
-        type,
-        dbKycRepository
-      );
+      const kycData = await handleKycRequestAdmin(kycId, type, dbKycRepository);
 
       res.status(HttpStatusCodes.OK).json({
         success: true,
         message: "kyc handled successfully",
         kycData,
+      });
+    }
+  );
+
+  const getAllProductPostAdmin = asyncHandler(
+    async (req: Request, res: Response) => {
+      const productPosts = await handleGetProductPostAdmin(dbRepositoryProduct);
+
+      res.status(HttpStatusCodes.OK).json({
+        success: true,
+        message: "Product Posts Retrived successfully",
+        productPosts,
+      });
+    }
+  );
+
+  const getDashboardStatistics = asyncHandler(
+    async (req: Request, res: Response) => {
+      const statistics = await handleGetAdminStatistics(
+        dbRepositoryPostReport,
+        dbRepositoryProduct,
+        dbRepositoryUser
+      );
+      console.log('statistics ',statistics);
+      
+      res.status(HttpStatusCodes.OK).json({
+        success: true,
+        message: "Dashboard statistics retrived successfully",
+        statistics,
       });
     }
   );
@@ -264,6 +306,8 @@ const adminController = (
     getBidHistoryOfProduct,
     getKycRequests,
     changeKycRequestStatus,
+    getAllProductPostAdmin,
+    getDashboardStatistics
   };
 };
 

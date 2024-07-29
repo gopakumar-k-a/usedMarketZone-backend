@@ -16,6 +16,8 @@ import {
 import { JwtForgotPasswordPayload } from "../../../types/authInterface";
 import { removeSensitiveFields } from "../user/read";
 
+
+import schedule from 'node-schedule';
 export const VerifyAndRegister = async (
   user: {
     firstName: string;
@@ -190,6 +192,13 @@ export const userAuthenticate = async (
 
   const token = await userService.generateToken(JSON.stringify(jwtPayload));
   const role = user.role;
+
+  const tenSecondsFromNow = new Date(Date.now() + 10 * 1000);
+  console.log(tenSecondsFromNow);
+  schedule.scheduleJob(tenSecondsFromNow,()=>{
+    console.log('job triggered on', tenSecondsFromNow);
+    
+  })
 
   return { token, user, role };
 };

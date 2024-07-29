@@ -189,7 +189,7 @@ export const userRepositoryMongoDb = () => {
         $addToSet: { followers: userId },
       }),
     ]);
-    return userToFollow.userName
+    return userToFollow.userName;
   };
 
   const unFollowUser = async (userId: string, userToUnFollowId: string) => {
@@ -323,6 +323,16 @@ export const userRepositoryMongoDb = () => {
     return results;
   };
 
+  const getNumberOfUsers = async () => {
+    const numberOfUsers = await User.aggregate([
+      {
+        $count: "numberOfUsers",
+      },
+    ]);
+
+    return numberOfUsers[0];
+  };
+
   return {
     addUser,
     getUserByEmail,
@@ -344,6 +354,7 @@ export const userRepositoryMongoDb = () => {
     getFollowersById,
     getFollowingById,
     searchUser,
+    getNumberOfUsers,
   };
 };
 

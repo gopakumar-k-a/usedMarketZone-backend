@@ -4,11 +4,12 @@ import { PostReportRepositoryMongoDb } from "../../frameworks/database/mongodb/r
 export const postReportDbRepository=(repository:ReturnType<PostReportRepositoryMongoDb>)=>{
 
     const submitPostReport =async (postReportEntity:PostReportEntityType) =>await repository.submitPostReport(postReportEntity)
-    
+    const getNumberOfPostReports = async () =>await repository.getNumberOfPostReports()
   const getReports = async () =>await repository.getReports()
      return {
         submitPostReport,
-        getReports
+        getReports,
+        getNumberOfPostReports
      }
 }
 

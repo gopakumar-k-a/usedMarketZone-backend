@@ -1,6 +1,5 @@
 import { Server } from 'http';
 import config from '../../config';
-
 const serverConfig = (server: Server) => {
   return {
     startServer: () => {

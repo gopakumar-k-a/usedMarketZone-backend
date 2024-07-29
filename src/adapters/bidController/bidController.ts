@@ -129,6 +129,8 @@ export const bidController = (
     }
   );
 
+
+  
   return {
     productBidPost,
     placeBid,

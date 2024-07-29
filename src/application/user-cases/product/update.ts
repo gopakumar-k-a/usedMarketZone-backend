@@ -12,9 +12,13 @@ import AppError from "../../../utils/appError";
 import { HttpStatusCodes } from "../../../types/httpStatusCodes";
 import { CommentDbRepository } from "../../repositories/commentRepository";
 import { commentEntity } from "../../../entities/createCommentEntity";
-import { BidRepository } from "../../repositories/bidRepository";
+import { BidInterface, BidRepository } from "../../repositories/bidRepository";
 import { createBidEntity } from "../../../entities/bidding/createBidEntity";
 import mongoose from "mongoose";
+import { BidServiceInterface } from "../../services/BidServiceInterface";
+import { ScheduleServiceInterface } from "../../services/scheduleServiceInterface";
+// import schedule from 'node-schedule';
+
 export const handlePostProduct = async (
   postData: ProductPostForm,
   userId: string,
@@ -159,7 +163,9 @@ export const handleAdminAcceptedBid = async (
   bidProductId: string,
   bidDuration: BidDuration,
   productRepository: ReturnType<ProductDbInterface>,
-  bidRepository: BidRepository
+  bidRepository: BidRepository,
+  bidService: ReturnType<BidServiceInterface>,
+  scheduleService: ReturnType<ScheduleServiceInterface>
 ) => {
   const updatedBidProduct = await productRepository.updateAdminAcceptBidStatus(
     bidProductId,
@@ -186,6 +192,10 @@ export const handleAdminAcceptedBid = async (
   updatedBidProduct.bidData = newlyAddedBid._id;
   await productRepository.updateProduct(bidProductId, updatedBidProduct);
 
+  
+  scheduleService.scheduleJob(updatedBidProduct.bidEndTime, async () => {
+    await bidService.processBidClosure(bidRepository, newlyAddedBid._id);
+  });
   return true;
 };
 export const handleReplyComment = async (

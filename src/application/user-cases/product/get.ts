@@ -94,3 +94,11 @@ export const handleGetPostReports = async (
   const postReportData = await reportRepository.getReports();
   return postReportData;
 };
+
+export const handleGetProductPostAdmin = async (
+  productRepository: ReturnType<ProductDbInterface>
+) => {
+  const productData = await productRepository.getAllProductPostAdmin();
+
+  return productData;
+};

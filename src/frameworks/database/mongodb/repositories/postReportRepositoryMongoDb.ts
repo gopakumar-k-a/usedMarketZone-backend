@@ -28,7 +28,6 @@ export const postReportRepositoryMongoDb = () => {
   };
 
   const getReports = async () => {
-    
     const postReports = await PostReport.aggregate([
       {
         $lookup: {
@@ -59,8 +58,8 @@ export const postReportRepositoryMongoDb = () => {
       { $unwind: "$postOwnerData" },
       {
         $project: {
-          postIsBlocked:'$postData.isBlocked',
-          postIsBidding:'$postData.isBidding',
+          postIsBlocked: "$postData.isBlocked",
+          postIsBidding: "$postData.isBidding",
           postOwnerId: "$postData.userId",
           postOwnerName: "$postOwnerData.userName",
           postId: "$postData._id",
@@ -74,16 +73,25 @@ export const postReportRepositoryMongoDb = () => {
       },
     ]);
 
-    console.log('postIncidentsData ',postReports);
+    console.log("postIncidentsData ", postReports);
 
-    return postReports
+    return postReports;
+  };
 
-    
+  const getNumberOfPostReports = async () => {
+    const numberOfReports = await PostReport.aggregate([
+      {
+        $count: "numberOfReports",
+      },
+    ]);
+
+    return numberOfReports[0]
   };
 
   return {
     submitPostReport,
-    getReports
+    getReports,
+    getNumberOfPostReports
   };
 };
 

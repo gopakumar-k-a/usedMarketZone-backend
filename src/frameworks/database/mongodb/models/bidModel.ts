@@ -1,4 +1,5 @@
 import mongoose, { Document, Model, Schema, mongo } from "mongoose";
+import { IProduct } from "./productModel";
 
 export interface IBid extends Document {
   _id: mongoose.Types.ObjectId;
@@ -12,6 +13,7 @@ export interface IBid extends Document {
   biddingStatus: string;
   highestBidderId: mongoose.Types.ObjectId;
   highestBidderHistoryId: mongoose.Types.ObjectId;
+  productData: IProduct;
 }
 
 const bidSchema: Schema = new Schema(

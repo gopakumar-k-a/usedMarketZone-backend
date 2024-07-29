@@ -243,13 +243,80 @@ export const productRepositoryMongoDb = () => {
   };
 
   const getUserPostDetailsAdmin = async (postId: string) => {
-    const postDetails = await Product.findOne({ _id: postId });
-    console.log("post Details getUserPostDetails", postDetails);
+    // const postDetails = await Product.findOne({ _id: postId });
+    // console.log("post Details getUserPostDetails", postDetails);
+    const products = await Product.aggregate([
+      {
+        $match: {
+          _id: new Types.ObjectId(postId),
+        },
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "userId",
+          foreignField: "_id",
+          as: "userDetails",
+        },
+      },
+      {
+        $unwind: "$userDetails",
+      },
+      {
+        $lookup: {
+          from: "bids",
+          localField: "bidData",
+          foreignField: "_id",
+          as: "bidDetails",
+        },
+      },
+      {
+        $unwind: {
+          path: "$bidDetails",
+          preserveNullAndEmptyArrays: true, // Preserve products without bids
+        },
+      },
 
-    if (!postDetails) {
-      return false;
-    }
-    return postDetails;
+      {
+        $addFields: {
+          currentHighestBid: "$bidDetails.currentHighestBid",
+        },
+      },
+      {
+        $project: {
+          _id: 1,
+          productName: 1,
+          basePrice: 1,
+          userId: 1,
+          productImageUrls: 1,
+          category: 1,
+          subCategory: 1,
+          phone: 1,
+          description: 1,
+          productCondition: 1,
+          productAge: 1,
+          bookmarkedCount: 1,
+          address: 1,
+          "userDetails.userName": 1,
+          "userDetails.imageUrl": 1,
+          isBookmarked: 1,
+          createdAt: 1,
+          isBidding: 1,
+          bidEndTime: 1,
+          bidAcceptedTime: 1,
+          currentHighestBid: 1,
+        },
+      },
+      {
+        $sort: {
+          createdAt: -1,
+        },
+      },
+    ]);
+
+    console.log("products ", products);
+
+    return products;
   };
 
   const updateAdminAcceptBidStatus = async (
@@ -318,8 +385,8 @@ export const productRepositoryMongoDb = () => {
       {
         $project: {
           productImageUrls: 1,
-          createdAt:1,
-          isBidding:1
+          createdAt: 1,
+          isBidding: 1,
         },
       },
       {
@@ -600,6 +667,117 @@ export const productRepositoryMongoDb = () => {
     return userBids;
   };
 
+  const getAllProductPostAdmin = async () => {
+    const products = await Product.aggregate([
+      {
+        $match: {
+          isAdminAccepted: true,
+          isDeactivatedPost: false,
+        },
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "userId",
+          foreignField: "_id",
+          as: "userDetails",
+        },
+      },
+      {
+        $unwind: "$userDetails",
+      },
+      {
+        $lookup: {
+          from: "bids",
+          localField: "bidData",
+          foreignField: "_id",
+          as: "bidDetails",
+        },
+      },
+      {
+        $unwind: {
+          path: "$bidDetails",
+          preserveNullAndEmptyArrays: true, // Preserve products without bids
+        },
+      },
+
+      {
+        $addFields: {
+          currentHighestBid: "$bidDetails.currentHighestBid",
+        },
+      },
+      {
+        $project: {
+          _id: 1,
+          productName: 1,
+          basePrice: 1,
+          userId: 1,
+          productImageUrls: 1,
+          category: 1,
+          subCategory: 1,
+          phone: 1,
+          description: 1,
+          productCondition: 1,
+          productAge: 1,
+          bookmarkedCount: 1,
+          address: 1,
+          "userDetails.userName": 1,
+          "userDetails.imageUrl": 1,
+          isBookmarked: 1,
+          createdAt: 1,
+          isBidding: 1,
+          bidEndTime: 1,
+          bidAcceptedTime: 1,
+          currentHighestBid: 1,
+        },
+      },
+      {
+        $sort: {
+          createdAt: -1,
+        },
+      },
+    ]);
+
+    console.log("products ", products);
+
+    return products;
+  };
+
+  const getNumberOfProducts=async()=>{
+    const [result] = await Product.aggregate([
+      {
+        $facet: {
+          numberOfProducts: [{ $count: "totalProducts" }],
+          numberOfBidProducts: [
+            { $match: { isBidding: true } },
+            { $count: "totalBidProducts" }
+          ],
+          numberOfNonBidProducts: [
+            { $match: { isBidding: false } },
+            { $count: "totalNonBidProducts" }
+          ]
+        }
+      },
+      {
+        $project: {
+          numberOfProducts: { $arrayElemAt: ["$numberOfProducts.totalProducts", 0] },
+          numberOfBidProducts: { $arrayElemAt: ["$numberOfBidProducts.totalBidProducts", 0] },
+          numberOfNonBidProducts: { $arrayElemAt: ["$numberOfNonBidProducts.totalNonBidProducts", 0] }
+        }
+      }
+    ]);
+
+    console.log('result ',result);
+    
+  
+    // Return default values if counts are missing
+    return {
+      numberOfProducts: result?.numberOfProducts || 0,
+      numberOfBidProducts: result?.numberOfBidProducts || 0,
+      numberOfNonBidProducts: result?.numberOfNonBidProducts || 0
+    };
+  }
+
   return {
     postProduct,
     getAllProductPost,
@@ -618,6 +796,8 @@ export const productRepositoryMongoDb = () => {
     deactivateProductSellPost,
     searchProduct,
     getUserBids,
+    getAllProductPostAdmin,
+    getNumberOfProducts
   };
 };
 
