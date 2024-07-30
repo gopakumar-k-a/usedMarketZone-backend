@@ -21,11 +21,18 @@ export const bidHistoryRepository = (
   const getProductBidHistoryAdmin = async (
     bidProductId: mongoose.Types.ObjectId
   ) => await repository.getProductBidHistoryAdmin(bidProductId);
+  const getBidParticipents = async (
+    bidWinnerId: Types.ObjectId,
+    productId: Types.ObjectId
+  ) =>repository.getBidParticipents(bidWinnerId,productId)
+  const getUserParticipatingBids = async (userId: Types.ObjectId) => repository.getUserParticipatingBids(userId)
   return {
     createNewBidHistory,
     getUserPreviousBidsSumOnProduct,
     getUserBidHistoryOnProduct,
     getProductBidHistoryAdmin,
+    getBidParticipents,
+    getUserParticipatingBids
   };
 };
 

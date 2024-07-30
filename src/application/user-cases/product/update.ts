@@ -3,7 +3,6 @@ import postEntity from "../../../entities/createProductPostEntity";
 import bidPostEntity from "../../../entities/createBidPostEntity";
 import {
   ProductDbInterface,
-  productDbRepository,
 } from "../../repositories/productDbRepository";
 import { BookMarkDbInterface } from "../../repositories/bookmarkDbRepository";
 // import {BookMarkDbInterface}  from "../../repositories/bookmarkDbRepository";
@@ -12,11 +11,13 @@ import AppError from "../../../utils/appError";
 import { HttpStatusCodes } from "../../../types/httpStatusCodes";
 import { CommentDbRepository } from "../../repositories/commentRepository";
 import { commentEntity } from "../../../entities/createCommentEntity";
-import { BidInterface, BidRepository } from "../../repositories/bidRepository";
+import {  BidRepository } from "../../repositories/bidRepository";
 import { createBidEntity } from "../../../entities/bidding/createBidEntity";
 import mongoose from "mongoose";
 import { BidServiceInterface } from "../../services/BidServiceInterface";
 import { ScheduleServiceInterface } from "../../services/scheduleServiceInterface";
+import { bidQueue } from "../../../frameworks/scheduler/bidQueue";
+import { BidHistoryInterface } from "../../repositories/bidHistoryRepository";
 // import schedule from 'node-schedule';
 
 export const handlePostProduct = async (
@@ -193,9 +194,14 @@ export const handleAdminAcceptedBid = async (
   await productRepository.updateProduct(bidProductId, updatedBidProduct);
 
   
-  scheduleService.scheduleJob(updatedBidProduct.bidEndTime, async () => {
-    await bidService.processBidClosure(bidRepository, newlyAddedBid._id);
-  });
+  // scheduleService.scheduleJob(updatedBidProduct.bidEndTime, async () => {
+  //   await bidService.processBidClosure(bidRepository, newlyAddedBid._id);
+  // });
+  // const delay = new Date(updatedBidProduct.bidEndTime).getTime() - Date.now();
+  const delay = new Date(updatedBidProduct.bidEndTime).getTime() - Date.now();
+
+
+bidQueue.add('closebid',{bidId:newlyAddedBid._id},{delay:delay})
   return true;
 };
 export const handleReplyComment = async (

@@ -21,13 +21,17 @@ export const bidDbRepository = (
     currentHighestBid:number,
     highestBidderId:Types.ObjectId,
   ) => await repository.placeBid(bidHistoryId, bidId,currentHighestBid,highestBidderId);
-
+  const updateBidWithClaimedUserId = async (
+    productId: Types.ObjectId,
+    fromUserId: Types.ObjectId
+  ) =>repository.updateBidWithClaimedUserId(productId,fromUserId)
   return {
     addBidAfterAdminAccept,
     getBidDetails,
     getBidById,
     updateBid,
     placeBid,
+    updateBidWithClaimedUserId
   };
 };
 

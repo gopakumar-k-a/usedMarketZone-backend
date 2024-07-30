@@ -22,6 +22,7 @@ import { BidHistoryRepositoryMongoDb } from "../../frameworks/database/mongodb/r
 import { handlePlaceBid } from "../../application/user-cases/bid/update";
 import {
   handleGetBidDetailsOfUserOnProduct,
+  handleGetMyParticipatingBids,
   handleGetUserWiseBidRequests,
 } from "../../application/user-cases/bid/get";
 import { KycInterface } from "../../application/repositories/kycDbRepository";
@@ -37,8 +38,8 @@ export const bidController = (
   bidRepositoryDbImpl: BidRepositoryMongoDb,
   bidHistroryDbRepository: BidHistoryInterface,
   bidHistoryDbImpl: BidHistoryRepositoryMongoDb,
-  kycRepositoryDb:KycInterface,
-  kycRepositoryImpl:KycRepositoryMongoDB
+  kycRepositoryDb: KycInterface,
+  kycRepositoryImpl: KycRepositoryMongoDB
 ) => {
   const dbRepositoryProduct = productDbRepository(productDbImpl());
   // const dbRepositoryBookmark = bookmarkRepository(bookmarkDbImpl());
@@ -49,7 +50,7 @@ export const bidController = (
   const dbBidRepository = bidRepositoryDb(bidRepositoryDbImpl());
   const dbBidHistoryRepository = bidHistroryDbRepository(bidHistoryDbImpl());
 
-  const dbKycRepository=kycRepositoryDb(kycRepositoryImpl())
+  const dbKycRepository = kycRepositoryDb(kycRepositoryImpl());
 
   const productBidPost = asyncHandler(
     async (req: ExtendedRequest, res: Response) => {
@@ -129,12 +130,28 @@ export const bidController = (
     }
   );
 
+  const getMyParticipatingBids = asyncHandler(
+    async (req: ExtendedRequest, res: Response) => {
+      const { _id: userId } = req.user as CreateUserInterface;
 
-  
+      const userParticipatingBids = await handleGetMyParticipatingBids(
+        userId,
+        dbBidHistoryRepository
+      );
+
+      res.status(HttpStatusCodes.OK).json({
+        success: true,
+        message: "user participating bids retrived Successfully",
+        userParticipatingBids,
+      });
+    }
+  );
+
   return {
     productBidPost,
     placeBid,
     getBidDetailsOfUserOnProduct,
-    getUserBids
+    getUserBids,
+    getMyParticipatingBids
   };
 };

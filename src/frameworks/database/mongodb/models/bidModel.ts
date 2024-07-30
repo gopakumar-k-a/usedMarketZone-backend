@@ -14,6 +14,8 @@ export interface IBid extends Document {
   highestBidderId: mongoose.Types.ObjectId;
   highestBidderHistoryId: mongoose.Types.ObjectId;
   productData: IProduct;
+  isBidAmountPaid: boolean;
+  claimedUserId:mongoose.Types.ObjectId;
 }
 
 const bidSchema: Schema = new Schema(
@@ -45,7 +47,7 @@ const bidSchema: Schema = new Schema(
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: "BidHistory",
-        default:[]
+        default: [],
       },
     ],
     highestBidderId: {
@@ -64,6 +66,14 @@ const bidSchema: Schema = new Schema(
       type: String,
       enum: ["active", "completed"],
       default: "active",
+    },
+    isBidAmountPaid: {
+      type: Boolean,
+      default: false,
+    },
+    claimedUserId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
     },
   },
   { timestamps: true }

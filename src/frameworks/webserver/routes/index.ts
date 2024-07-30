@@ -8,6 +8,7 @@ import adminRouter from "./admin";
 import productRouter from "./product";
 import bidRouter from "./bid";
 import messageRouter from "./message";
+import paymenRouter from "./payment";
 
 const routes = (app: Application) => {
   console.log("inside index.ts");
@@ -18,6 +19,7 @@ const routes = (app: Application) => {
   app.use("/api/product",jwtTokenVerfiyUser,productRouter());
   app.use("/api/bid",jwtTokenVerfiyUser,bidRouter())
   app.use("/api/message",jwtTokenVerfiyUser,messageRouter())
+  app.use("/api/payment",jwtTokenVerfiyUser,paymenRouter())
 };
 
 export default routes;

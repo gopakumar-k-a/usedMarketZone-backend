@@ -44,7 +44,7 @@ export const bidRepositoryMongoDb = () => {
     }
 
     // return bidData[0];
-    return bidData
+    return bidData;
   };
 
   const getHighestBidderDetails = async (productId: string) => {
@@ -111,6 +111,28 @@ export const bidRepositoryMongoDb = () => {
     return placeBid;
   };
 
+  // await BidData.updateOne(
+  //   { productId },
+  //   { $set: { claimedUserId: fromUserId } }
+  // );
+
+  const updateBidWithClaimedUserId = async (
+    productId: Types.ObjectId,
+    fromUserId: Types.ObjectId
+  ) => {
+    await Bid.updateOne(
+      { productId },
+      { $set: { claimedUserId: fromUserId, isBidAmountPaid: true } }
+    );
+    return;
+  };
+
+  // Notify all other bidders
+  // const allBidders = await BidHistory.find({
+  //   bidData: bidId,
+  //   bidderId: { $ne: bidWinner }  // Exclude the highest bidder
+  // }).select('bidderId');
+
   return {
     addBidAfterAdminAccept,
     getBidDetails,
@@ -118,6 +140,7 @@ export const bidRepositoryMongoDb = () => {
     getBidById,
     updateBid,
     placeBid,
+    updateBidWithClaimedUserId,
     // addHighestBidHistoryIdToBid
   };
 };

@@ -97,8 +97,12 @@ export const bidHistoryRepositoryMongoDb = () => {
     //   Bid Total Amount
     //   Time
 
-
     const bidHistory = await BidHistory.aggregate([
+      {
+        $match: {
+          productId: bidProductId,
+        },
+      },
       {
         $lookup: {
           from: "users",
@@ -153,19 +157,144 @@ export const bidHistoryRepositoryMongoDb = () => {
         },
       },
       {
-        $sort:{lastBidDate:-1}
-      }
+        $sort: { lastBidDate: -1 },
+      },
     ]);
     console.log("bidHistory ", bidHistory);
     return bidHistory;
   };
 
+  // Notify all other bidders
+  // const allBidders = await BidHistory.find({
+  //   bidData: bidId,
+  //   bidderId: { $ne: bidWinner }  // Exclude the highest bidder
+  // }).select('bidderId');
+
+  const getBidParticipents = async (
+    bidWinnerId: Types.ObjectId,
+    productId: Types.ObjectId
+  ) => {
+    const bidParticipents = await BidHistory.aggregate([
+      {
+        $match: {
+          bidderId: { $ne: bidWinnerId },
+          productId: productId,
+        },
+      },
+      {
+        $group: {
+          _id: "$bidderId",
+          productId: { $first: "$productId" },
+          bidderId: { $first: "$bidderId" },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          productId: 1,
+          bidderId: 1,
+        },
+      },
+    ]);
+
+    console.log("bidParticipents ", bidParticipents);
+
+    return bidParticipents;
+  };
+
+  const getUserParticipatingBids = async (userId: Types.ObjectId) => {
+    const userBids = await BidHistory.aggregate([
+      {
+        $match: {
+          bidderId: userId,
+        },
+      },
+      {
+        $lookup: {
+          from: "products",
+          localField: "productId",
+          foreignField: "_id",
+          as: "productData",
+        },
+      },
+      {
+        $unwind: "$productData",
+      },
+      {
+        $lookup: {
+          from: "bids",
+          localField: "productId",
+          foreignField: "productId",
+          as: "bidData",
+        },
+      },
+      {
+        $unwind: "$bidData",
+      },
+      {
+        $group: {
+          _id: {
+            productId: "$productId",
+            userId: "$bidderId",
+          },
+          totalBidAmount: {
+            $sum: "$bidAmount",
+          },
+          productData: {
+            $first: "$productData",
+          },
+          bidData: {
+            $first: "$bidData",
+          },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          productId: "$_id.productId",
+          userId: "$bidData.userId",
+          // userId: "$_id.userId",
+          totalBidAmount: 1,
+          productName: "$productData.productName",
+          productBasePrice: "$productData.basePrice",
+          productImageUrls: "$productData.productImageUrls",
+          isMyHighestBid: {
+            $eq: ["$bidData.highestBidderId", userId],
+          },
+          highestBidAmount: "$bidData.currentHighestBid",
+          isBidEnded: {
+            $lt: [Date.now(), "$bidData.bidEndTime"],
+          },
+          // isAmountPaid: {
+          //   $cond: {
+          //     if: {
+          //       $and: [
+          //         { $eq: ["$bidData.highestBidderId", userId] },
+          //         { $lt: [Date.now(), "$bidData.bidEndTime"] },
+          //       ],
+          //     },
+          //     then: "$bidData.isBidAmountPaid",
+          //     else: false,
+          //   },
+          // }
+          isBidAmountPaid: "$bidData.isBidAmountPaid",
+          claimedUserId: "$bidData.claimedUserId",
+        },
+      },
+    ]);
+
+    console.log("userBids ", userBids);
+
+    return userBids;
+  };
   return {
     createNewBidHistory,
     getHighestBid,
     getUserPreviousBidsSumOnProduct,
     getUserBidHistoryOnProduct,
     getProductBidHistoryAdmin,
+    getBidParticipents,
+    getUserParticipatingBids,
   };
 };
 

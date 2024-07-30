@@ -38,6 +38,8 @@ const bidRouter = () => {
   );
   router.get("/get-user-bids", controller.getUserBids);
 
+  router.get("/my-participating-bids",controller.getMyParticipatingBids)
+
   //   router.patch("/bookmark-post/remove/:postId", controller.removeFromBookmark);
 
   return router;

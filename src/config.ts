@@ -9,6 +9,8 @@ const configKeys = {
   MAIL_SENDER_PASS: process.env.MAIL_SENDER_PASS as string,
   CLIENT_URL: process.env.CLIENT_URL as string,
   SERVER_DOMAIN: process.env.SERVER_DOMAIN as string,
+  RAZOR_KEY_ID: process.env.RAZOR_KEY_ID as string,
+  RAZOR_KEY_SECRET: process.env.RAZOR_KEY_SECRET as string,
 };
 
 export default configKeys;

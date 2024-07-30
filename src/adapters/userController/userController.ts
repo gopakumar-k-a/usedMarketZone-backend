@@ -376,6 +376,8 @@ console.log('in controller ',kycData);
       });
     }
   );
+
+
   return {
     handleGetUserProfile,
     handleUserNameCheck,

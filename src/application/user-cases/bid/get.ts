@@ -13,14 +13,15 @@ export const handleGetBidRequests = async (
 export const handleGetUserWiseBidRequests = async (
   userId: string,
   adminBidRequestDb: ReturnType<AdminBidRequestDbInterface>,
-  productDb:ReturnType<ProductDbInterface>
-  
+  productDb: ReturnType<ProductDbInterface>
 ) => {
   // const userWiseBidRequests = await adminBidRequestDb.getUserWiseBidRequests(
   //   new Types.ObjectId(userId)
   // );
 
-  const userWiseBidRequests=await productDb.getUserBids(new Types.ObjectId(userId))
+  const userWiseBidRequests = await productDb.getUserBids(
+    new Types.ObjectId(userId)
+  );
 
   return userWiseBidRequests;
 };
@@ -47,4 +48,15 @@ export const handleAdminGetBidHistoryOfProduct = async (
   );
 
   return bidHistory;
+};
+
+export const handleGetMyParticipatingBids = async (
+  userId: string,
+  bidHistoryDb: BidHistoryRepository
+) => {
+
+     const myParticipatingBids=await bidHistoryDb.getUserParticipatingBids(new Types.ObjectId(userId))
+
+     return myParticipatingBids
+
 };

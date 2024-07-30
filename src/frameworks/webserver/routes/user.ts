@@ -10,6 +10,7 @@ import { productDbRepository } from "../../../application/repositories/productDb
 import { productRepositoryMongoDb } from "../../database/mongodb/repositories/productRepositoryMongoDb";
 import { notificationRepository } from "../../../application/repositories/notificationRepository";
 import { notificationRepositoryMongoDB } from "../../database/mongodb/repositories/notificationRepositoryMongoDB";
+
 const userRouter = () => {
   const router = express.Router();
 
