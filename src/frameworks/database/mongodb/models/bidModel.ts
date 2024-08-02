@@ -15,7 +15,17 @@ export interface IBid extends Document {
   highestBidderHistoryId: mongoose.Types.ObjectId;
   productData: IProduct;
   isBidAmountPaid: boolean;
-  claimedUserId:mongoose.Types.ObjectId;
+  claimedUserId: mongoose.Types.ObjectId;
+  isClaimerAddressAdded: boolean;
+  claimerAddress: {
+    country: String;
+    state: String;
+    district: String;
+    city: String;
+    postalCode: String;
+    phone: string;
+  };
+  transactionId: mongoose.Types.ObjectId;
 }
 
 const bidSchema: Schema = new Schema(
@@ -74,6 +84,34 @@ const bidSchema: Schema = new Schema(
     claimedUserId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
+    },
+    isClaimerAddressAdded: {
+      type: Boolean,
+      default: false,
+    },
+    claimerAddress: {
+      country: {
+        type: String,
+      },
+      state: {
+        type: String,
+      },
+      district: {
+        type: String,
+      },
+      city: {
+        type: String,
+      },
+      postalCode: {
+        type: String,
+      },
+      phone: {
+        type: String,
+      },
+    },
+    transactionId: {
+      type: mongoose.Types.ObjectId,
+      ref: "Transaction",
     },
   },
   { timestamps: true }

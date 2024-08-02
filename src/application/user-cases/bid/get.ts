@@ -1,7 +1,11 @@
 import { Types } from "mongoose";
 import { AdminBidRequestDbInterface } from "../../repositories/adminBidRequestDbRepository";
-import { BidHistoryRepository } from "../../repositories/bidHistoryRepository";
+import {
+  BidHistoryInterface,
+  BidHistoryRepository,
+} from "../../repositories/bidHistoryRepository";
 import { ProductDbInterface } from "../../repositories/productDbRepository";
+import { BidInterface } from "../../repositories/bidRepository";
 export const handleGetBidRequests = async (
   adminBidRequestDb: ReturnType<AdminBidRequestDbInterface>
 ) => {
@@ -54,9 +58,31 @@ export const handleGetMyParticipatingBids = async (
   userId: string,
   bidHistoryDb: BidHistoryRepository
 ) => {
+  const myParticipatingBids = await bidHistoryDb.getUserParticipatingBids(
+    new Types.ObjectId(userId)
+  );
 
-     const myParticipatingBids=await bidHistoryDb.getUserParticipatingBids(new Types.ObjectId(userId))
-
-     return myParticipatingBids
-
+  return myParticipatingBids;
 };
+
+export const handleGetClaimProductDetails = async (
+  userId: string,
+  productId: string,
+  bidHistoryDb: ReturnType<BidHistoryInterface>
+) => {
+  const claimableBid = await bidHistoryDb.getClaimableBidDetails(
+    new Types.ObjectId(userId),
+    new Types.ObjectId(productId)
+  );
+console.log('claim bid details ',claimableBid);
+
+  return claimableBid;
+};
+
+export const handleGetBidResultForOwner=async(productId:string,userId:string,bidDb:ReturnType<BidInterface>)=>{
+
+
+  const result=await bidDb.bidResultsForOwner(new Types.ObjectId(productId),new Types.ObjectId(userId))
+
+  return result
+}

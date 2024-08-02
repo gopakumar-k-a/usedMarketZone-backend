@@ -19,9 +19,14 @@ import { BidInterface } from "../../application/repositories/bidRepository";
 import { BidRepositoryMongoDb } from "../../frameworks/database/mongodb/repositories/bidRepositoryMongoDb";
 import { BidHistoryInterface } from "../../application/repositories/bidHistoryRepository";
 import { BidHistoryRepositoryMongoDb } from "../../frameworks/database/mongodb/repositories/bidHistoryRepositoryMongoDb";
-import { handlePlaceBid } from "../../application/user-cases/bid/update";
+import {
+  handleAddClaimerAddress,
+  handlePlaceBid,
+} from "../../application/user-cases/bid/update";
 import {
   handleGetBidDetailsOfUserOnProduct,
+  handleGetBidResultForOwner,
+  handleGetClaimProductDetails,
   handleGetMyParticipatingBids,
   handleGetUserWiseBidRequests,
 } from "../../application/user-cases/bid/get";
@@ -147,11 +152,72 @@ export const bidController = (
     }
   );
 
+  const getClaimBidDetails = asyncHandler(
+    async (req: ExtendedRequest, res: Response) => {
+      const { _id: userId } = req.user as CreateUserInterface;
+      const { productId } = req.params;
+
+      const bidData = await handleGetClaimProductDetails(
+        userId,
+        productId,
+        dbBidHistoryRepository
+      );
+
+      res.status(HttpStatusCodes.OK).json({
+        success: true,
+        message: "claimable bid data retrived successfully",
+        bidData,
+      });
+    }
+  );
+
+  const addBidClaimerAddress = asyncHandler(
+    async (req: ExtendedRequest, res: Response) => {
+      const { bidId } = req.params;
+
+      const newAddress = await handleAddClaimerAddress(
+        bidId,
+        req.body,
+        dbBidRepository
+      );
+      res.status(HttpStatusCodes.OK).json({
+        success: true,
+        message: "Claimer Address added successfully",
+        newAddress,
+      });
+    }
+  );
+
+  const getBidResultForOwner = asyncHandler(
+    async (req: ExtendedRequest, res: Response) => {
+      const { _id: userId } = req.user as CreateUserInterface;
+      const { productId } = req.params;
+      console.log('productId ',productId);
+      
+      const bidResult = await handleGetBidResultForOwner(
+        productId,
+        userId,
+        dbBidRepository
+      );
+
+      console.log('bidResult is ',bidResult);
+      
+      res.status(HttpStatusCodes.OK).json({
+        success: true,
+        message: "Bid Result retrived success",
+        bidResult,
+      });
+    }
+  );
+
   return {
     productBidPost,
     placeBid,
     getBidDetailsOfUserOnProduct,
     getUserBids,
-    getMyParticipatingBids
+    getMyParticipatingBids,
+    getClaimBidDetails,
+    addBidClaimerAddress,
+    getBidResultForOwner,
   };
 };

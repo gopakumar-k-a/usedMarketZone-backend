@@ -2,6 +2,7 @@ import { CreateBidEntityType } from "../../entities/bidding/createBidEntity";
 import { BidRepositoryMongoDb } from "../../frameworks/database/mongodb/repositories/bidRepositoryMongoDb";
 import { IBid } from "../../frameworks/database/mongodb/models/bidModel";
 import { Types } from "mongoose";
+import { CreateBidClaimerAddressEntityType } from "../../entities/bidding/createBidClaimerAddress";
 
 export const bidDbRepository = (
   repository: ReturnType<BidRepositoryMongoDb>
@@ -18,20 +19,41 @@ export const bidDbRepository = (
   const placeBid = async (
     bidHistoryId: Types.ObjectId,
     bidId: Types.ObjectId,
-    currentHighestBid:number,
-    highestBidderId:Types.ObjectId,
-  ) => await repository.placeBid(bidHistoryId, bidId,currentHighestBid,highestBidderId);
+    currentHighestBid: number,
+    highestBidderId: Types.ObjectId
+  ) =>
+    await repository.placeBid(
+      bidHistoryId,
+      bidId,
+      currentHighestBid,
+      highestBidderId
+    );
   const updateBidWithClaimedUserId = async (
     productId: Types.ObjectId,
     fromUserId: Types.ObjectId
-  ) =>repository.updateBidWithClaimedUserId(productId,fromUserId)
+  ) => await repository.updateBidWithClaimedUserId(productId, fromUserId);
+  const addBidClaimerAddress = async (
+    bidId: Types.ObjectId,
+    addressEntity: CreateBidClaimerAddressEntityType
+  ) => await repository.addBidClaimerAddress(bidId, addressEntity);
+  const bidResultsForOwner = async (
+    productId: Types.ObjectId,
+    userId: Types.ObjectId
+  ) => await repository.bidResultsForOwner(productId, userId);
+  const addTransactionIdToBid = async (
+    productId: Types.ObjectId,
+    transactionId: Types.ObjectId
+  ) => await repository.addTransactionIdToBid(productId, transactionId);
   return {
     addBidAfterAdminAccept,
     getBidDetails,
     getBidById,
     updateBid,
     placeBid,
-    updateBidWithClaimedUserId
+    updateBidWithClaimedUserId,
+    addBidClaimerAddress,
+    bidResultsForOwner,
+    addTransactionIdToBid,
   };
 };
 

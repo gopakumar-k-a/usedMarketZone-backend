@@ -6,6 +6,7 @@ import {
   handleCapturePayment,
   handleCreatePaymentOrder,
   handleGetUserWallet,
+  handleShipProductToAdmin,
 } from "../../application/user-cases/payment/update";
 import { HttpStatusCodes } from "../../types/httpStatusCodes";
 import { TransactionInterface } from "../../application/repositories/transactionRepository";
@@ -53,8 +54,15 @@ export const paymentController = (
 
   const capturePayment = asyncHandler(
     async (req: ExtendedRequest, res: Response) => {
-      const { payment_id, fromUserId, toUserId, amount, currency, productId } =
-        req.body;
+      const {
+        payment_id,
+        fromUserId,
+        toUserId,
+        amount,
+        currency,
+        productId,
+        bidId,
+      } = req.body;
       console.log("capturePayment ");
 
       console.log(
@@ -74,6 +82,7 @@ export const paymentController = (
         amount,
         currency,
         productId,
+        bidId,
         dbTransaction,
         dbWallet,
         dbBid
@@ -99,9 +108,22 @@ export const paymentController = (
     }
   );
 
+  const shipProductToAdmin = asyncHandler(
+    async (req: ExtendedRequest, res: Response) => {
+      const { productId, trackingNumber } = req.body;
+
+      await handleShipProductToAdmin(productId, trackingNumber, dbTransaction,dbBid);
+      res.status(HttpStatusCodes.OK).json({
+        success: true,
+        message: "tracking data submitted to admin successfully",
+      });
+    }
+  );
+
   return {
     createPaymentOrder,
     capturePayment,
     getUserWallet,
+    shipProductToAdmin,
   };
 };

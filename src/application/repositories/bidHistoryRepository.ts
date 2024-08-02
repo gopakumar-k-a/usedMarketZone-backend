@@ -26,13 +26,18 @@ export const bidHistoryRepository = (
     productId: Types.ObjectId
   ) =>repository.getBidParticipents(bidWinnerId,productId)
   const getUserParticipatingBids = async (userId: Types.ObjectId) => repository.getUserParticipatingBids(userId)
+  const getClaimableBidDetails = async (
+    userId: Types.ObjectId,
+    productId: Types.ObjectId
+  ) => await repository.getClaimableBidDetails(userId,productId)
   return {
     createNewBidHistory,
     getUserPreviousBidsSumOnProduct,
     getUserBidHistoryOnProduct,
     getProductBidHistoryAdmin,
     getBidParticipents,
-    getUserParticipatingBids
+    getUserParticipatingBids,
+    getClaimableBidDetails
   };
 };
 

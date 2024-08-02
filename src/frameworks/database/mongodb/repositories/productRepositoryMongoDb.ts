@@ -743,40 +743,47 @@ export const productRepositoryMongoDb = () => {
     return products;
   };
 
-  const getNumberOfProducts=async()=>{
+  const getNumberOfProducts = async () => {
     const [result] = await Product.aggregate([
       {
         $facet: {
           numberOfProducts: [{ $count: "totalProducts" }],
           numberOfBidProducts: [
             { $match: { isBidding: true } },
-            { $count: "totalBidProducts" }
+            { $count: "totalBidProducts" },
           ],
           numberOfNonBidProducts: [
             { $match: { isBidding: false } },
-            { $count: "totalNonBidProducts" }
-          ]
-        }
+            { $count: "totalNonBidProducts" },
+          ],
+        },
       },
       {
         $project: {
-          numberOfProducts: { $arrayElemAt: ["$numberOfProducts.totalProducts", 0] },
-          numberOfBidProducts: { $arrayElemAt: ["$numberOfBidProducts.totalBidProducts", 0] },
-          numberOfNonBidProducts: { $arrayElemAt: ["$numberOfNonBidProducts.totalNonBidProducts", 0] }
-        }
-      }
+          numberOfProducts: {
+            $arrayElemAt: ["$numberOfProducts.totalProducts", 0],
+          },
+          numberOfBidProducts: {
+            $arrayElemAt: ["$numberOfBidProducts.totalBidProducts", 0],
+          },
+          numberOfNonBidProducts: {
+            $arrayElemAt: ["$numberOfNonBidProducts.totalNonBidProducts", 0],
+          },
+        },
+      },
     ]);
 
-    console.log('result ',result);
-    
-  
+    console.log("result ", result);
+
     // Return default values if counts are missing
     return {
       numberOfProducts: result?.numberOfProducts || 0,
       numberOfBidProducts: result?.numberOfBidProducts || 0,
-      numberOfNonBidProducts: result?.numberOfNonBidProducts || 0
+      numberOfNonBidProducts: result?.numberOfNonBidProducts || 0,
     };
-  }
+  };
+
+ 
 
   return {
     postProduct,
@@ -797,7 +804,7 @@ export const productRepositoryMongoDb = () => {
     searchProduct,
     getUserBids,
     getAllProductPostAdmin,
-    getNumberOfProducts
+    getNumberOfProducts,
   };
 };
 

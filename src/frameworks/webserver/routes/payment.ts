@@ -20,7 +20,8 @@ const paymenRouter = () => {
 
   router.post("/create-payment-order", controller.createPaymentOrder);
   router.post("/capture-payment", controller.capturePayment);
-  router.get("/user-wallet",controller.getUserWallet)
+  router.get("/user-wallet",controller.getUserWallet);
+  router.post('/ship-product-to-admin',controller.shipProductToAdmin)
 
   return router;
 };

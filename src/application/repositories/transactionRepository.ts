@@ -4,12 +4,16 @@ import { TransactionRepositoryMongoDb } from "../../frameworks/database/mongodb/
 export const transactionRepository = (
   repository: ReturnType<TransactionRepositoryMongoDb>
 ) => {
-  const addNewTransaction = async (
+  const addNewEscrowTransaction = async (
     transactionEntity: CreateTransactionEntityType
-  ) => await repository.addNewTransaction(transactionEntity);
-
+  ) => await repository.addNewEscrowTransaction(transactionEntity);
+  const shipProductToAdmin = async (
+    productId: string,
+    trackingNumber: string
+  ) => await repository.shipProductToAdmin(productId, trackingNumber);
   return {
-    addNewTransaction,
+    addNewEscrowTransaction,
+    shipProductToAdmin,
   };
 };
 

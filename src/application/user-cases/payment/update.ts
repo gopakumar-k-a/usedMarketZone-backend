@@ -66,6 +66,7 @@ export const handleCapturePayment = async (
   amount: number,
   currency: string,
   productId: string,
+  bidId: string,
   transactionDb: ReturnType<TransactionInterface>,
   walletDb: ReturnType<WalletInterface>,
   bidDb: ReturnType<BidInterface>
@@ -89,16 +90,25 @@ export const handleCapturePayment = async (
 
     const newTransactionEntity = createTransactionEntity(
       fromUserId,
-      toUserId,
+      null,
       amount,
-      captureStatus
+      "escrow",
+      productId,
+      bidId
     );
 
-    await transactionDb.addNewTransaction(newTransactionEntity);
-
+    const transaction = await transactionDb.addNewEscrowTransaction(
+      newTransactionEntity
+    );
+    if (transaction) {
+      await bidDb.addTransactionIdToBid(
+        new Types.ObjectId(productId),
+        transaction._id as Types.ObjectId
+      );
+    }
     if (captureStatus === "captured") {
       await Promise.all([
-        walletDb.addAmountToUserWallet(new Types.ObjectId(toUserId), amount),
+        // walletDb.addAmountToUserWallet(new Types.ObjectId(toUserId), amount),
         bidDb.updateBidWithClaimedUserId(
           new Types.ObjectId(productId),
           new Types.ObjectId(fromUserId)
@@ -114,14 +124,24 @@ export const handleCapturePayment = async (
       HttpStatusCodes.INTERNAL_SERVER_ERROR
     );
   }
-  
 };
 
+export const handleGetUserWallet = async (
+  userId: string,
+  walletDb: ReturnType<WalletInterface>
+) => {
+  const wallet = await walletDb.getUserWallet(new Types.ObjectId(userId));
 
-export const handleGetUserWallet=async(userId:string,walletDb:ReturnType<WalletInterface>)=>{
+  return wallet;
+};
 
-   const wallet=await walletDb.getUserWallet(new Types.ObjectId(userId))
+export const handleShipProductToAdmin = async (
+  productId: string,
+  trackingNumber: string,
+  transactionDb: ReturnType<TransactionInterface>,
+  bidDb: ReturnType<BidInterface>
+) => {
+  await transactionDb.shipProductToAdmin(productId, trackingNumber);
 
-   return wallet
-
-}
+  return;
+};

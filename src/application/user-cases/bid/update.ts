@@ -1,4 +1,4 @@
-import { BidRepository } from "../../repositories/bidRepository";
+import { BidInterface, BidRepository } from "../../repositories/bidRepository";
 import { BidHistoryRepository } from "../../repositories/bidHistoryRepository";
 import { createBidHistoryEntity } from "../../../entities/bidding/createBidHistory";
 import { CreateBidHistoryEntityType } from "../../../entities/bidding/createBidHistory";
@@ -9,6 +9,7 @@ import { IBid } from "../../../frameworks/database/mongodb/models/bidModel";
 import { IBidHistory } from "../../../frameworks/database/mongodb/models/bidHistoryModel";
 import { io } from "../../../app";
 import { KycRepository } from "../../repositories/kycDbRepository";
+import { createBidClaimerAddressEntity } from "../../../entities/bidding/createBidClaimerAddress";
 
 export const handlePlaceBid = async (
   bidderId: string,
@@ -151,4 +152,30 @@ const updateBidDetails = async (
   );
 };
 
+export const handleAddClaimerAddress = async (
+  bidId: string,
+  address: {
+    country: string;
+    state: string;
+    district: string;
+    city: string;
+    postalCode: string;
+    phone: string;
+  },
+  bidDb: ReturnType<BidInterface>
+) => {
+  const newAddressEntity = createBidClaimerAddressEntity(
+    address.country,
+    address.state,
+    address.district,
+    address.city,
+    address.postalCode,
+    address.phone
+  );
 
+  const newAddress=await bidDb.addBidClaimerAddress(new Types.ObjectId(bidId), newAddressEntity);
+
+  console.log('new Adress ',newAddress);
+  
+  return newAddress
+};
