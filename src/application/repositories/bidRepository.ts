@@ -44,6 +44,10 @@ export const bidDbRepository = (
     productId: Types.ObjectId,
     transactionId: Types.ObjectId
   ) => await repository.addTransactionIdToBid(productId, transactionId);
+  const markBidAsEnded = async (bidId: Types.ObjectId) =>
+    await repository.markBidAsEnded(bidId);
+  const getTransactionDetailsOfBidEndedProductsAdmin = async () =>
+    await repository.getTransactionDetailsOfBidEndedProductsAdmin();
   return {
     addBidAfterAdminAccept,
     getBidDetails,
@@ -54,6 +58,8 @@ export const bidDbRepository = (
     addBidClaimerAddress,
     bidResultsForOwner,
     addTransactionIdToBid,
+    markBidAsEnded,
+    getTransactionDetailsOfBidEndedProductsAdmin,
   };
 };
 

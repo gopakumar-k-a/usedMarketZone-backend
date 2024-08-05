@@ -26,6 +26,7 @@ export interface IBid extends Document {
     phone: string;
   };
   transactionId: mongoose.Types.ObjectId;
+  isBiddingEnded: boolean;
 }
 
 const bidSchema: Schema = new Schema(
@@ -112,6 +113,10 @@ const bidSchema: Schema = new Schema(
     transactionId: {
       type: mongoose.Types.ObjectId,
       ref: "Transaction",
+    },
+    isBiddingEnded: {
+      type: Boolean,
+      default: false,
     },
   },
   { timestamps: true }

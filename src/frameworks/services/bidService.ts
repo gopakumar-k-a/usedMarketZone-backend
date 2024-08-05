@@ -2,17 +2,22 @@ import { Types } from "mongoose";
 import { BidRepository } from "../../application/repositories/bidRepository";
 import { BidHistoryRepository } from "../../application/repositories/bidHistoryRepository";
 import { NotificationRepository } from "../../application/repositories/notificationRepository";
+import { NotificationServiceInterface } from "../../application/services/notificationServiceInterface.ts";
+import { createNotificationEntity } from "../../entities/createNotificationEntity";
 
 export const bidService = () => {
   const processBidClosure = async (
     bidRepository: BidRepository,
     bidHistoryRepo: BidHistoryRepository,
-    notificationRepo:NotificationRepository,
+    notificationRepo: NotificationRepository,
 
-    bidId: Types.ObjectId
+    bidId: Types.ObjectId,
+    productId: Types.ObjectId,
+    notificationService: ReturnType<NotificationServiceInterface>
   ): Promise<void> => {
     console.log("this is bid id ", bidId);
 
+    await bidRepository.markBidAsEnded(bidId);
     const bid = await bidRepository.getBidById(String(bidId));
     if (!bid) {
       console.error(`Bid with ID ${bidId} not found`);
@@ -32,17 +37,63 @@ export const bidService = () => {
 
     const bidParticipents = await bidHistoryRepo.getBidParticipents(
       bidWinner,
-      bidId
+      new Types.ObjectId(productId)
     );
 
     console.log(` bidParticipents ${bidParticipents}`);
-    
 
-    // Notify all other bidders
-    // const allBidders = await BidHistory.find({
-    //   bidData: bidId,
-    //   bidderId: { $ne: bidWinner }  // Exclude the highest bidder
-    // }).select('bidderId');
+    const newWinnerNotificationEntity = createNotificationEntity(
+      "bidWin",
+      null,
+      String(bidWinner),
+      "unread",
+      String(productId),
+      "",
+      String(bidId),
+      ""
+    );
+    const winnerNotification = await notificationRepo.createNotification(
+      newWinnerNotificationEntity
+    );
+
+    console.log("winner notification ", winnerNotification);
+
+    notificationService.sendRealTimeNotification(
+      String(bidWinner),
+      "bidLose",
+      winnerNotification,
+      ""
+    );
+
+    if (bidParticipents.length > 0) {
+      const sendNotificationToBidParticipents = async (userId: string) => {
+        const newParticipentNotificationEntity = createNotificationEntity(
+          "bidLose",
+          null,
+          userId,
+          "unread",
+          String(productId),
+          "",
+          String(bidId),
+          ""
+        );
+        const participentNotification =
+          await notificationRepo.createNotification(
+            newParticipentNotificationEntity
+          );
+        console.log("participent notification ", participentNotification);
+
+        notificationService.sendRealTimeNotification(
+          userId,
+          "bidWin",
+          participentNotification,
+          ""
+        );
+      };
+      bidParticipents.map((userId: Types.ObjectId) => {
+        sendNotificationToBidParticipents(String(userId));
+      });
+    }
   };
 
   return {

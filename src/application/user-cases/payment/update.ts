@@ -138,10 +138,59 @@ export const handleGetUserWallet = async (
 export const handleShipProductToAdmin = async (
   productId: string,
   trackingNumber: string,
-  transactionDb: ReturnType<TransactionInterface>,
-  bidDb: ReturnType<BidInterface>
+  transactionDb: ReturnType<TransactionInterface>
 ) => {
   await transactionDb.shipProductToAdmin(productId, trackingNumber);
 
   return;
+};
+
+export const handleChangeShipmentStatusToAdminRecieved = async (
+  transactionId: string,
+  transactionDb: ReturnType<TransactionInterface>
+) => {
+  console.log("transactionId ", transactionId);
+
+  const updatedTransaction = await transactionDb.adminReceivesProduct(
+    transactionId
+  );
+  return updatedTransaction;
+};
+
+export const handleShipProductToBidWinner = async (
+  transactionId: string,
+  trackingNumber: string,
+  transactionDb: ReturnType<TransactionInterface>
+) => {
+  const updatedTransaction = await transactionDb.adminShipsProductToWinner(
+    transactionId,
+    trackingNumber
+  );
+
+  return updatedTransaction;
+};
+
+export const handleProductDeliveredToWinner = async (
+  transactionId: string,
+  transactionDb: ReturnType<TransactionInterface>,
+  walletDb:ReturnType<WalletInterface>
+) => {
+  // const transaction = await AdminTransaction.findById(transactionId);
+  const transaction = await transactionDb.getTransactionById(transactionId);
+
+  if (!transaction) {
+    throw new AppError("cant find transaction", HttpStatusCodes.BAD_GATEWAY);
+  }
+  // const commissionRate = transaction.commissionRate;
+  const commissionAmount = (transaction.amount * 1) / 100;
+  console.log("commissionAmount ", commissionAmount);
+
+  // const escrowAmount = transaction.escrowAmount;
+  // const commissionAmount = (escrowAmount * commissionRate) / 100;
+  // const amountTransferredToSeller = escrowAmount - commissionAmount;
+  // await AdminTransaction.findByIdAndUpdate(transactionId, {
+  //   commissionAmount,
+  //   amountTransferredToSeller,
+  //   paymentStatus: "completed",
+  // });
 };

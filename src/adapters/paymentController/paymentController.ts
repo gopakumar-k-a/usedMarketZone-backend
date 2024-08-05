@@ -112,7 +112,7 @@ export const paymentController = (
     async (req: ExtendedRequest, res: Response) => {
       const { productId, trackingNumber } = req.body;
 
-      await handleShipProductToAdmin(productId, trackingNumber, dbTransaction,dbBid);
+      await handleShipProductToAdmin(productId, trackingNumber, dbTransaction);
       res.status(HttpStatusCodes.OK).json({
         success: true,
         message: "tracking data submitted to admin successfully",

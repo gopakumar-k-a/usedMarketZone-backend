@@ -201,7 +201,7 @@ export const handleAdminAcceptedBid = async (
   const delay = new Date(updatedBidProduct.bidEndTime).getTime() - Date.now();
 
 
-bidQueue.add('closebid',{bidId:newlyAddedBid._id},{delay:delay})
+bidQueue.add('closebid',{bidId:newlyAddedBid._id,productId:newlyAddedBid.productId},{delay:delay})
   return true;
 };
 export const handleReplyComment = async (

@@ -6,6 +6,8 @@ import { conversationRepository } from "../../../application/repositories/conver
 import { conversationRepositoryMongoDb } from "../../database/mongodb/repositories/conversationRepositoryMongoDb";
 import { notificationRepository } from "../../../application/repositories/notificationRepository";
 import { notificationRepositoryMongoDB } from "../../database/mongodb/repositories/notificationRepositoryMongoDB";
+import { notificationServiceInterface } from "../../../application/services/notificationServiceInterface.ts";
+import { notificationService } from "../../services/notificationService";
 const messageRouter = () => {
   const router = express.Router();
   const controller = messageController(
@@ -14,7 +16,9 @@ const messageRouter = () => {
     conversationRepository,
     conversationRepositoryMongoDb,
     notificationRepository,
-    notificationRepositoryMongoDB
+    notificationRepositoryMongoDB,
+    notificationServiceInterface,
+    notificationService
   );
 
   router.post("/send-message/:userId", controller.sendNewMessage);

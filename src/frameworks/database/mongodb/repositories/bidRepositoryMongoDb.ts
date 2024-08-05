@@ -165,10 +165,8 @@ export const bidRepositoryMongoDb = () => {
     console.log("product id userId", productId, " ", userId);
 
     const result = await Bid.aggregate([
-      // Match the bid by its ID
       { $match: { productId: productId, userId: userId } },
 
-      // Lookup to join with products collection
       {
         $lookup: {
           from: "products",
@@ -178,13 +176,10 @@ export const bidRepositoryMongoDb = () => {
         },
       },
 
-      // Unwind the product data array
       {
         $unwind: "$productData",
       },
 
-      // Lookup to join with users collection for the highest bidder
-      // Lookup to join with users collection for the highest bidder
       {
         $lookup: {
           from: "users",
@@ -196,10 +191,20 @@ export const bidRepositoryMongoDb = () => {
         },
       },
 
-      // Unwind the winner data array with preserveNullAndEmptyArrays option
       { $unwind: { path: "$winnerData", preserveNullAndEmptyArrays: true } },
+      {
+        $lookup: {
+          from: "transactions",
+          localField: "transactionId",
+          foreignField: "_id",
+          as: "transactionData",
+        },
+      },
 
-      // Project the necessary fields
+      {
+        $unwind: { path: "$transactionData", preserveNullAndEmptyArrays: true },
+      },
+
       {
         $project: {
           _id: 1,
@@ -249,6 +254,18 @@ export const bidRepositoryMongoDb = () => {
           "winnerData._id": 1,
           "winnerData.firstName": 1,
           "winnerData.lastName": 1,
+          "transactionData._id": 1,
+          "transactionData.fromUserId": 1,
+          "transactionData.toUserId": 1,
+          "transactionData.amount": 1,
+          "transactionData.status": 1,
+          "transactionData.transactionType": 1,
+          "transactionData.createdAt": 1,
+          "transactionData.updatedAt": 1,
+          "transactionData.productId": 1,
+          "transactionData.bidId": 1,
+          "transactionData.shipmentStatus": 1,
+          "transactionData.trackingNumbers": 1,
         },
       },
     ]);
@@ -269,6 +286,71 @@ export const bidRepositoryMongoDb = () => {
     }
     throw new AppError("No BidData Found", HttpStatusCodes.BAD_GATEWAY);
   };
+  const markBidAsEnded = async (bidId: Types.ObjectId) => {
+    const bidData = await Bid.findOne({ _id: bidId });
+    if (bidData) {
+      bidData.isBiddingEnded = true;
+      await bidData.save();
+      return;
+    }
+    throw new AppError("No BidData Found", HttpStatusCodes.BAD_GATEWAY);
+  };
+
+  const getTransactionDetailsOfBidEndedProductsAdmin = async () => {
+    const transactions = await Bid.aggregate([
+      {
+        $match: {
+          isBiddingEnded: true,
+        },
+      },
+      {
+        $lookup: {
+          from: "transactions",
+          localField: "transactionId",
+          foreignField: "_id",
+          as: "transactionData",
+        },
+      },
+      {
+        $unwind: "$transactionData",
+      },
+      {
+        $lookup: {
+          from: "products",
+          localField: "productId",
+          foreignField: "_id",
+          as: "productData",
+        },
+      },
+      {
+        $unwind: "$productData",
+      },
+      {
+        $project: {
+          _id: 0,
+          bidId: "$_id",
+          productId: "$productId",
+          transactionId: "$transactionData._id",
+          ownerId: "$productData.userId",
+          highestWinnerId: "$highestWinnerId",
+          claimerAddress: "$claimerAddress",
+          paymentStatus: "$transactionData.paymentStatus",
+          transactionStatus: "$transactionData.status",
+          shipmentStatus: "$transactionData.shipmentStatus",
+          price: "$transactionData.price",
+          trackingNumbers: "$transactionData.trackingNumbers",
+          wonPrice: "$currentHighestBid",
+          baseBidPrice: "$baseBidPrice",
+          bidWinnerId: "$highestBidderId",
+          productData: "$productData",
+        },
+      },
+    ]);
+
+    console.log("transactions ", transactions[0]);
+
+    return transactions;
+  };
   return {
     addBidAfterAdminAccept,
     getBidDetails,
@@ -280,6 +362,8 @@ export const bidRepositoryMongoDb = () => {
     addBidClaimerAddress,
     bidResultsForOwner,
     addTransactionIdToBid,
+    markBidAsEnded,
+    getTransactionDetailsOfBidEndedProductsAdmin,
     // addHighestBidHistoryIdToBid
   };
 };

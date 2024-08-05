@@ -18,6 +18,10 @@ import { bidServiceInterface } from "../../../application/services/BidServiceInt
 import { bidService } from "../../services/bidService";
 import { scheduleServiceInterface } from "../../../application/services/scheduleServiceInterface";
 import { scheduleService } from "../../scheduler/scheduleService";
+import { transactionRepository } from "../../../application/repositories/transactionRepository";
+import { transactionRepositoryMongoDb } from "../../database/mongodb/repositories/transactionRepositoryMongoDb";
+import { walletRepository } from "../../../application/repositories/walletRepository";
+import { walletRepositoryMongoDb } from "../../database/mongodb/repositories/walletRepositoryMongoDb";
 const adminRouter = () => {
   const router = express.Router();
   const controller = adminController(
@@ -38,7 +42,11 @@ const adminRouter = () => {
     bidServiceInterface,
     bidService,
     scheduleServiceInterface,
-    scheduleService
+    scheduleService,
+    transactionRepository,
+    transactionRepositoryMongoDb,
+    walletRepository,
+    walletRepositoryMongoDb
   );
 
   router.get("/get-all-users/:page/:limit", controller.handleGetUsers);
@@ -54,7 +62,19 @@ const adminRouter = () => {
   router.get("/get-kyc-requests", controller.getKycRequests);
   router.patch("/handle-kyc-request/:kycId", controller.changeKycRequestStatus);
   router.get("/all-product-posts", controller.getAllProductPostAdmin);
-  router.get("/get-dashboard-statistics",controller.getDashboardStatistics) 
+  router.get("/get-dashboard-statistics", controller.getDashboardStatistics);
+  router.get(
+    "/get-bid-transactions",
+    controller.getTransactionDetailsOfBidAdmin
+  );
+
+  router.patch(
+    "/admin-recieved-bid-product/:trId",
+    controller.adminRecievedTransactionChangeStatus
+  );
+
+  router.patch("/admin-send-bid-product-winner/:trId",controller.shipProductToWinner)
+  router.patch("/mark-product-delivered/:trId",controller.productDeliveredToWinner)
   return router;
 };
 

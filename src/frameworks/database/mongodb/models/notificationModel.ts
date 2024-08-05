@@ -1,97 +1,100 @@
-import mongoose, { Schema, Document, Types } from 'mongoose';
-import { IProduct } from './productModel';
-import { Imessage } from './messageModel';
-import { IBid } from './bidModel';
-import { IUser } from './userModel';
-// Define the interface for the notification document
-// interface NotificationDocument extends Document {
-//   notificationType: 'comment' | 'bid' | 'message'; // Enum for different types of notifications
-//   postId?: mongoose.Schema.Types.ObjectId; // Optional, since not all notifications will have a postId
-//   messageId?: mongoose.Schema.Types.ObjectId; // Optional, since not all notifications will have a messageId
-//   bidId?: mongoose.Schema.Types.ObjectId; // Optional, reference to the Bid model
-//   senderId: mongoose.Schema.Types.ObjectId;
-//   receiverId: mongoose.Schema.Types.ObjectId;
-//   status: 'read' | 'unread'; // Status of the notification
-//   additionalInfo?: string; // Optional, any additional information
-//   priority?: 'low' | 'medium' | 'high'; // Priority of the notification
-// }
+import mongoose, { Schema, Document, Types } from "mongoose";
+import { IProduct } from "./productModel";
+import { Imessage } from "./messageModel";
+import { IBid } from "./bidModel";
+import { IUser } from "./userModel";
 
 interface NotificationDocument extends Document {
-  notificationType: 'comment' | 'bid' | 'message'|'follow';
+  notificationType:
+    | "comment"
+    | "outBid"
+    | "bidWin"
+    | "bidLose"
+    | "message"
+    | "follow";
   postId?: Types.ObjectId | IProduct;
   messageId?: Types.ObjectId | Imessage;
   bidId?: Types.ObjectId | IBid;
   senderId: Types.ObjectId | IUser;
   receiverId: Types.ObjectId | IUser;
-  status: 'read' | 'unread';
+  status: "read" | "unread";
   additionalInfo?: string;
-  priority?: 'low' | 'medium' | 'high';
+  priority?: "low" | "medium" | "high";
   createdAt: Date;
   updatedAt: Date;
 }
 
-
-// Create the schema for the notification
+// COMMENT = "comment",
+// OUTBID = "outBid",
+// BIDWIN = "bidWin",
+// BIDLOSE = "bidLose",
+// MESSAGE = "message",
+// FOLLOW = "follow",
 const NotificationSchema: Schema = new Schema(
   {
     notificationType: {
       type: String,
-      enum: ['comment', 'bid', 'message','follow'], // Enum to restrict the types of notifications
+      enum: ["comment", "outBid", "bidWin", "bidLose", "message", "follow"],
       required: true,
     },
     postId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Post', // Assuming you have a Post model
+      ref: "Product",
       required: function (this: NotificationDocument) {
-        return this.notificationType === 'comment'; // postId is required only for comment notifications
+        return this.notificationType === "comment";
       },
     },
     messageId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Messages', // Assuming you have a Message model
+      ref: "Messages", // Assuming you have a Message model
       required: function (this: NotificationDocument) {
-        return this.notificationType === 'message'; // messageId is required only for message notifications
+        return this.notificationType === "message";
       },
     },
     bidId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Bid', // Assuming you have a Bid model
+      ref: "bid", // Assuming you have a Bid model
       required: function (this: NotificationDocument) {
-        return this.notificationType === 'bid'; // bidId is required only for bid notifications
+        return (
+          this.notificationType === "outBid" ||
+          this.notificationType === "bidWin" ||
+          this.notificationType === "bidLose"
+        );
       },
     },
     senderId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'User', // Assuming you have a User model
-      required: true,
+      ref: "User",
     },
     receiverId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'User', // Assuming you have a User model
+      ref: "User",
       required: true,
     },
     status: {
       type: String,
-      enum: ['read', 'unread'], // Enum to restrict the status values
-      default: 'unread',
+      enum: ["read", "unread"],
+      default: "unread",
       required: true,
     },
     additionalInfo: {
       type: String,
-      default: '',
+      default: "",
     },
     priority: {
       type: String,
-      enum: ['low', 'medium', 'high'], // Enum to restrict the priority values
-      default: 'medium',
+      enum: ["low", "medium", "high"],
+      default: "medium",
     },
   },
   {
-    timestamps: true, // This will add createdAt and updatedAt timestamps
+    timestamps: true,
   }
 );
 
-// Create and export the model
-const Notification = mongoose.model<NotificationDocument>('Notification', NotificationSchema);
+const Notification = mongoose.model<NotificationDocument>(
+  "Notification",
+  NotificationSchema
+);
 
 export default Notification;

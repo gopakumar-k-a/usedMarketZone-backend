@@ -13,13 +13,16 @@ import { createPostReplyMessageEntity } from "../../../entities/createPostReplyM
 import { createNotificationEntity } from "../../../entities/createNotificationEntity";
 import { NotificationRepository } from "../../repositories/notificationRepository";
 import { send } from "process";
+import { NotificationServiceInterface } from "../../services/notificationServiceInterface.ts";
+
 export const handleSendNewMessage = async (
   senderId: string,
   recieverId: string,
   message: string,
   messageRepository: MessageDbRepository,
   conversationRepository: ConversationDbRepository,
-  notificationRepository: NotificationRepository
+  notificationRepository: NotificationRepository,
+  notificationService: ReturnType<NotificationServiceInterface>
 ) => {
   const newMessageEntity = createMessageEntity(senderId, recieverId, message);
   console.log("newMessageEntity ", newMessageEntity);
@@ -37,7 +40,9 @@ export const handleSendNewMessage = async (
   );
 
   // const recieverId=socketConfig.getRecieverId()
-  const conversationId=await conversationRepository.createConversation(conversationEntity);
+  const conversationId = await conversationRepository.createConversation(
+    conversationEntity
+  );
 
   console.log(`sender id ${senderId}
     reciever Id ${recieverId}`);
@@ -62,49 +67,11 @@ export const handleSendNewMessage = async (
     newNotificationEntity
   );
 
-  if (recieverSocketId) {
-
-       
-    io.to(recieverSocketId).emit("newMessage", newMessage);
-    // Server-side example
-    // io.to(recieverSocketId).emit("notification", {
-    //   title: "You have a new message ",
-    //   description: `  ${newNotification?.senderId?.userName} send a new Message To You`,
-    //   message:`${newNotification?.messageId?.message}`
-    //   type: `${newNotification.notificationType}`,
-    // });
-  }
-  // if (recieverSocketId && newNotification.length > 0) {
-  //   const notification = newNotification[0];
-  //   const { senderDetails, messageDetails, notificationType } = notification;
-
-  //   const notificationData = {
-  //     title: "You have a new message",
-  //     description: `${senderDetails.userName} sent a new message to you`,
-  //     message: messageDetails.messages,
-  //     type: notificationType,
-  //   };
-
-  //   io.to(recieverSocketId).emit("notification", notificationData);
-  // }
-  if (recieverSocketId && newNotification) {
-    const { senderId, messageId, notificationType } = newNotification;
-    console.log("notificationType ", notificationType);
-
-    const notificationData = {
-      title: "You have a new message",
-      //@ts-ignore
-      description: `${senderId.userName} sent a new message to you`,
-      senderId,
-      //@ts-ignore
-      additionalInfo: messageId.message,
-      notificationType,
-      newNotification,
-    };
-
-    io.to(recieverSocketId).emit("notification", notificationData);
-  }
-
+  // notificationService.sendRealTimeNotification(
+  //   recieverId,
+  //   "message",
+  //   newNotification
+  // );
   return newMessage;
 };
 

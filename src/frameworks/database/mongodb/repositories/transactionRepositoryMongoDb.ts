@@ -21,13 +21,16 @@ export const transactionRepositoryMongoDb = () => {
     return transaction;
   };
 
+  const getTransactionById = async (transactionId: string) => {
+    const transaction = await Transaction.findOne({ _id: transactionId });
+    return transaction;
+  };
   const shipProductToAdmin = async (
     productId: string,
     trackingNumber: string
   ) => {
-    const transaction = await Transaction.findOne({ productId })
-    console.log('transaction shipProductToAdmin',transaction);
-    ;
+    const transaction = await Transaction.findOne({ productId });
+    console.log("transaction shipProductToAdmin", transaction);
     if (transaction) {
       transaction.shipmentStatus = "shipped_to_admin";
       transaction.trackingNumbers.shippedToAdminTrackingNumber = trackingNumber;
@@ -37,9 +40,56 @@ export const transactionRepositoryMongoDb = () => {
     throw new AppError("Transaction not found", HttpStatusCodes.BAD_GATEWAY);
   };
 
+  const adminReceivesProduct = async (transactionId: string) => {
+    const updatedTransaction = await Transaction.findByIdAndUpdate(
+      transactionId,
+      { shipmentStatus: "received_by_admin" },
+      { new: true }
+    );
+
+    if (!updatedTransaction) {
+      throw new AppError(
+        "some thing went wrong cant change status ",
+        HttpStatusCodes.BAD_GATEWAY
+      );
+    }
+
+    return updatedTransaction;
+  };
+
+  const adminShipsProductToWinner = async (
+    transactionId: string,
+    trackingNumber: string
+  ) => {
+    const updatedTransaction = await Transaction.findByIdAndUpdate(
+      transactionId,
+      {
+        shipmentStatus: "shipped_to_buyer",
+        "trackingNumbers.shippedToBuyerTrackingNumber": trackingNumber,
+      },
+      { new: true }
+    );
+    if (!updatedTransaction) {
+      throw new AppError(
+        "some thing went wrong cant change status ",
+        HttpStatusCodes.BAD_GATEWAY
+      );
+    }
+    return updatedTransaction;
+  };
+
+  const buyerConfirmsReceipt = async (transactionId: string) => {
+    await Transaction.findByIdAndUpdate(transactionId, {
+      shipmentStatus: "delivered",
+    });
+  };
+
   return {
     addNewEscrowTransaction,
     shipProductToAdmin,
+    adminReceivesProduct,
+    adminShipsProductToWinner,
+    getTransactionById
   };
 };
 

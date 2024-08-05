@@ -174,6 +174,9 @@ export const bidHistoryRepositoryMongoDb = () => {
     bidWinnerId: Types.ObjectId,
     productId: Types.ObjectId
   ) => {
+    console.log("bidWinnerId ", bidWinnerId);
+    console.log("productId ", productId);
+
     const bidParticipents = await BidHistory.aggregate([
       {
         $match: {
@@ -183,23 +186,17 @@ export const bidHistoryRepositoryMongoDb = () => {
       },
       {
         $group: {
-          _id: "$bidderId",
-          productId: { $first: "$productId" },
-          bidderId: { $first: "$bidderId" },
-        },
-      },
-      {
-        $project: {
-          _id: 0,
-          productId: 1,
-          bidderId: 1,
+          _id: null,
+          bidders: { $addToSet: "$bidderId" },
         },
       },
     ]);
 
     console.log("bidParticipents ", bidParticipents);
-
-    return bidParticipents;
+    const formattedResult = bidParticipents.length > 0 ? bidParticipents[0].bidders : [];
+    console.log('formateed result ',formattedResult);
+    
+    return formattedResult;
   };
 
   const getUserParticipatingBids = async (userId: Types.ObjectId) => {
@@ -280,7 +277,128 @@ export const bidHistoryRepositoryMongoDb = () => {
     userId: Types.ObjectId,
     productId: Types.ObjectId
   ) => {
-    
+    // const userBid = await BidHistory.aggregate([
+    //   {
+    //     $match: {
+    //       bidderId: userId,
+    //       productId: productId,
+    //     },
+    //   },
+    //   {
+    //     $lookup: {
+    //       from: "products",
+    //       localField: "productId",
+    //       foreignField: "_id",
+    //       as: "productData",
+    //     },
+    //   },
+    //   {
+    //     $unwind: "$productData",
+    //   },
+    //   {
+    //     $lookup: {
+    //       from: "bids",
+    //       localField: "productId",
+    //       foreignField: "productId",
+    //       as: "bidData",
+    //     },
+    //   },
+    //   {
+    //     $unwind: "$bidData",
+    //   },
+    //   {
+    //     $lookup: {
+    //       from: "transactions",
+    //       localField: "bidData.transactionId",
+    //       foreignField: "_id",
+    //       as: "transactionData",
+    //     },
+    //   },
+    //   {
+    //     $unwind: {
+    //       path: "$transactionData",
+    //       preserveNullAndEmptyArrays: true,
+    //     },
+    //   },
+    //   {
+    //     $lookup: {
+    //       from: "users",
+    //       localField: "productData.userId",
+    //       foreignField: "_id",
+    //       as: "userData",
+    //     },
+    //   },
+    //   {
+    //     $addFields: {
+    //       userData: {
+    //         $filter: {
+    //           input: "$userData",
+    //           as: "user",
+    //           cond: { $eq: ["$$user._id", "$productData.userId"] },
+    //         },
+    //       },
+    //     },
+    //   },
+    //   {
+    //     $unwind: "$userData",
+    //   },
+    //   {
+    //     $group: {
+    //       _id: {
+    //         productId: "$productId",
+    //         userId: "$bidderId",
+    //       },
+    //       totalBidAmount: {
+    //         $sum: "$bidAmount",
+    //       },
+    //       productData: {
+    //         $first: "$productData",
+    //       },
+    //       bidData: {
+    //         $first: "$bidData",
+    //       },
+    //       userData: {
+    //         $first: "$userData",
+    //       },
+    //     },
+    //   },
+    //   {
+    //     $project: {
+    //       _id: 0,
+    //       productId: "$_id.productId",
+    //       userId: "$bidData.userId",
+    //       totalBidAmount: 1,
+    //       productName: "$productData.productName",
+    //       productBasePrice: "$productData.basePrice",
+    //       productImageUrls: "$productData.productImageUrls",
+    //       isMyHighestBid: {
+    //         $eq: ["$bidData.highestBidderId", userId],
+    //       },
+    //       highestBidAmount: "$bidData.currentHighestBid",
+    //       isBidEnded: {
+    //         $lt: [Date.now(), "$bidData.bidEndTime"],
+    //       },
+    //       isBidAmountPaid: "$bidData.isBidAmountPaid",
+    //       claimedUserId: "$bidData.claimedUserId",
+    //       bidId: "$bidData._id",
+    //       description: "$bidData.description",
+    //       isClaimerAddressAdded: "$bidData.isClaimerAddressAdded",
+    //       claimerAddress: "$bidData.claimerAddress",
+    //       ownerData: {
+    //         imageUrl: "$userData.imageUrl",
+    //         userName: "$userData.userName",
+    //         _id: "$userData._id",
+    //         firstName: "$userData.firstName",
+    //         lastName: "$userData.lastName",
+    //       },
+    //       transactionData: {
+    //         shipmentStatus: "$transactionData.shipmentStatus",
+    //         status: "$transactionData.status",
+    //       },
+    //       transactionId: "$bidData.transactionId",
+    //     },
+    //   },
+    // ]);
     const userBid = await BidHistory.aggregate([
       {
         $match: {
@@ -312,22 +430,27 @@ export const bidHistoryRepositoryMongoDb = () => {
       },
       {
         $lookup: {
-          from: "users",
-          localField: "productData.userId",
+          from: "transactions",
+          localField: "bidData.transactionId",
           foreignField: "_id",
-          as: "userData",
+          as: "transactionData",
         },
       },
       {
-        $addFields: {
-          userData: {
-            $filter: {
-              input: "$userData",
-              as: "user",
-              cond: { $eq: ["$$user._id", "$productData.userId"] }
-            }
-          }
-        }
+        $unwind: {
+          path: "$transactionData",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $lookup: {
+          from: "users",
+          let: { productUserId: "$productData.userId" },
+          pipeline: [
+            { $match: { $expr: { $eq: ["$_id", "$$productUserId"] } } },
+          ],
+          as: "userData",
+        },
       },
       {
         $unwind: "$userData",
@@ -350,14 +473,15 @@ export const bidHistoryRepositoryMongoDb = () => {
           userData: {
             $first: "$userData",
           },
+          transactionData: {
+            $first: "$transactionData",
+          },
         },
       },
       {
-        $project: {
-          _id: 0,
+        $addFields: {
           productId: "$_id.productId",
-          userId: "$bidData.userId",
-          totalBidAmount: 1,
+          userId: "$_id.userId",
           productName: "$productData.productName",
           productBasePrice: "$productData.basePrice",
           productImageUrls: "$productData.productImageUrls",
@@ -366,7 +490,7 @@ export const bidHistoryRepositoryMongoDb = () => {
           },
           highestBidAmount: "$bidData.currentHighestBid",
           isBidEnded: {
-            $lt: [Date.now(), "$bidData.bidEndTime"],
+            $lt: [new Date(), "$bidData.bidEndTime"],
           },
           isBidAmountPaid: "$bidData.isBidAmountPaid",
           claimedUserId: "$bidData.claimedUserId",
@@ -381,18 +505,42 @@ export const bidHistoryRepositoryMongoDb = () => {
             firstName: "$userData.firstName",
             lastName: "$userData.lastName",
           },
+          transactionData: {
+            shipmentStatus: "$transactionData.shipmentStatus",
+            status: "$transactionData.status",
+          },
+          transactionId: "$bidData.transactionId",
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          productId: 1,
+          userId: 1,
+          totalBidAmount: 1,
+          productName: 1,
+          productBasePrice: 1,
+          productImageUrls: 1,
+          isMyHighestBid: 1,
+          highestBidAmount: 1,
+          isBidEnded: 1,
+          isBidAmountPaid: 1,
+          claimedUserId: 1,
+          bidId: 1,
+          description: 1,
+          isClaimerAddressAdded: 1,
+          claimerAddress: 1,
+          ownerData: 1,
+          transactionData: 1,
+          transactionId: 1,
         },
       },
     ]);
-    
-    console.log(userBid);
-    
 
-    // return userBid;
+    console.log("get claimable bid ", userBid);
+
     return userBid && userBid.length > 0 ? userBid[0] : null;
   };
-
-
 
   return {
     createNewBidHistory,

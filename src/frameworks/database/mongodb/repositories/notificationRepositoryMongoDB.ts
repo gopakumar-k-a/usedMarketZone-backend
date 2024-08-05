@@ -21,6 +21,8 @@ export const notificationRepositoryMongoDB = () => {
         priority: notificationEntity.getPriority(),
       });
 
+      console.log("new Notification ", newNotification);
+
       const populatedNotification = await Notification.findById(
         newNotification._id
       )
@@ -57,7 +59,7 @@ export const notificationRepositoryMongoDB = () => {
       })
       .populate({
         path: "postId",
-        select: "productImageUrls",
+        select: "productImageUrls productName",
       })
       .populate({
         path: "messageId",
@@ -83,7 +85,10 @@ export const notificationRepositoryMongoDB = () => {
   };
 
   const changeUnreadStatusNotification = async (receiverId: string) => {
-    await Notification.updateMany({ receiverId, status: "unread" }, { status: "read" });
+    await Notification.updateMany(
+      { receiverId, status: "unread" },
+      { status: "read" }
+    );
     return;
   };
   return {

@@ -46,6 +46,17 @@ import { BidService } from "../../frameworks/services/bidService";
 import { BidServiceInterface } from "../../application/services/BidServiceInterface";
 import { ScheduleServiceInterface } from "../../application/services/scheduleServiceInterface";
 import { ScheduleService } from "../../frameworks/scheduler/scheduleService";
+import { handleGetTransactionDetailsOfBidAdmin } from "../../application/user-cases/transactions/get";
+import { TransactionInterface } from "../../application/repositories/transactionRepository";
+import { TransactionRepositoryMongoDb } from "../../frameworks/database/mongodb/repositories/transactionRepositoryMongoDb";
+import {
+  handleChangeShipmentStatusToAdminRecieved,
+  handleShipProductToBidWinner,
+} from "../../application/user-cases/payment/update";
+import { WalletInterface } from "../../application/repositories/walletRepository";
+import { WalletRepositoryMongoDb } from "../../frameworks/database/mongodb/repositories/walletRepositoryMongoDb";
+import { ExtendedAdminRequest, ExtendedRequest } from "../../types/extendedRequest";
+import { CreateUserInterface } from "../../types/userInterface";
 
 const adminController = (
   userDbRepository: UserDbInterface,
@@ -62,11 +73,14 @@ const adminController = (
   bidHistoryImpl: BidHistoryRepositoryMongoDb,
   kycRepository: KycInterface,
   kycRepositoryDbImpl: KycRepositoryMongoDB,
-  bidServiceInterface:BidServiceInterface,
-  bidService:BidService,
-  scheduleServiceInterface:ScheduleServiceInterface,
-  scheduleServiceImpl:ScheduleService
-
+  bidServiceInterface: BidServiceInterface,
+  bidService: BidService,
+  scheduleServiceInterface: ScheduleServiceInterface,
+  scheduleServiceImpl: ScheduleService,
+  transactionRepository: TransactionInterface,
+  transactionDbImpl: TransactionRepositoryMongoDb,
+  walletRepository: WalletInterface,
+  walletImpl: WalletRepositoryMongoDb
 ) => {
   const dbRepositoryUser = userDbRepository(userDbImpl());
   const dbRepositoryProduct = productDbRepository(productDbImpl());
@@ -79,8 +93,10 @@ const adminController = (
   );
   const dbBidHistory = bidHistoryRepository(bidHistoryImpl());
   const dbKycRepository = kycRepository(kycRepositoryDbImpl());
-  const biddingService=bidServiceInterface(bidService())
-  const scheduleServie=scheduleServiceInterface(scheduleServiceImpl())
+  const biddingService = bidServiceInterface(bidService());
+  const scheduleServie = scheduleServiceInterface(scheduleServiceImpl());
+  const dbTransaction = transactionRepository(transactionDbImpl());
+  const dbWallet = walletRepository(walletImpl());
 
   const handleGetUsers = asyncHandler(async (req: Request, res: Response) => {
     // console.log("inside admin controller ", req.params);
@@ -284,12 +300,79 @@ const adminController = (
         dbRepositoryProduct,
         dbRepositoryUser
       );
-      console.log('statistics ',statistics);
-      
+      console.log("statistics ", statistics);
+
       res.status(HttpStatusCodes.OK).json({
         success: true,
         message: "Dashboard statistics retrived successfully",
         statistics,
+      });
+    }
+  );
+
+  const getTransactionDetailsOfBidAdmin = asyncHandler(
+    async (req: Request, res: Response) => {
+      const transactions = await handleGetTransactionDetailsOfBidAdmin(
+        dbBidRepository
+      );
+
+      res.status(HttpStatusCodes.OK).json({
+        success: true,
+        message: "bid ended product transactions retrived success",
+        transactions,
+      });
+    }
+  );
+
+  const adminRecievedTransactionChangeStatus = asyncHandler(
+    async (req: Request, res: Response) => {
+      const { trId } = req.params;
+      const updatedTransaction =
+        await handleChangeShipmentStatusToAdminRecieved(trId, dbTransaction);
+      res.status(HttpStatusCodes.OK).json({
+        success: true,
+        message: `transaction status updated to ${
+          updatedTransaction.shipmentStatus
+            ? updatedTransaction.shipmentStatus
+            : "cant update"
+        }`,
+        updatedTransaction,
+      });
+    }
+  );
+
+  const shipProductToWinner = asyncHandler(
+    async (req: Request, res: Response) => {
+      const { trId } = req.params;
+      const { winnerTrackingNumber } = req.body;
+      const updatedTransaction = await handleShipProductToBidWinner(
+        trId,
+        winnerTrackingNumber,
+        dbTransaction
+      );
+      res.status(HttpStatusCodes.OK).json({
+        success: true,
+        message: `transaction status updated to ${
+          updatedTransaction.shipmentStatus
+            ? updatedTransaction.shipmentStatus
+            : "cant update"
+        }`,
+        updatedTransaction,
+      });
+    }
+  );
+
+  const productDeliveredToWinner = asyncHandler(
+    async (req: ExtendedAdminRequest, res: Response) => {
+      const { trId } = req.params;
+      const {productOwnerId}=req.body
+      console.log('trId , productOwnerID',trId,' ',productOwnerId);
+      
+      const { _id: adminId } = req.user as CreateUserInterface;
+      console.log("admin id ", adminId);
+      res.status(HttpStatusCodes.OK).json({
+        success: true,
+        nessage: `transaction changed`,
       });
     }
   );
@@ -307,7 +390,11 @@ const adminController = (
     getKycRequests,
     changeKycRequestStatus,
     getAllProductPostAdmin,
-    getDashboardStatistics
+    getDashboardStatistics,
+    getTransactionDetailsOfBidAdmin,
+    adminRecievedTransactionChangeStatus,
+    shipProductToWinner,
+    productDeliveredToWinner
   };
 };
 

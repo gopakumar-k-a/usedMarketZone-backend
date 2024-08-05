@@ -6,6 +6,8 @@ import { userRepositoryMongoDb } from "../../database/mongodb/repositories/userR
 import AppError from "../../../utils/appError";
 import { HttpStatusCodes } from "../../../types/httpStatusCodes";
 import { JwtPayload } from "jsonwebtoken";
+import { CreateUserInterface } from "../../../types/userInterface";
+import { ExtendedAdminRequest } from "../../../types/extendedRequest";
 
 const serviceProvider = authServiceInterface(authService());
 const userDb = userDbRepository(userRepositoryMongoDb());
@@ -16,7 +18,7 @@ interface CustomJwtPayload extends JwtPayload {
 }
 
 export default async function jwtTokenVerifyAdmin(
-  req: Request,
+  req: ExtendedAdminRequest,
   res: Response,
   next: NextFunction
 ) {
@@ -32,14 +34,19 @@ export default async function jwtTokenVerifyAdmin(
     const decoded = serviceProvider.verifyToken(token);
     console.log("decoded ", decoded);
 
- 
     const customPayload = JSON.parse(
       (decoded as any).payload
     ) as CustomJwtPayload;
 
-    const userData = await userDb.getUserById(customPayload._id);
-    
-    if (userData && userData.role === "admin") {
+    // console.log("custom payload ", customPayload);
+
+    // const userData = await userDb.getUserById(customPayload._id);
+
+    // console.log("user data ", userData);
+
+    if ( customPayload.role === "admin") {
+      // req.admin = customPayload._id as string;
+
       return next();
     } else {
       return next(new AppError("Not authorized", HttpStatusCodes.UNAUTHORIZED));
