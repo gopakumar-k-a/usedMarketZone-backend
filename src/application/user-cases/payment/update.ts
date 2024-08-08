@@ -7,6 +7,7 @@ import { createTransactionEntity } from "../../../entities/createTransactionEnti
 import { WalletInterface } from "../../repositories/walletRepository";
 import { Types } from "mongoose";
 import { BidInterface } from "../../repositories/bidRepository";
+import { createWalletHistoryEntity } from "../../../entities/createWalletHistoryEntity";
 
 const razorpay = new Razorpay({
   // key_id: configKeys.RAZOR_KEY_ID,
@@ -116,7 +117,7 @@ export const handleCapturePayment = async (
       ]);
     }
 
-    return captureStatus;
+    return {captureStatus,transaction};
   } catch (error) {
     console.error(error);
     throw new AppError(
@@ -126,20 +127,22 @@ export const handleCapturePayment = async (
   }
 };
 
-export const handleGetUserWallet = async (
-  userId: string,
-  walletDb: ReturnType<WalletInterface>
-) => {
-  const wallet = await walletDb.getUserWallet(new Types.ObjectId(userId));
-
-  return wallet;
-};
-
 export const handleShipProductToAdmin = async (
   productId: string,
   trackingNumber: string,
   transactionDb: ReturnType<TransactionInterface>
 ) => {
+  const transaction = await transactionDb.getTransactionByProductId(productId);
+
+  if (!transaction) {
+    throw new AppError("cant find transaction", HttpStatusCodes.BAD_GATEWAY);
+  }
+  if (transaction.shipmentStatus == "delivered") {
+    throw new AppError(
+      "can't change the status, product is already delivered ",
+      HttpStatusCodes.BAD_GATEWAY
+    );
+  }
   await transactionDb.shipProductToAdmin(productId, trackingNumber);
 
   return;
@@ -149,6 +152,17 @@ export const handleChangeShipmentStatusToAdminRecieved = async (
   transactionId: string,
   transactionDb: ReturnType<TransactionInterface>
 ) => {
+  const transaction = await transactionDb.getTransactionById(transactionId);
+
+  if (!transaction) {
+    throw new AppError("cant find transaction", HttpStatusCodes.BAD_GATEWAY);
+  }
+  if (transaction.shipmentStatus == "delivered") {
+    throw new AppError(
+      "can't change the status, product is already delivered ",
+      HttpStatusCodes.BAD_GATEWAY
+    );
+  }
   console.log("transactionId ", transactionId);
 
   const updatedTransaction = await transactionDb.adminReceivesProduct(
@@ -162,6 +176,17 @@ export const handleShipProductToBidWinner = async (
   trackingNumber: string,
   transactionDb: ReturnType<TransactionInterface>
 ) => {
+  const transaction = await transactionDb.getTransactionById(transactionId);
+
+  if (!transaction) {
+    throw new AppError("cant find transaction", HttpStatusCodes.BAD_GATEWAY);
+  }
+  if (transaction.shipmentStatus == "delivered") {
+    throw new AppError(
+      "can't change the status, product is already delivered ",
+      HttpStatusCodes.BAD_GATEWAY
+    );
+  }
   const updatedTransaction = await transactionDb.adminShipsProductToWinner(
     transactionId,
     trackingNumber
@@ -172,8 +197,12 @@ export const handleShipProductToBidWinner = async (
 
 export const handleProductDeliveredToWinner = async (
   transactionId: string,
+  productId: string,
+  bidId: string,
+  adminId: string,
+  productOwnerId: string,
   transactionDb: ReturnType<TransactionInterface>,
-  walletDb:ReturnType<WalletInterface>
+  walletDb: ReturnType<WalletInterface>
 ) => {
   // const transaction = await AdminTransaction.findById(transactionId);
   const transaction = await transactionDb.getTransactionById(transactionId);
@@ -181,16 +210,41 @@ export const handleProductDeliveredToWinner = async (
   if (!transaction) {
     throw new AppError("cant find transaction", HttpStatusCodes.BAD_GATEWAY);
   }
+  if (transaction.shipmentStatus == "delivered") {
+    throw new AppError(
+      "can't change the status, product is already delivered ",
+      HttpStatusCodes.BAD_GATEWAY
+    );
+  }
   // const commissionRate = transaction.commissionRate;
-  const commissionAmount = (transaction.amount * 1) / 100;
-  console.log("commissionAmount ", commissionAmount);
+  const commisionPercentage = 1;
+  const commissionAmountInPaise =
+    (transaction.amount * commisionPercentage) / 100;
+  console.log("commissionAmountInPaise ", commissionAmountInPaise);
 
-  // const escrowAmount = transaction.escrowAmount;
-  // const commissionAmount = (escrowAmount * commissionRate) / 100;
-  // const amountTransferredToSeller = escrowAmount - commissionAmount;
-  // await AdminTransaction.findByIdAndUpdate(transactionId, {
-  //   commissionAmount,
-  //   amountTransferredToSeller,
-  //   paymentStatus: "completed",
-  // });
+  const amountAfterCommision = transaction.amount - commissionAmountInPaise;
+  console.log("amountAfterCommision ", amountAfterCommision);
+  const adminWalletHistory = createWalletHistoryEntity(
+    productId,
+    bidId,
+    commissionAmountInPaise
+  );
+  const productOwnerWalletHistory = createWalletHistoryEntity(
+    productId,
+    bidId,
+    commissionAmountInPaise
+  );
+  await Promise.all([
+    walletDb.addAmountToUserWallet(
+      new Types.ObjectId(adminId),
+      commissionAmountInPaise,
+      adminWalletHistory
+    ),
+    walletDb.addAmountToUserWallet(
+      new Types.ObjectId(productOwnerId),
+      amountAfterCommision,
+      productOwnerWalletHistory
+    ),
+    transactionDb.releasePayment(transactionId),
+  ]);
 };

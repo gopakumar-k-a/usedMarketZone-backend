@@ -6,7 +6,7 @@ export interface IConversation extends Document {
 }
 
 const conversationSchema: Schema = new Schema({
-  participants: [{ type: mongoose.Types.ObjectId, default: [] }],
+  participants: [{ type: mongoose.Types.ObjectId, default: [],ref:'User' }],
 
   messages: [{ type: mongoose.Types.ObjectId, default: [],ref:'Messages' }],
 },{timestamps:true});

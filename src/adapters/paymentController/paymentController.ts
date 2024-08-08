@@ -5,7 +5,6 @@ import { CreateUserInterface } from "../../types/userInterface";
 import {
   handleCapturePayment,
   handleCreatePaymentOrder,
-  handleGetUserWallet,
   handleShipProductToAdmin,
 } from "../../application/user-cases/payment/update";
 import { HttpStatusCodes } from "../../types/httpStatusCodes";
@@ -15,6 +14,7 @@ import { WalletInterface } from "../../application/repositories/walletRepository
 import { WalletRepositoryMongoDb } from "../../frameworks/database/mongodb/repositories/walletRepositoryMongoDb";
 import { BidInterface } from "../../application/repositories/bidRepository";
 import { BidRepositoryMongoDb } from "../../frameworks/database/mongodb/repositories/bidRepositoryMongoDb";
+import { handleGetUserWallet } from "../../application/user-cases/payment/get";
 
 export const paymentController = (
   transactionDbRepository: TransactionInterface,
@@ -90,7 +90,8 @@ export const paymentController = (
       res.status(HttpStatusCodes.OK).json({
         success: true,
         message: "order created successfully",
-        captureStatus,
+        captureStatus: captureStatus.captureStatus,
+        transactionData: captureStatus.transaction,
       });
     }
   );

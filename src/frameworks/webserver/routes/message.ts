@@ -31,6 +31,7 @@ const messageRouter = () => {
     controller.changeReadMessageStatus
   );
 
+  router.get("/get-conversations", controller.getConversations);
   return router;
 };
 

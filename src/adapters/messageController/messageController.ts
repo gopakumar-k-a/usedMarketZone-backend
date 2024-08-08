@@ -15,6 +15,7 @@ import { HttpStatusCodes } from "../../types/httpStatusCodes";
 import {
   handleChangeMessageSeen,
   handleGetChat,
+  handleGetConversations,
   handleGetUnreadMessageCount,
 } from "../../application/user-cases/message/get";
 import { NotificationInterface } from "../../application/repositories/notificationRepository";
@@ -29,8 +30,8 @@ export const messageController = (
   conversationDbImpl: ConversationRepositoryMongoDb,
   notificationDbRepository: NotificationInterface,
   notificationDbImpl: NotificationRepositoryMongoDB,
-  notificationServiceInterface:NotificationServiceInterface,
-  notificationServiceImpl:NotificationService
+  notificationServiceInterface: NotificationServiceInterface,
+  notificationServiceImpl: NotificationService
 ) => {
   const dbRepositoryMessage = messageDbRepository(messageDbImpl());
   const dbRepositoryConversation = conversationDbRepository(
@@ -38,7 +39,26 @@ export const messageController = (
   );
   const dbNotification = notificationDbRepository(notificationDbImpl());
 
-const notificationService=notificationServiceInterface(notificationServiceImpl())
+  const notificationService = notificationServiceInterface(
+    notificationServiceImpl()
+  );
+
+  const getConversations = asyncHandler(
+    async (req: ExtendedRequest, res: Response) => {
+      const { _id } = req.user as CreateUserInterface;
+
+      const conversations = await handleGetConversations(
+        _id,
+        dbRepositoryConversation
+      );
+
+      res.status(HttpStatusCodes.OK).json({
+        success: true,
+        message: "conversations data retirieved succuss",
+        conversations,
+      });
+    }
+  );
   const sendNewMessage = asyncHandler(
     async (req: ExtendedRequest, res: Response) => {
       const { _id } = req.user as CreateUserInterface;
@@ -57,7 +77,6 @@ const notificationService=notificationServiceInterface(notificationServiceImpl()
         dbRepositoryConversation,
         dbNotification,
         notificationService
-
       );
 
       res.status(HttpStatusCodes.OK).json({
@@ -83,7 +102,7 @@ const notificationService=notificationServiceInterface(notificationServiceImpl()
         productId,
         dbRepositoryMessage,
         dbRepositoryConversation,
-        dbNotification,
+        dbNotification
       );
 
       res.status(HttpStatusCodes.OK).json({
@@ -177,6 +196,7 @@ const notificationService=notificationServiceInterface(notificationServiceImpl()
     getChat,
     postReplyAsMessage,
     getUnreadMessages,
-    changeReadMessageStatus
+    changeReadMessageStatus,
+    getConversations
   };
 };

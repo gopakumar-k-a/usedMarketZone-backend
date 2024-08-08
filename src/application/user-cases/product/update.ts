@@ -193,11 +193,6 @@ export const handleAdminAcceptedBid = async (
   updatedBidProduct.bidData = newlyAddedBid._id;
   await productRepository.updateProduct(bidProductId, updatedBidProduct);
 
-  
-  // scheduleService.scheduleJob(updatedBidProduct.bidEndTime, async () => {
-  //   await bidService.processBidClosure(bidRepository, newlyAddedBid._id);
-  // });
-  // const delay = new Date(updatedBidProduct.bidEndTime).getTime() - Date.now();
   const delay = new Date(updatedBidProduct.bidEndTime).getTime() - Date.now();
 
 

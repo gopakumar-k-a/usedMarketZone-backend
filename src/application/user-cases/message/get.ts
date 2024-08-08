@@ -40,3 +40,15 @@ export const handleChangeMessageSeen = async (
 
   return;
 };
+
+export const handleGetConversations = async (
+  userId: string,
+  conversationRepository: ConversationDbRepository
+) => {
+  const conversations =
+    await conversationRepository.getConversationsWithUserData(
+      new Types.ObjectId(userId)
+    );
+
+  return conversations;
+};

@@ -44,8 +44,9 @@ export default async function jwtTokenVerifyAdmin(
 
     // console.log("user data ", userData);
 
-    if ( customPayload.role === "admin") {
+    if (customPayload.role === "admin") {
       // req.admin = customPayload._id as string;
+      (req as ExtendedAdminRequest).admin = customPayload._id as string;
 
       return next();
     } else {

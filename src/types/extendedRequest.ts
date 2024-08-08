@@ -5,5 +5,5 @@ export interface ExtendedRequest extends Request {
 }
 
 export interface ExtendedAdminRequest extends Request{
-  admin: string;
+  admin?: string;
 }

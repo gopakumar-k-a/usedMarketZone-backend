@@ -24,12 +24,6 @@ interface NotificationDocument extends Document {
   updatedAt: Date;
 }
 
-// COMMENT = "comment",
-// OUTBID = "outBid",
-// BIDWIN = "bidWin",
-// BIDLOSE = "bidLose",
-// MESSAGE = "message",
-// FOLLOW = "follow",
 const NotificationSchema: Schema = new Schema(
   {
     notificationType: {

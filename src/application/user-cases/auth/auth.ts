@@ -16,8 +16,7 @@ import {
 import { JwtForgotPasswordPayload } from "../../../types/authInterface";
 import { removeSensitiveFields } from "../user/read";
 
-
-import schedule from 'node-schedule';
+import schedule from "node-schedule";
 export const VerifyAndRegister = async (
   user: {
     firstName: string;
@@ -180,25 +179,22 @@ export const userAuthenticate = async (
     );
   }
 
-  const jwtPayload = {
-    _id: userData._id,
-    role: "user",
-  };
-
-  // const user = omit(userData, "password");
   const user = await removeSensitiveFields(userData);
+  const role = user.role;
+  const jwtPayload = {
+    _id: user._id,
+    role,
+  };
 
   console.log("user data is ", user);
 
   const token = await userService.generateToken(JSON.stringify(jwtPayload));
-  const role = user.role;
 
   const tenSecondsFromNow = new Date(Date.now() + 10 * 1000);
   console.log(tenSecondsFromNow);
-  schedule.scheduleJob(tenSecondsFromNow,()=>{
-    console.log('job triggered on', tenSecondsFromNow);
-    
-  })
+  schedule.scheduleJob(tenSecondsFromNow, () => {
+    console.log("job triggered on", tenSecondsFromNow);
+  });
 
   return { token, user, role };
 };

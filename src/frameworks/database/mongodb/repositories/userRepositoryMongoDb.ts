@@ -284,6 +284,8 @@ export const userRepositoryMongoDb = () => {
           "following.imageUrl": 1,
           "following.userName": 1,
           "following.createdAt": 1,
+          "following.firstName": 1,
+          "following.lastName": 1,
           "following._id": 1,
         },
       },

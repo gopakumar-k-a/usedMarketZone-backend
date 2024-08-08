@@ -51,11 +51,15 @@ import { TransactionInterface } from "../../application/repositories/transaction
 import { TransactionRepositoryMongoDb } from "../../frameworks/database/mongodb/repositories/transactionRepositoryMongoDb";
 import {
   handleChangeShipmentStatusToAdminRecieved,
+  handleProductDeliveredToWinner,
   handleShipProductToBidWinner,
 } from "../../application/user-cases/payment/update";
 import { WalletInterface } from "../../application/repositories/walletRepository";
 import { WalletRepositoryMongoDb } from "../../frameworks/database/mongodb/repositories/walletRepositoryMongoDb";
-import { ExtendedAdminRequest, ExtendedRequest } from "../../types/extendedRequest";
+import {
+  ExtendedAdminRequest,
+  ExtendedRequest,
+} from "../../types/extendedRequest";
 import { CreateUserInterface } from "../../types/userInterface";
 
 const adminController = (
@@ -365,11 +369,22 @@ const adminController = (
   const productDeliveredToWinner = asyncHandler(
     async (req: ExtendedAdminRequest, res: Response) => {
       const { trId } = req.params;
-      const {productOwnerId}=req.body
-      console.log('trId , productOwnerID',trId,' ',productOwnerId);
-      
-      const { _id: adminId } = req.user as CreateUserInterface;
+      const { productOwnerId, productId, bidId } = req.body;
+      console.log("trId , productOwnerID", trId, " ", productOwnerId);
+
+      const adminId = req.admin;
       console.log("admin id ", adminId);
+
+      await handleProductDeliveredToWinner(
+        trId,
+        productId,
+        bidId,
+        adminId as string,
+        productOwnerId,
+        dbTransaction,
+        dbWallet
+      );
+
       res.status(HttpStatusCodes.OK).json({
         success: true,
         nessage: `transaction changed`,
@@ -394,7 +409,7 @@ const adminController = (
     getTransactionDetailsOfBidAdmin,
     adminRecievedTransactionChangeStatus,
     shipProductToWinner,
-    productDeliveredToWinner
+    productDeliveredToWinner,
   };
 };
 

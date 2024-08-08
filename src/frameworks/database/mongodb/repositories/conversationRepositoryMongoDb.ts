@@ -111,10 +111,69 @@ export const conversationRepositoryMongoDb = () => {
       },
     ]);
   };
+
+  const getConversationsWithUserData = async (userId: Types.ObjectId) => {
+    const conversations = await Conversation.aggregate([
+      {
+        $match: {
+          participants: userId,
+        },
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "participants",
+          foreignField: "_id",
+          as: "participantsData",
+        },
+      },
+      {
+        $addFields: {
+          participantsData: {
+            $filter: {
+              input: "$participantsData",
+              as: "participant",
+              cond: { $ne: ["$$participant._id", userId] },
+            },
+          },
+        },
+      },
+      {
+        $project: {
+          _id: 1,
+          createdAt: 1,
+          participantsData: {
+            userName: 1,
+            imageUrl: 1,
+            createdAt: 1,
+            _id: 1,
+          },
+        },
+      },
+    ]).exec();
+
+    console.log("Populated Conversations with User Data: ", conversations);
+    console.log("participents data ", conversations[0].participantsData);
+
+    return conversations;
+
+    // const conversations = await Conversation.find({
+    //   participants: userId,
+    // })
+    //   .populate({
+    //     path: "participants",
+    //     select: "userName imageUrl createdAt _id",
+    //   })
+    //   .exec();
+
+    // console.log("conversations getConversationsWithUserData", conversations);
+    // return conversations;
+  };
   return {
     createConversation,
     getMessages,
     getUnreadMessages,
+    getConversationsWithUserData,
   };
 };
 

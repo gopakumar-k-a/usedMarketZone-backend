@@ -9,6 +9,7 @@ export const transactionRepository = (
   ) => await repository.addNewEscrowTransaction(transactionEntity);
   const getTransactionById = async (transactionId: string) =>
     await repository.getTransactionById(transactionId);
+  const getTransactionByProductId=async(productId:string)=>await repository.getTransactionByProductId(productId)
   const shipProductToAdmin = async (
     productId: string,
     trackingNumber: string
@@ -20,12 +21,15 @@ export const transactionRepository = (
     trackingNumber: string
   ) =>
     await repository.adminShipsProductToWinner(transactionId, trackingNumber);
+    const releasePayment = async (transactionId: string) =>await repository.releasePayment(transactionId)
   return {
     addNewEscrowTransaction,
     shipProductToAdmin,
     adminReceivesProduct,
     adminShipsProductToWinner,
     getTransactionById,
+    releasePayment,
+    getTransactionByProductId
   };
 };
 

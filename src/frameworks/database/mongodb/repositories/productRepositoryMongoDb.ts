@@ -645,22 +645,111 @@ export const productRepositoryMongoDb = () => {
   };
 
   const getUserBids = async (userId: Types.ObjectId) => {
-    const userBids = await Product.find(
+    const userBids = await Product.aggregate([
       {
-        userId: userId,
-        isBidding: true,
+        $match: {
+          userId: userId,
+          isBidding: true,
+        },
       },
       {
-        productName: 1,
-        basePrice: 1,
-        productImageUrls: 1,
-        category: 1,
-        bidDuration: 1,
-        subCategory: 1,
-        isAdminAccepted: 1,
-        bidEndTime: 1,
+        $lookup: {
+          from: "bids",
+          localField: "bidData",
+          foreignField: "_id",
+          as: "bidData",
+        },
+      },
+      {
+        $unwind: {
+          path: "$bidData",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $lookup: {
+          from: "transactions",
+          localField: "bidData.transactionId",
+          foreignField: "_id",
+          as: "transactionData",
+        },
+      },
+      {
+        $unwind: {
+          path: "$transactionData",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $addFields: {
+          productStatus: {
+            $switch: {
+              branches: [
+                {
+                  case: {
+                    $eq: ["$transactionData.shipmentStatus", "not_shipped"],
+                  },
+                  then: "not_shipped",
+                },
+                {
+                  case: {
+                    $eq: [
+                      "$transactionData.shipmentStatus",
+                      "shipped_to_admin",
+                    ],
+                  },
+                  then: "shipped_to_admin",
+                },
+                {
+                  case: {
+                    $eq: [
+                      "$transactionData.shipmentStatus",
+                      "received_by_admin",
+                    ],
+                  },
+                  then: "received_by_admin",
+                },
+                {
+                  case: {
+                    $eq: [
+                      "$transactionData.shipmentStatus",
+                      "shipped_to_buyer",
+                    ],
+                  },
+                  then: "shipped_to_buyer",
+                },
+                {
+                  case: {
+                    $eq: ["$transactionData.shipmentStatus", "delivered"],
+                  },
+                  then: "Delivered",
+                },
+              ],
+              default: "processing",
+            },
+          },
+        },
+      },
+      {
+        $project: {
+          productName: 1,
+          basePrice: 1,
+          productImageUrls: 1,
+          category: 1,
+          bidDuration: 1,
+          subCategory: 1,
+          isAdminAccepted: 1,
+          bidEndTime: 1,
+          productStatus: 1,
+          createdAt:1
+        },
+      },
+      {
+        $sort:{
+          createdAt:-1
+        }
       }
-    ).sort({ createdAt: -1 });
+    ])
 
     console.log("user bids getUserBids product mongodb", userBids);
 
@@ -782,8 +871,6 @@ export const productRepositoryMongoDb = () => {
       numberOfNonBidProducts: result?.numberOfNonBidProducts || 0,
     };
   };
-
- 
 
   return {
     postProduct,
