@@ -70,6 +70,8 @@ export const handleGetClaimProductDetails = async (
   productId: string,
   bidHistoryDb: ReturnType<BidHistoryInterface>
 ) => {
+  console.log('product id ',productId);
+  
   const claimableBid = await bidHistoryDb.getClaimableBidDetails(
     new Types.ObjectId(userId),
     new Types.ObjectId(productId)

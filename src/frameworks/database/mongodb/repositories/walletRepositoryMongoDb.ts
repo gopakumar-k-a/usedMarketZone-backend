@@ -56,41 +56,59 @@ export const walletRepositoryMongoDb = () => {
   // };
 
   const getUserWallet = async (userId: Types.ObjectId) => {
-    let userWallet = await Wallet.aggregate([
-      { $match: { userId } },
-      { $unwind: "$walletHistory" },
-      {
-        $lookup: {
-          from: "products", // Assuming the collection name is 'products'
-          localField: "walletHistory.productId",
-          foreignField: "_id",
-          as: "productDetails",
-        },
-      },
-      {
-        $unwind: { path: "$productDetails", preserveNullAndEmptyArrays: true },
-      },
-      {
-        $project: {
-          walletHistory:[ {
-            productData: { productName: "$productDetails.productName",productId:'$productDetails._id' },
-            type: "$walletHistory.type",
-            amount: "$walletHistory.amount",
-          }],
-          userId: 1,
-          walletBalance: 1,
-        },
-      },
-    ]);
-    if (userWallet.length === 0) {
-      const newWallet = await Wallet.create({ userId });
-      return newWallet;
-    }
+    // let userWallet = await Wallet.aggregate([
+    //   { $match: { userId } },
 
-    console.log("user wallet ", userWallet[0]);
-    console.log("user wallet productName", userWallet[0].WalletHistory);
+    //   { $unwind: "$walletHistory" },
+    //   {
+    //     $lookup: {
+    //       from: "products", // Assuming the collection name is 'products'
+    //       localField: "walletHistory.productId",
+    //       foreignField: "_id",
+    //       as: "productDetails",
+    //     },
+    //   },
+    //   {
+    //     $unwind: { path: "$productDetails", preserveNullAndEmptyArrays: true },
+    //   },
+    //   {
+    //     $project: {
 
-    return userWallet.length > 0 ? userWallet[0] : null;
+    //       walletHistory:[ {
+    //         productData: { productName: "$productDetails.productName",productId:'$productDetails._id' },
+    //         type: "$walletHistory.type",
+    //         amount: "$walletHistory.amount",
+    //       }],
+    //       userId: 1,
+    //       walletBalance: 1,
+    //     },
+    //   },
+    // ]);
+    const wallet = await Wallet.findOne({ userId })
+      .populate({
+        path: "walletHistory.productId",
+        select: "productName", // Replace with the fields you want to retrieve from Product
+      })
+      .populate({
+        path: "walletHistory.bidId",
+        select: "bidName", // Replace with the fields you want to retrieve from bid
+      });
+    // if (userWallet.length === 0) {
+    //   const newWallet = await Wallet.create({ userId });
+    //   return newWallet;
+    // }
+
+    // console.log("user wallet ", userWallet[0]);
+    // console.log("user wallet productName", userWallet[0].WalletHistory);
+
+    // return userWallet.length > 0 ? userWallet[0] : null;
+    console.log("user wallet ", wallet);
+    console.log(
+      "wallet history ",
+      wallet?.walletHistory ? wallet.walletHistory : null
+    );
+
+    return wallet;
   };
   return {
     addAmountToUserWallet,

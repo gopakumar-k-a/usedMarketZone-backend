@@ -60,7 +60,7 @@ export const bidService = () => {
 
     notificationService.sendRealTimeNotification(
       String(bidWinner),
-      "bidLose",
+      "bidWin",
       winnerNotification,
       ""
     );
@@ -85,7 +85,7 @@ export const bidService = () => {
 
         notificationService.sendRealTimeNotification(
           userId,
-          "bidWin",
+          "bidLose",
           participentNotification,
           ""
         );

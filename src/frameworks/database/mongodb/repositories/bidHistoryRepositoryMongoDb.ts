@@ -277,6 +277,7 @@ export const bidHistoryRepositoryMongoDb = () => {
     userId: Types.ObjectId,
     productId: Types.ObjectId
   ) => {
+    console.log('getClaimableBidDetails',productId,'userid',userId);
     
     const userBid = await BidHistory.aggregate([
       {

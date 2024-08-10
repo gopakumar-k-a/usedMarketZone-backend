@@ -17,6 +17,7 @@ import { JwtForgotPasswordPayload } from "../../../types/authInterface";
 import { removeSensitiveFields } from "../user/read";
 
 import schedule from "node-schedule";
+import { CustomJwtPayload } from "../../../frameworks/webserver/middlewares/jwtUserTokenVerifyMiddleware";
 export const VerifyAndRegister = async (
   user: {
     firstName: string;
@@ -188,17 +189,76 @@ export const userAuthenticate = async (
 
   console.log("user data is ", user);
 
-  const token = await userService.generateToken(JSON.stringify(jwtPayload));
+  // const token = await userService.generateToken(JSON.stringify(jwtPayload));
+  const accessToken = await userService.generateAccessToken(
+    JSON.stringify(jwtPayload)
+  );
+  const refreshToken = await userService.generateRefreshToken(
+    JSON.stringify(jwtPayload)
+  );
 
-  const tenSecondsFromNow = new Date(Date.now() + 10 * 1000);
-  console.log(tenSecondsFromNow);
-  schedule.scheduleJob(tenSecondsFromNow, () => {
-    console.log("job triggered on", tenSecondsFromNow);
-  });
+  // const tenSecondsFromNow = new Date(Date.now() + 10 * 1000);
+  // console.log(tenSecondsFromNow);
+  // schedule.scheduleJob(tenSecondsFromNow, () => {
+  //   console.log("job triggered on", tenSecondsFromNow);
+  // });
 
-  return { token, user, role };
+  return { user, role, refreshToken, accessToken };
 };
 
+export const handleRefreshAccessToken = async (
+  cookies: { refreshToken: string },
+  dbUserRepository: ReturnType<UserDbInterface>,
+  authService: ReturnType<AuthServiceInterface>
+) => {
+  console.log("cookies ", cookies);
+  if (!cookies?.refreshToken) {
+    throw new AppError("Invalid token!", HttpStatusCodes.UNAUTHORIZED);
+  }
+  const refreshToken = cookies.refreshToken;
+  console.log("refresh token cookies ", refreshToken);
+  const decoded = authService.verifyToken(refreshToken);
+  console.log("decoded ", decoded);
+  if (!decoded) {
+    throw new AppError(
+      "Token expired or invalid",
+      HttpStatusCodes.UNAUTHORIZED
+    );
+  }
+  const customPayload = JSON.parse(
+    (decoded as any).payload
+  ) as CustomJwtPayload;
+
+  const jwtPayload = {
+    _id: customPayload._id,
+    role: customPayload.role,
+  };
+
+  console.log("custom payload ", customPayload);
+
+  const newRefreshToken = authService.generateRefreshToken(
+    JSON.stringify(jwtPayload)
+  );
+  console.log("newRefreshToken refreshToken    ", newRefreshToken);
+
+  // const { userId, role } = authService.verifyRefreshToken(refreshToken.toString());
+  // if (!userId || role !== "client") {
+  //   throw new AppError("Invalid token!2", HttpStatusCodes.UNAUTHORIZED);
+  // }
+  // const user = await dbUserRepository.getUserById(userId);
+  // const role = user.role;
+
+  // const jwtPayload = {
+  //   _id: user._id,
+  //   role,
+  // };
+
+  // const newAccessToken = authService.generateAccessToken(userId, "client");
+  // return newAccessToken;
+  return {
+    accessToken: newRefreshToken,
+  };
+};
 //google sign in
 export const googleAuthenticate = async (
   userCred: {

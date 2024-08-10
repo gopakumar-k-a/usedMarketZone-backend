@@ -1,30 +1,33 @@
+import { AuthServiceReturnType } from "../../frameworks/services/authService";
 
-import { AuthServiceReturnType } from "../../frameworks/services/authService"
+export const authServiceInterface = (service: AuthServiceReturnType) => {
+  const encryptPassword = (password: string) =>
+    service.encryptPassword(password);
 
-export const authServiceInterface=(service:AuthServiceReturnType)=>{
+  const comparePassword = (password: string, hashedPassword: string) =>
+    service.comparePassword(password, hashedPassword);
 
-    const encryptPassword=(password:string)=>service.encryptPassword(password)
+  const generateToken = (payload: any) => service.generateToken(payload);
 
-    const comparePassword=(password:string,hashedPassword:string)=>service.comparePassword(password,hashedPassword)
+  const verifyToken = (token: string) => service.verifyToken(token);
 
-    const generateToken=(payload:any)=>service.generateToken(payload)
+  const sendOtpEmail = async (email: string, otp: number) =>
+    await service.sendOtpEmail(email, otp);
+  const generateAccessToken = (payload: any) =>
+    service.generateAccessToken(payload);
+  const generateRefreshToken = (payload: any) =>
+    service.generateRefreshToken(payload);
+  // const createUserName=async(firstName:string,lastName:string)=>await
 
-    const verifyToken=(token:string)=>service.verifyToken(token)
+  return {
+    encryptPassword,
+    comparePassword,
+    generateToken,
+    verifyToken,
+    sendOtpEmail,
+    generateAccessToken,
+    generateRefreshToken,
+  };
+};
 
-    const sendOtpEmail=async (email:string,otp:number)=>await service.sendOtpEmail(email,otp)
-
-    // const createUserName=async(firstName:string,lastName:string)=>await 
-
-    return {
-        encryptPassword,
-        comparePassword,
-        generateToken,
-        verifyToken,
-        sendOtpEmail,
-        
-    }
-
-
-}
-
-export type AuthServiceInterface=typeof authServiceInterface
+export type AuthServiceInterface = typeof authServiceInterface;

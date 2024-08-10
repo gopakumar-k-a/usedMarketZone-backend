@@ -16,7 +16,8 @@ import {
   forgotPasswordSendOtp,
   verifyForgotPasswordOtp,
   resetPassword,
-  resendOtp
+  resendOtp,
+  handleRefreshAccessToken,
 } from "../../application/user-cases/auth/auth";
 
 const authController = (
@@ -62,30 +63,26 @@ const authController = (
     });
   });
 
-  
   const resendOtpHandler = asyncHandler(async (req: Request, res: Response) => {
     const { email } = req.body;
-  
+
     if (!email) {
       throw new AppError("Email is required", HttpStatusCodes.BAD_REQUEST);
     }
-  
+
     // const user = await dbRepositoryUser.getUserByEmail(email);
     // if (!user) {
     //   throw new AppError("User not found", HttpStatusCodes.NOT_FOUND);
     // }
-  
+
     const userData = await resendOtp(req.body, dbRepositoryUser, userService);
-  
+
     res.status(HttpStatusCodes.OK).json({
       status: true,
       message: "OTP resent successfully",
-      userData
+      userData,
     });
   });
-  
-  
-
 
   const verifyOtpRegister = asyncHandler(
     async (req: Request, res: Response) => {
@@ -120,23 +117,41 @@ const authController = (
         HttpStatusCodes.BAD_REQUEST
       );
     }
-    const { token, user, role } = await userAuthenticate(
-      email,
-      password,
-      dbRepositoryUser,
-      userService
-    );
+    const {  user, role, accessToken, refreshToken } =
+      await userAuthenticate(email, password, dbRepositoryUser, userService);
 
-    console.log("user with out pass is ", user);
 
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      maxAge: 7.5 * 24 * 60 * 60 * 1000,
+    });
     res.status(HttpStatusCodes.OK).json({
       status: true,
       message: "success user log in success",
-      token,
+      accessToken,
       user,
       role,
     });
   });
+
+  const refreshAccessToken = asyncHandler(
+    async (req: Request, res: Response) => {
+      const { refreshToken } = req.cookies;
+      console.log("inside refresh access token ");
+      console.log("refresh token ", refreshToken);
+
+      const { accessToken } = await handleRefreshAccessToken(
+        { refreshToken },
+        dbRepositoryUser,
+        userService
+      );
+      res.status(HttpStatusCodes.OK).json({
+        status: true,
+        message: "new access token generated",
+        accessToken,
+      });
+    }
+  );
 
   const googleAuthenticator = asyncHandler(
     async (req: Request, res: Response) => {
@@ -180,7 +195,7 @@ const authController = (
         success: "true",
         message: "otp send to user success",
         otpToken,
-        email
+        email,
       });
     }
   );
@@ -203,7 +218,7 @@ const authController = (
         success: true,
         message: "forgot password otp verification success",
         otpCheck,
-        email
+        email,
       });
     }
   );
@@ -211,12 +226,14 @@ const authController = (
   const handleResetPassword = asyncHandler(
     async (req: Request, res: Response) => {
       const { email, newPassword } = req.body;
-      console.log('email new password ',email,newPassword);
-      
-      if(!email || !newPassword){
-        throw new AppError("All fields are required",HttpStatusCodes.BAD_GATEWAY)
+      console.log("email new password ", email, newPassword);
+
+      if (!email || !newPassword) {
+        throw new AppError(
+          "All fields are required",
+          HttpStatusCodes.BAD_GATEWAY
+        );
       }
-      
 
       const updateStatus = await resetPassword(
         email,
@@ -248,6 +265,7 @@ const authController = (
     handleForgotPasswordOtpSend,
     handleForgotPasswordOtpVerify,
     handleResetPassword,
+    refreshAccessToken,
   };
 };
 

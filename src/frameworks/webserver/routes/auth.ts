@@ -28,6 +28,7 @@ const authRouter = () => {
     controller.handleForgotPasswordOtpVerify
   );
   router.post("/reset-password", controller.handleResetPassword);
+  router.get("/refresh-access-token",controller.refreshAccessToken)
 
   return router;
 };

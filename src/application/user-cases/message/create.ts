@@ -63,10 +63,15 @@ export const handleSendNewMessage = async (
     "normal"
   );
 
-  const newNotification = await notificationRepository.createNotification(
-    newNotificationEntity
-  );
+  // const newNotification = await notificationRepository.createNotification(
+  //   newNotificationEntity
+  // );
+  if (recieverSocketId) {
+    io.to(recieverSocketId).emit("newMessage", newMessage);
+  }
 
+  console.log('recieversocket id ',recieverSocketId);
+  
   // notificationService.sendRealTimeNotification(
   //   recieverId,
   //   "message",

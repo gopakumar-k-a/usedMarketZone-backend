@@ -26,10 +26,10 @@ export const transactionRepositoryMongoDb = () => {
     return transaction;
   };
 
-  const getTransactionByProductId=async(productId:string)=>{
-    const transaction=await Transaction.findOne({productId:productId})
-    return transaction
-  }
+  const getTransactionByProductId = async (productId: string) => {
+    const transaction = await Transaction.findOne({ productId: productId });
+    return transaction;
+  };
   const shipProductToAdmin = async (
     productId: string,
     trackingNumber: string
@@ -106,6 +106,55 @@ export const transactionRepositoryMongoDb = () => {
     return;
   };
 
+  const transactionStatistics = async () => {
+    const transactions = await Transaction.find(
+      {},
+      { shipmentStatus: 1, status: 1 }
+    );
+    return transactions;
+  };
+
+  const lastTransactionsAdmin = async () => {
+    const transactions = await Transaction.aggregate([
+      {
+        $lookup: {
+          from: "users",
+          localField: "fromUserId",
+          foreignField: "_id",
+          as: "userData",
+        },
+      },
+      {
+        $unwind: {
+          path: "$userData",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $project: {
+          amount: 1,
+          productId: 1,
+          createdAt: 1,
+          fromUserId: 1,
+          fromUserName: "$userData.userName",
+          bidId:1
+
+        },
+      },
+      {
+        $sort: {
+          createdAt: -1,
+        },
+      },
+      {
+        $limit: 10,
+      },
+    ]);
+
+    console.log("transactions ", transactions);
+
+    return transactions;
+  };
   return {
     addNewEscrowTransaction,
     shipProductToAdmin,
@@ -113,7 +162,9 @@ export const transactionRepositoryMongoDb = () => {
     adminShipsProductToWinner,
     getTransactionById,
     releasePayment,
-    getTransactionByProductId
+    getTransactionByProductId,
+    transactionStatistics,
+    lastTransactionsAdmin,
   };
 };
 

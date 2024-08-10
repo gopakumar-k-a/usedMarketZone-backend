@@ -11,7 +11,7 @@ import { CreateUserInterface } from "../../../types/userInterface";
 const serviceProvider = authServiceInterface(authService());
 const userDb = userDbRepository(userRepositoryMongoDb());
 
-interface CustomJwtPayload extends JwtPayload {
+export interface CustomJwtPayload extends JwtPayload {
   _id: string;
   role: string;
 }
@@ -47,12 +47,12 @@ export default async function jwtTokenVerifyUser(
       (decoded as any).payload
     ) as CustomJwtPayload;
 
-    
+    // const decoded = serviceProvider.verifyToken(token) as CustomJwtPayload;
+    // console.log("decoded ", decoded);
     
 
     const userData = await userDb.getUserWithOutPass(customPayload._id);
-
-    console.log('user data ',userData);
+    console.log('userData is ',userData);
     
 
     if (userData && userData.role === "user" && userData.isActive) {

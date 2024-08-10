@@ -41,7 +41,10 @@ import {
   KycRepository,
 } from "../../application/repositories/kycDbRepository";
 import { KycRepositoryMongoDB } from "../../frameworks/database/mongodb/repositories/kycRepositoryMongoDB";
-import { handleGetAdminStatistics } from "../../application/user-cases/dashboard/get";
+import {
+  handleGetAdminStatistics,
+  handleGetTransactionStastics,
+} from "../../application/user-cases/dashboard/get";
 import { BidService } from "../../frameworks/services/bidService";
 import { BidServiceInterface } from "../../application/services/BidServiceInterface";
 import { ScheduleServiceInterface } from "../../application/services/scheduleServiceInterface";
@@ -391,6 +394,20 @@ const adminController = (
       });
     }
   );
+
+  const getTransactionStatistics = asyncHandler(
+    async (req: ExtendedAdminRequest, res: Response) => {
+      const { transactions, lastTransactions } =
+        await handleGetTransactionStastics(dbTransaction);
+
+      res.status(HttpStatusCodes.OK).json({
+        success: true,
+        nessage: `transaction statistics retirived`,
+        transactions,
+        lastTransactions,
+      });
+    }
+  );
   return {
     handleGetUsers,
     handleModifyUserAccess,
@@ -410,6 +427,7 @@ const adminController = (
     adminRecievedTransactionChangeStatus,
     shipProductToWinner,
     productDeliveredToWinner,
+    getTransactionStatistics,
   };
 };
 

@@ -22,6 +22,8 @@ export const transactionRepository = (
   ) =>
     await repository.adminShipsProductToWinner(transactionId, trackingNumber);
     const releasePayment = async (transactionId: string) =>await repository.releasePayment(transactionId)
+    const transactionStatistics=async()=>await repository.transactionStatistics()
+    const lastTransactionsAdmin = async () =>await repository.lastTransactionsAdmin()
   return {
     addNewEscrowTransaction,
     shipProductToAdmin,
@@ -29,7 +31,9 @@ export const transactionRepository = (
     adminShipsProductToWinner,
     getTransactionById,
     releasePayment,
-    getTransactionByProductId
+    getTransactionByProductId,
+    transactionStatistics,
+    lastTransactionsAdmin
   };
 };
 

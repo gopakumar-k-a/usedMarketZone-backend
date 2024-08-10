@@ -67,14 +67,24 @@ const adminRouter = () => {
     "/get-bid-transactions",
     controller.getTransactionDetailsOfBidAdmin
   );
+  router.get(
+    "/get-dashboard-transactions",
+    controller.getTransactionStatistics
+  );
 
   router.patch(
     "/admin-recieved-bid-product/:trId",
     controller.adminRecievedTransactionChangeStatus
   );
 
-  router.patch("/admin-send-bid-product-winner/:trId",controller.shipProductToWinner)
-  router.patch("/mark-product-delivered/:trId",controller.productDeliveredToWinner)
+  router.patch(
+    "/admin-send-bid-product-winner/:trId",
+    controller.shipProductToWinner
+  );
+  router.patch(
+    "/mark-product-delivered/:trId",
+    controller.productDeliveredToWinner
+  );
   return router;
 };
 
