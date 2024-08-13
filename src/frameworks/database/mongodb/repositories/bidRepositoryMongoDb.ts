@@ -296,7 +296,73 @@ export const bidRepositoryMongoDb = () => {
     throw new AppError("No BidData Found", HttpStatusCodes.BAD_GATEWAY);
   };
 
-  const getTransactionDetailsOfBidEndedProductsAdmin = async () => {
+  const getTransactionDetailsOfBidEndedProductsAdmin = async (
+    page: number = 1,
+    limit: number = 5,
+    searchQuery: string = "",
+    sort: string = "createdAt_desc",
+    shipmentStatus: string = "",
+    paymentStatus: string = ""
+  ) => {
+    console.log("page is ", page);
+    const skip = (page - 1) * limit;
+
+    console.log("skip is ", skip);
+
+    console.log("sort ", sort);
+    console.log("shipmentStatus ", shipmentStatus);
+    const filters: { [key: string]: any } = {};
+    if (shipmentStatus) {
+      filters["transactionData.shipmentStatus"] = shipmentStatus;
+    }
+    if (paymentStatus) {
+      filters["transactionData.status"] = paymentStatus;
+    }
+    type SortCriteria = {
+      [key: string]: 1 | -1;
+    };
+
+    const sortCriteria: SortCriteria = {};
+
+    switch (sort) {
+      case "createdAt_asc":
+        sortCriteria.createdAt = 1;
+        break;
+      case "createdAt_desc":
+        sortCriteria.createdAt = -1;
+        break;
+      case "price_asc":
+        sortCriteria.baseBidPrice = 1;
+        break;
+      case "price_desc":
+        sortCriteria.baseBidPrice = -1;
+        break;
+      default:
+        sortCriteria.createdAt = -1;
+    }
+    console.log("sortCriteria ", sortCriteria);
+
+    const searchCriteria: any = {};
+    if (searchQuery) {
+      searchCriteria.$or = [
+        { "productData.productName": { $regex: searchQuery, $options: "i" } }, // Case-insensitive search by product name
+        { "productData._id": { $regex: searchQuery, $options: "i" } }, // Case-insensitive search by product name
+        { "transactionData.status": { $regex: searchQuery, $options: "i" } }, // Case-insensitive search by transaction status
+        {
+          "transactionData.paymentStatus": {
+            $regex: searchQuery,
+            $options: "i",
+          },
+        }, // Case-insensitive search by payment status
+        {
+          "transactionData.shipmentStatus": {
+            $regex: searchQuery,
+            $options: "i",
+          },
+        }, // Case-insensitive search by shipment status
+        { highestWinnerId: { $regex: searchQuery, $options: "i" } }, // Case-insensitive search by highest winner ID
+      ];
+    }
     const transactions = await Bid.aggregate([
       {
         $match: {
@@ -326,6 +392,12 @@ export const bidRepositoryMongoDb = () => {
         $unwind: "$productData",
       },
       {
+        $match: {
+          ...searchCriteria,
+          ...filters,
+        },
+      },
+      {
         $project: {
           _id: 0,
           bidId: "$_id",
@@ -343,13 +415,48 @@ export const bidRepositoryMongoDb = () => {
           baseBidPrice: "$baseBidPrice",
           bidWinnerId: "$highestBidderId",
           productData: "$productData",
+          createdAt: 1,
         },
+      },
+      {
+        $sort: sortCriteria,
+      },
+      {
+        $skip: skip,
+      },
+      {
+        $limit: limit,
       },
     ]);
 
-    console.log("transactions ", transactions[0]);
+    console.log("transactions ", transactions);
 
-    return transactions;
+    // const totalDocuments = await Bid.countDocuments(searchCriteria);
+    // console.log("total documents ", totalDocuments);
+
+    const totalDocuments = await Bid.aggregate([
+      {
+        $match: {
+          isBiddingEnded: true,
+          ...searchCriteria,
+          ...filters,
+        },
+      },
+      {
+        $count: "totalCount",
+      },
+    ]);
+
+    
+
+    const totalDocumentsCount =
+      totalDocuments.length > 0 ? totalDocuments[0].totalCount : 0;
+
+    return {
+      transactions,
+      totalDocuments: totalDocumentsCount,
+      currentPage: page,
+    };
   };
   return {
     addBidAfterAdminAccept,

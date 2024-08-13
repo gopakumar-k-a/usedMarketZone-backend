@@ -741,27 +741,80 @@ export const productRepositoryMongoDb = () => {
           isAdminAccepted: 1,
           bidEndTime: 1,
           productStatus: 1,
-          createdAt:1
+          createdAt: 1,
         },
       },
       {
-        $sort:{
-          createdAt:-1
-        }
-      }
-    ])
+        $sort: {
+          createdAt: -1,
+        },
+      },
+    ]);
 
     console.log("user bids getUserBids product mongodb", userBids);
 
     return userBids;
   };
 
-  const getAllProductPostAdmin = async () => {
+  const getAllProductPostAdmin = async (
+    page = 1,
+    limit = 5,
+    searchQuery = "",
+    sort = "createdAt_desc"
+  ) => {
+    const skip = (page - 1) * limit;
+    // const totalDocuments = await Product.countDocuments({
+    //   isAdminAccepted: true,
+    //   isDeactivatedPost: false,
+    // });
+
+    const searchCriteria = searchQuery
+      ? {
+          $or: [
+            { productName: { $regex: searchQuery, $options: "i" } },
+            { category: { $regex: searchQuery, $options: "i" } },
+            { subCategory: { $regex: searchQuery, $options: "i" } },
+            { description: { $regex: searchQuery, $options: "i" } },
+          ],
+        }
+      : {};
+
+      type SortCriteria = {
+        [key: string]: 1 | -1;
+      };
+      
+      const sortCriteria: SortCriteria = {};
+      
+      switch (sort) {
+        case "createdAt_asc":
+          sortCriteria.createdAt = 1; // Oldest first
+          break;
+        case "createdAt_desc":
+          sortCriteria.createdAt = -1; // Newest first
+          break;
+        case "price_asc":
+          sortCriteria.basePrice = 1; // Price: Low to High
+          break;
+        case "price_desc":
+          sortCriteria.basePrice = -1; // Price: High to Low
+          break;
+        default:
+          sortCriteria.createdAt = -1; // Default to Newest first
+      }
+      
+      
+      
+    const totalDocuments = await Product.countDocuments({
+      isAdminAccepted: true,
+      isDeactivatedPost: false,
+      ...searchCriteria,
+    });
     const products = await Product.aggregate([
       {
         $match: {
           isAdminAccepted: true,
           isDeactivatedPost: false,
+          ...searchCriteria,
         },
       },
       {
@@ -786,7 +839,7 @@ export const productRepositoryMongoDb = () => {
       {
         $unwind: {
           path: "$bidDetails",
-          preserveNullAndEmptyArrays: true, // Preserve products without bids
+          preserveNullAndEmptyArrays: true,
         },
       },
 
@@ -821,15 +874,23 @@ export const productRepositoryMongoDb = () => {
         },
       },
       {
-        $sort: {
-          createdAt: -1,
-        },
+        $sort: sortCriteria, // Apply the sorting criteria
+      },
+      {
+        $skip: skip,
+      },
+      {
+        $limit: limit,
       },
     ]);
 
     console.log("products ", products);
 
-    return products;
+    return {
+      products,
+      totalDocuments,
+      currentPage: page,
+    };
   };
 
   const getNumberOfProducts = async () => {

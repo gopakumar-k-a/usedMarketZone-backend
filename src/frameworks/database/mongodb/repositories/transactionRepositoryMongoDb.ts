@@ -137,8 +137,7 @@ export const transactionRepositoryMongoDb = () => {
           createdAt: 1,
           fromUserId: 1,
           fromUserName: "$userData.userName",
-          bidId:1
-
+          bidId: 1,
         },
       },
       {
@@ -155,6 +154,20 @@ export const transactionRepositoryMongoDb = () => {
 
     return transactions;
   };
+
+  const getTransactionHistoryUser = async (userId: Types.ObjectId) => {
+    const transactionHistory = await Transaction.find(
+      { fromUserId: userId },
+      {
+        amount: 1,
+        createdAt: 1,
+        productId: 1,
+      }
+    );
+
+    return transactionHistory;
+  };
+
   return {
     addNewEscrowTransaction,
     shipProductToAdmin,
@@ -165,6 +178,7 @@ export const transactionRepositoryMongoDb = () => {
     getTransactionByProductId,
     transactionStatistics,
     lastTransactionsAdmin,
+    getTransactionHistoryUser
   };
 };
 

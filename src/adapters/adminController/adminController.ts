@@ -189,7 +189,26 @@ const adminController = (
   );
 
   const getBidRequests = asyncHandler(async (req: Request, res: Response) => {
-    const bidRequests = await handleGetBidRequests(dbRepositoryAdminBidRequest);
+    console.log("query params ", req.query);
+    const page =
+      typeof req.query.page === "string" ? parseInt(req.query.page) : 1;
+    const limit =
+      typeof req.query.limit === "string" ? parseInt(req.query.limit) : 5;
+    const searchQuery =
+      typeof req.query.searchQuery === "string" ? req.query.searchQuery : "";
+    console.log("search query ", searchQuery);
+
+    const sort = typeof req.query.sort === "string" ? req.query.sort : "";
+    console.log("sort ", sort);
+
+    const { bidRequests, totalDocuments, currentPage } =
+      await handleGetBidRequests(
+        page,
+        limit,
+        searchQuery,
+        sort,
+        dbRepositoryAdminBidRequest
+      );
 
     console.log("bid requests from mongo ", bidRequests);
 
@@ -197,6 +216,8 @@ const adminController = (
       success: true,
       message: "bid Requests retrived successfully",
       bidRequests,
+      totalDocuments,
+      currentPage,
     });
   });
 
@@ -265,12 +286,32 @@ const adminController = (
   );
 
   const getKycRequests = asyncHandler(async (req: Request, res: Response) => {
-    const kycData = await handleGetKycRequestsAdmin(dbKycRepository);
+    console.log("query params ", req.query);
+    const page =
+      typeof req.query.page === "string" ? parseInt(req.query.page) : 1;
+    const limit =
+      typeof req.query.limit === "string" ? parseInt(req.query.limit) : 5;
+    const searchQuery =
+      typeof req.query.searchQuery === "string" ? req.query.searchQuery : "";
+    console.log("search query ", searchQuery);
+
+    const sort = typeof req.query.sort === "string" ? req.query.sort : "";
+    console.log("sort ", sort);
+    const { kycData, totalDocuments, currentPage } =
+      await handleGetKycRequestsAdmin(
+        page,
+        limit,
+        searchQuery,
+        sort,
+        dbKycRepository
+      );
 
     res.status(HttpStatusCodes.OK).json({
       success: true,
       message: "kyc data retrived success",
       kycData,
+      totalDocuments,
+      currentPage,
     });
   });
 
@@ -290,12 +331,36 @@ const adminController = (
 
   const getAllProductPostAdmin = asyncHandler(
     async (req: Request, res: Response) => {
-      const productPosts = await handleGetProductPostAdmin(dbRepositoryProduct);
+      console.log("query params ", req.query);
+      const page =
+        typeof req.query.page === "string" ? parseInt(req.query.page) : 1;
+      const limit =
+        typeof req.query.limit === "string" ? parseInt(req.query.limit) : 5;
+      const searchQuery =
+        typeof req.query.searchQuery === "string" ? req.query.searchQuery : "";
+      console.log("search query ", searchQuery);
+
+      const sort = typeof req.query.sort === "string" ? req.query.sort : "";
+      console.log("sort ", sort);
+
+      const {
+        products: productPosts,
+        totalDocuments,
+        currentPage,
+      } = await handleGetProductPostAdmin(
+        page,
+        limit,
+        searchQuery,
+        sort,
+        dbRepositoryProduct
+      );
 
       res.status(HttpStatusCodes.OK).json({
         success: true,
         message: "Product Posts Retrived successfully",
         productPosts,
+        totalDocuments,
+        currentPage,
       });
     }
   );
@@ -319,14 +384,41 @@ const adminController = (
 
   const getTransactionDetailsOfBidAdmin = asyncHandler(
     async (req: Request, res: Response) => {
-      const transactions = await handleGetTransactionDetailsOfBidAdmin(
-        dbBidRepository
-      );
+      console.log("query params ", req.query);
+      const page =
+        typeof req.query.page === "string" ? parseInt(req.query.page) : 1;
+      const limit =
+        typeof req.query.limit === "string" ? parseInt(req.query.limit) : 5;
+      const searchQuery =
+        typeof req.query.searchQuery === "string" ? req.query.searchQuery : "";
+      console.log("search query ", searchQuery);
+
+      const sort = typeof req.query.sort === "string" ? req.query.sort : "";
+      const shipmentStatus =
+        typeof req.query.shipmentStatus === "string"
+          ? req.query.shipmentStatus
+          : "";
+      const paymentStatus =
+        typeof req.query.paymentStatus === "string"
+          ? req.query.paymentStatus
+          : "";
+      const { transactions, totalDocuments, currentPage } =
+        await handleGetTransactionDetailsOfBidAdmin(
+          page,
+          limit,
+          searchQuery,
+          sort,
+          shipmentStatus,
+          paymentStatus,
+          dbBidRepository
+        );
 
       res.status(HttpStatusCodes.OK).json({
         success: true,
         message: "bid ended product transactions retrived success",
         transactions,
+        totalDocuments,
+        currentPage,
       });
     }
   );

@@ -18,7 +18,44 @@ export const adminBidRequestMongoDb = () => {
     return newBidRequest;
   };
 
-  const getBidRequestsFromDb = async () => {
+  const getBidRequestsFromDb = async (
+    search: string = "",
+    page: number = 1,
+    limit: number = 5,
+    sort: string = "createdAt_desc"
+  ) => {
+    const skip = (page - 1) * limit;
+
+    let sortCriteria: Record<string, 1 | -1> = {};
+
+    switch (sort) {
+      case "createdAt_asc":
+        sortCriteria.createdAt = 1; // Oldest first
+        break;
+      case "createdAt_desc":
+        sortCriteria.createdAt = -1; // Newest first
+        break;
+      case "price_asc":
+        sortCriteria["productData.basePrice"] = 1; // Price: Low to High
+        break;
+      case "price_desc":
+        sortCriteria["productData.basePrice"] = -1; // Price: High to Low
+        break;
+      default:
+        sortCriteria.createdAt = -1; // Default to Newest first
+    }
+
+    const matchCriteria = search
+      ? {
+          $or: [
+            { "productData.productName": { $regex: search, $options: "i" } },
+            { "userData.firstName": { $regex: search, $options: "i" } },
+            { "userData.lastName": { $regex: search, $options: "i" } },
+            { "userData.userName": { $regex: search, $options: "i" } },
+            // Add more fields as needed
+          ],
+        }
+      : {};
     const bidRequests = await AdminBidRequest.aggregate([
       {
         $lookup: {
@@ -43,6 +80,9 @@ export const adminBidRequestMongoDb = () => {
         $unwind: "$userData",
       },
       {
+        $match: matchCriteria, // Apply the search criteria
+      },
+      {
         $project: {
           _id: 1,
           bidderId: 1,
@@ -65,21 +105,66 @@ export const adminBidRequestMongoDb = () => {
         },
       },
       {
-        $sort: {
-          createdAt: -1,
-        },
+        $sort: sortCriteria, // Apply the sorting criteria
+      },
+      {
+        $skip: skip, // Apply pagination - skip the previous pages
+      },
+      {
+        $limit: limit, // Apply pagination - limit to the number of items per page
       },
     ]);
 
     console.log(bidRequests);
 
     console.log("bidRequests ", bidRequests);
-
-    return bidRequests;
+    const totalBidRequests = await AdminBidRequest.aggregate([
+      {
+        $lookup: {
+          from: "products",
+          localField: "bidProductId",
+          foreignField: "_id",
+          as: "productData",
+        },
+      },
+      {
+        $unwind: "$productData",
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "bidderId",
+          foreignField: "_id",
+          as: "userData",
+        },
+      },
+      {
+        $unwind: "$userData",
+      },
+      {
+        $match: matchCriteria, // Apply the search criteria for total count
+      },
+      {
+        $count: "total", // Count the total number of matching documents
+      },
+    ]);
+    // return bidRequests;
+    const totalDocuments = totalBidRequests[0]?.total || 0;
+    // const totalPages = Math.ceil(totalDocuments / limit);
+    // return {
+    //   products,
+    //   totalDocuments,
+    //   currentPage: page,
+    // };
+    return {
+      bidRequests,
+      totalDocuments,
+      currentPage: page,
+    };
   };
 
   const getUserWiseBidRequests = async (userId: Types.ObjectId) => {
-    console.log('user id getUserWiseBidRequests',userId)
+    console.log("user id getUserWiseBidRequests", userId);
     const userBidRequests = await AdminBidRequest.aggregate([
       {
         $match: {
@@ -151,7 +236,7 @@ export const adminBidRequestMongoDb = () => {
   return {
     createBidRequestAdmin,
     getBidRequestsFromDb,
-    getUserWiseBidRequests
+    getUserWiseBidRequests,
     // acceptBidRequest
   };
 };

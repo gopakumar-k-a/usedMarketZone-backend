@@ -9,8 +9,8 @@ import { bidRepositoryMongoDb } from "../../database/mongodb/repositories/bidRep
 const paymenRouter = () => {
   const router = express.Router();
 
-  
-  const controller = paymentController(transactionRepository,
+  const controller = paymentController(
+    transactionRepository,
     transactionRepositoryMongoDb,
     walletRepository,
     walletRepositoryMongoDb,
@@ -20,8 +20,9 @@ const paymenRouter = () => {
 
   router.post("/create-payment-order", controller.createPaymentOrder);
   router.post("/capture-payment", controller.capturePayment);
-  router.get("/user-wallet",controller.getUserWallet);
-  router.post('/ship-product-to-admin',controller.shipProductToAdmin)
+  router.get("/user-wallet", controller.getUserWallet);
+  router.post("/ship-product-to-admin", controller.shipProductToAdmin);
+  router.get("/transaction-history", controller.getTransactionHistoryUser);
 
   return router;
 };

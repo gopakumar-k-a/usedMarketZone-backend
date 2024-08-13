@@ -14,7 +14,10 @@ import { WalletInterface } from "../../application/repositories/walletRepository
 import { WalletRepositoryMongoDb } from "../../frameworks/database/mongodb/repositories/walletRepositoryMongoDb";
 import { BidInterface } from "../../application/repositories/bidRepository";
 import { BidRepositoryMongoDb } from "../../frameworks/database/mongodb/repositories/bidRepositoryMongoDb";
-import { handleGetUserWallet } from "../../application/user-cases/payment/get";
+import {
+  handleGetTransactionHistoryUser,
+  handleGetUserWallet,
+} from "../../application/user-cases/payment/get";
 
 export const paymentController = (
   transactionDbRepository: TransactionInterface,
@@ -121,10 +124,30 @@ export const paymentController = (
     }
   );
 
+  const getTransactionHistoryUser = asyncHandler(
+    async (req: ExtendedRequest, res: Response) => {
+      const { _id: userId } = req.user as CreateUserInterface;
+      const transactionHistory = await handleGetTransactionHistoryUser(
+        userId,
+        dbTransaction
+      );
+
+      console.log('transactionHistory is ',transactionHistory);
+      
+
+      res.status(HttpStatusCodes.OK).json({
+        success: true,
+        message: "transaction history retrived successfully",
+        transactionHistory,
+      });
+    }
+  );
+
   return {
     createPaymentOrder,
     capturePayment,
     getUserWallet,
     shipProductToAdmin,
+    getTransactionHistoryUser,
   };
 };

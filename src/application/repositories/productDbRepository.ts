@@ -45,7 +45,7 @@ export const productDbRepository = (
     await repository.deactivateProductSellPost(userId, productId);
   const searchProduct = async (query: string, isBidding: boolean,userId:Types.ObjectId) =>await repository.searchProduct(query,isBidding,userId)
   const getUserBids = async (userId: Types.ObjectId) =>await repository.getUserBids(userId)
-  const getAllProductPostAdmin = async () =>await repository.getAllProductPostAdmin()
+  const getAllProductPostAdmin = async (page = 1, limit = 5,searchQuery = "", sort = "createdAt_desc") =>await repository.getAllProductPostAdmin(page, limit,searchQuery,sort)
   const getNumberOfProducts=async()=>await repository.getNumberOfProducts()
   return {
     postProduct,

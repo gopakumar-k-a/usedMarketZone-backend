@@ -96,9 +96,19 @@ export const handleGetPostReports = async (
 };
 
 export const handleGetProductPostAdmin = async (
+  page: number = 1,
+  limit: number = 5,
+  searchQuery: string = "",
+  sort: string = "",
   productRepository: ReturnType<ProductDbInterface>
 ) => {
-  const productData = await productRepository.getAllProductPostAdmin();
+  const { products, totalDocuments, currentPage } =
+    await productRepository.getAllProductPostAdmin(
+      page,
+      limit,
+      searchQuery,
+      sort
+    );
 
-  return productData;
+  return { products, totalDocuments, currentPage };
 };

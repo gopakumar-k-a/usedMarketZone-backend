@@ -7,11 +7,21 @@ import {
 import { ProductDbInterface } from "../../repositories/productDbRepository";
 import { BidInterface } from "../../repositories/bidRepository";
 export const handleGetBidRequests = async (
+  page: number,
+  limit: number,
+  searchQuery: string,
+  sort: string,
   adminBidRequestDb: ReturnType<AdminBidRequestDbInterface>
 ) => {
-  const bidRequests = await adminBidRequestDb.getBidRequestsFromDb();
+  const { bidRequests, totalDocuments, currentPage } =
+    await adminBidRequestDb.getBidRequestsFromDb(
+      searchQuery,
+      page,
+      limit,
+      sort
+    );
 
-  return bidRequests;
+  return { bidRequests, totalDocuments, currentPage };
 };
 
 export const handleGetUserWiseBidRequests = async (
@@ -70,21 +80,26 @@ export const handleGetClaimProductDetails = async (
   productId: string,
   bidHistoryDb: ReturnType<BidHistoryInterface>
 ) => {
-  console.log('product id ',productId);
-  
+  console.log("product id ", productId);
+
   const claimableBid = await bidHistoryDb.getClaimableBidDetails(
     new Types.ObjectId(userId),
     new Types.ObjectId(productId)
   );
-console.log('claim bid details ',claimableBid);
+  console.log("claim bid details ", claimableBid);
 
   return claimableBid;
 };
 
-export const handleGetBidResultForOwner=async(productId:string,userId:string,bidDb:ReturnType<BidInterface>)=>{
+export const handleGetBidResultForOwner = async (
+  productId: string,
+  userId: string,
+  bidDb: ReturnType<BidInterface>
+) => {
+  const result = await bidDb.bidResultsForOwner(
+    new Types.ObjectId(productId),
+    new Types.ObjectId(userId)
+  );
 
-
-  const result=await bidDb.bidResultsForOwner(new Types.ObjectId(productId),new Types.ObjectId(userId))
-
-  return result
-}
+  return result;
+};

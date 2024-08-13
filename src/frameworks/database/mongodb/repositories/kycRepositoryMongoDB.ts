@@ -37,7 +37,42 @@ export const kycRepositoryMongoDB = () => {
     return kycData;
   };
 
-  const getKycAdmin = async () => {
+  const getKycAdmin = async (
+    page: number = 1,
+    limit: number = 5,
+    searchQuery: string = "",
+    sort: string = "createdAt_desc"
+  ) => {
+    const skip = (page - 1) * limit;
+
+    type SortCriteria = {
+      [key: string]: 1 | -1;
+    };
+
+    const sortCriteria: SortCriteria = {};
+
+    switch (sort) {
+      case "createdAt_asc":
+        sortCriteria.createdAt = 1;
+        break;
+      case "createdAt_desc":
+        sortCriteria.createdAt = -1;
+        break;
+      default:
+        sortCriteria.createdAt = -1;
+    }
+    const searchCriteria = searchQuery
+      ? {
+          $or: [
+            { name: { $regex: searchQuery, $options: "i" } },
+            { phone: { $regex: searchQuery, $options: "i" } },
+            { idNumber: { $regex: searchQuery, $options: "i" } },
+            { "userDetails.firstName": { $regex: searchQuery, $options: "i" } },
+            { "userDetails.lastName": { $regex: searchQuery, $options: "i" } },
+            { "userDetails.userName": { $regex: searchQuery, $options: "i" } },
+          ],
+        }
+      : {};
     const kycData = await KYC.aggregate([
       {
         $lookup: {
@@ -49,6 +84,9 @@ export const kycRepositoryMongoDB = () => {
       },
       {
         $unwind: "$userDetails",
+      },
+      {
+        $match: searchCriteria,
       },
       {
         $project: {
@@ -67,11 +105,24 @@ export const kycRepositoryMongoDB = () => {
           "userDetails.userName": 1,
         },
       },
+      {
+        $sort: sortCriteria,
+      },
+      {
+        $skip: skip,
+      },
+      {
+        $limit: limit,
+      },
     ]);
+    const totalDocuments = await KYC.countDocuments(searchCriteria);
 
     console.log("kycData ", kycData);
-
-    return kycData;
+    return {
+      kycData,
+      totalDocuments,
+      currentPage: page,
+    };
   };
 
   const handleKycRequestAdmin = async (
@@ -116,7 +167,7 @@ export const kycRepositoryMongoDB = () => {
     getKycByUserId,
     getKycAdmin,
     handleKycRequestAdmin,
-    checkKycIsVerified
+    checkKycIsVerified,
   };
 };
 

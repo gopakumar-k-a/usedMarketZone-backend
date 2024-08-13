@@ -46,8 +46,22 @@ export const bidDbRepository = (
   ) => await repository.addTransactionIdToBid(productId, transactionId);
   const markBidAsEnded = async (bidId: Types.ObjectId) =>
     await repository.markBidAsEnded(bidId);
-  const getTransactionDetailsOfBidEndedProductsAdmin = async () =>
-    await repository.getTransactionDetailsOfBidEndedProductsAdmin();
+  const getTransactionDetailsOfBidEndedProductsAdmin = async (
+    page: number = 1,
+    limit: number = 5,
+    searchQuery: string = "",
+    sort: string = "",
+    shipmentStatus: string = "",
+    paymentStatus: string = ""
+  ) =>
+    await repository.getTransactionDetailsOfBidEndedProductsAdmin(
+      page,
+      limit,
+      searchQuery,
+      sort,
+      shipmentStatus,
+      paymentStatus
+    );
   return {
     addBidAfterAdminAccept,
     getBidDetails,

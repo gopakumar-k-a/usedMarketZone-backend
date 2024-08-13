@@ -1,3 +1,4 @@
+import { Types } from "mongoose";
 import { CreateTransactionEntityType } from "../../entities/createTransactionEntity";
 import { TransactionRepositoryMongoDb } from "../../frameworks/database/mongodb/repositories/transactionRepositoryMongoDb";
 
@@ -9,7 +10,8 @@ export const transactionRepository = (
   ) => await repository.addNewEscrowTransaction(transactionEntity);
   const getTransactionById = async (transactionId: string) =>
     await repository.getTransactionById(transactionId);
-  const getTransactionByProductId=async(productId:string)=>await repository.getTransactionByProductId(productId)
+  const getTransactionByProductId = async (productId: string) =>
+    await repository.getTransactionByProductId(productId);
   const shipProductToAdmin = async (
     productId: string,
     trackingNumber: string
@@ -21,9 +23,14 @@ export const transactionRepository = (
     trackingNumber: string
   ) =>
     await repository.adminShipsProductToWinner(transactionId, trackingNumber);
-    const releasePayment = async (transactionId: string) =>await repository.releasePayment(transactionId)
-    const transactionStatistics=async()=>await repository.transactionStatistics()
-    const lastTransactionsAdmin = async () =>await repository.lastTransactionsAdmin()
+  const releasePayment = async (transactionId: string) =>
+    await repository.releasePayment(transactionId);
+  const transactionStatistics = async () =>
+    await repository.transactionStatistics();
+  const lastTransactionsAdmin = async () =>
+    await repository.lastTransactionsAdmin();
+  const getTransactionHistoryUser = async (userId: Types.ObjectId) =>
+    await repository.getTransactionHistoryUser(userId);
   return {
     addNewEscrowTransaction,
     shipProductToAdmin,
@@ -33,7 +40,8 @@ export const transactionRepository = (
     releasePayment,
     getTransactionByProductId,
     transactionStatistics,
-    lastTransactionsAdmin
+    lastTransactionsAdmin,
+    getTransactionHistoryUser
   };
 };
 

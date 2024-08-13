@@ -9,13 +9,25 @@ export const kycDbRepository = (
     await repository.createNewKycRequest(createKycEntity);
   const getKycByUserId = async (userId: Types.ObjectId) =>
     await repository.getKycByUserId(userId);
-  const getKycAdmin = async () => await repository.getKycAdmin();
+  const getKycAdmin = async (
+    page: number = 1,
+    limit: number = 5,
+    searchQuery: string = "",
+    sort: string = "createdAt_desc"
+  ) => await repository.getKycAdmin(page, limit, searchQuery, sort);
   const handleKycRequestAdmin = async (
     kycId: Types.ObjectId,
     type: "accept" | "reject"
-  ) =>await repository.handleKycRequestAdmin(kycId, type);
-  const checkKycIsVerified = (userId: Types.ObjectId) =>repository.checkKycIsVerified(userId)
-  return { createNewKycRequest, getKycByUserId, getKycAdmin,handleKycRequestAdmin,checkKycIsVerified };
+  ) => await repository.handleKycRequestAdmin(kycId, type);
+  const checkKycIsVerified = (userId: Types.ObjectId) =>
+    repository.checkKycIsVerified(userId);
+  return {
+    createNewKycRequest,
+    getKycByUserId,
+    getKycAdmin,
+    handleKycRequestAdmin,
+    checkKycIsVerified,
+  };
 };
 
 export type KycInterface = typeof kycDbRepository;

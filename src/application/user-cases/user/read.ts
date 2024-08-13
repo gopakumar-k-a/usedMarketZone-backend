@@ -180,10 +180,13 @@ export const handleGetKycByUserId = async (
 };
 
 export const handleGetKycRequestsAdmin = async (
+  page: number = 1,
+  limit: number = 5,
+  searchQuery: string = "",
+  sort: string = "",
   kycRepository: ReturnType<KycInterface>
 ) => {
-  const kycData = await kycRepository.getKycAdmin();
-  return kycData;
+  const { kycData, totalDocuments, currentPage } =
+    await kycRepository.getKycAdmin(page, limit, searchQuery, sort);
+  return { kycData, totalDocuments, currentPage };
 };
-
-
