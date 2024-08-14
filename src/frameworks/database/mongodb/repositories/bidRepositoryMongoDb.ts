@@ -302,8 +302,14 @@ export const bidRepositoryMongoDb = () => {
     searchQuery: string = "",
     sort: string = "createdAt_desc",
     shipmentStatus: string = "",
-    paymentStatus: string = ""
+    paymentStatus: string = "",
+    fromDate: string = "",
+    toDate: string = ""
   ) => {
+
+    console.log('from date is ',fromDate);
+    console.log('to date is ',toDate);
+    
     console.log("page is ", page);
     const skip = (page - 1) * limit;
 
@@ -323,7 +329,17 @@ export const bidRepositoryMongoDb = () => {
     };
 
     const sortCriteria: SortCriteria = {};
+    const dateRangeFilter: { [key: string]: any } = {};
+    if (fromDate && toDate) {
+      dateRangeFilter["transactionData.createdAt"] = { $gte: new Date(fromDate), $lte: new Date(toDate) };
+    } else if (fromDate) {
+      dateRangeFilter["transactionData.createdAt"] = { $gte: new Date(fromDate) };
+    } else if (toDate) {
+      dateRangeFilter["transactionData.createdAt"] = { $lte: new Date(toDate) };
+    }
 
+    console.log('dateRangeFilter ',dateRangeFilter);
+    
     switch (sort) {
       case "createdAt_asc":
         sortCriteria.createdAt = 1;
@@ -395,6 +411,7 @@ export const bidRepositoryMongoDb = () => {
         $match: {
           ...searchCriteria,
           ...filters,
+          ...(Object.keys(dateRangeFilter).length ? dateRangeFilter : {}),
         },
       },
       {
@@ -440,14 +457,13 @@ export const bidRepositoryMongoDb = () => {
           isBiddingEnded: true,
           ...searchCriteria,
           ...filters,
+          ...(Object.keys(dateRangeFilter).length ? dateRangeFilter : {}),
         },
       },
       {
         $count: "totalCount",
       },
     ]);
-
-    
 
     const totalDocumentsCount =
       totalDocuments.length > 0 ? totalDocuments[0].totalCount : 0;

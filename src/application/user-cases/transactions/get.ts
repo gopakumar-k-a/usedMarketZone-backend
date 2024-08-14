@@ -7,6 +7,8 @@ export const handleGetTransactionDetailsOfBidAdmin = async (
   sort: string = "",
   shipmentStatus: string,
   paymentStatus: string = "",
+  fromDate: string = "",
+  toDate: string = "",
   bidRepository: ReturnType<BidInterface>
 ) => {
   const { transactions, totalDocuments, currentPage } =
@@ -16,7 +18,9 @@ export const handleGetTransactionDetailsOfBidAdmin = async (
       searchQuery,
       sort,
       shipmentStatus,
-      paymentStatus
+      paymentStatus,
+      fromDate,
+      toDate
     );
   return {
     transactions,

@@ -52,7 +52,9 @@ export const bidDbRepository = (
     searchQuery: string = "",
     sort: string = "",
     shipmentStatus: string = "",
-    paymentStatus: string = ""
+    paymentStatus: string = "",
+    fromDate: string = "",
+    toDate: string = ""
   ) =>
     await repository.getTransactionDetailsOfBidEndedProductsAdmin(
       page,
@@ -60,7 +62,9 @@ export const bidDbRepository = (
       searchQuery,
       sort,
       shipmentStatus,
-      paymentStatus
+      paymentStatus,
+    fromDate,
+    toDate
     );
   return {
     addBidAfterAdminAccept,

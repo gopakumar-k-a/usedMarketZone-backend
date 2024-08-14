@@ -106,9 +106,6 @@ const adminController = (
   const dbWallet = walletRepository(walletImpl());
 
   const handleGetUsers = asyncHandler(async (req: Request, res: Response) => {
-    // console.log("inside admin controller ", req.params);
-    console.log("inside admin controller");
-
     const page = parseInt(req.params.page) || 1;
     const limit = parseInt(req.params.limit) || 10;
     const startIndex = (page - 1) * limit;
@@ -118,11 +115,6 @@ const adminController = (
       limit,
       dbRepositoryUser
     );
-
-    console.log("users get in get users ", users);
-    console.log("total documents in get users ", totalDocuments);
-
-    // const user/
 
     res.status(HttpStatusCodes.OK).send({
       success: true,
@@ -402,6 +394,15 @@ const adminController = (
         typeof req.query.paymentStatus === "string"
           ? req.query.paymentStatus
           : "";
+
+      const fromDate =
+        typeof req.query.fromDate == "string" ? req.query.fromDate : "";
+      const toDate =
+        typeof req.query.toDate == "string" ? req.query.toDate : "";
+
+      console.log("from date ", fromDate);
+      console.log(" toDate ", toDate);
+
       const { transactions, totalDocuments, currentPage } =
         await handleGetTransactionDetailsOfBidAdmin(
           page,
@@ -410,6 +411,8 @@ const adminController = (
           sort,
           shipmentStatus,
           paymentStatus,
+          fromDate,
+          toDate,
           dbBidRepository
         );
 
