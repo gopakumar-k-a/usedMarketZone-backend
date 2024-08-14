@@ -36,13 +36,6 @@ export const handlePlaceBid = async (
     throw new AppError("Bid not found", HttpStatusCodes.BAD_GATEWAY);
   }
 
-  // if (bid.productData.isBlocked) {
-  //   throw new AppError(
-  //     "cant place Bid Bid is blocked By Admin",
-  //     HttpStatusCodes.BAD_GATEWAY
-  //   );
-  // }
-
   if (bidderId === String(bid.userId)) {
     throw new AppError(
       "Owner of the Bid is Not Allowed To Bid On Their Products",
@@ -173,9 +166,10 @@ export const handleAddClaimerAddress = async (
     address.phone
   );
 
-  const newAddress=await bidDb.addBidClaimerAddress(new Types.ObjectId(bidId), newAddressEntity);
+  const newAddress = await bidDb.addBidClaimerAddress(
+    new Types.ObjectId(bidId),
+    newAddressEntity
+  );
 
-  console.log('new Adress ',newAddress);
-  
-  return newAddress
+  return newAddress;
 };

@@ -8,8 +8,6 @@ import { authServiceInterface } from "../../../application/services/authServiceI
 const authRouter = () => {
   const router = express.Router();
 
-  console.log("inside auth.ts");
-
   const controller = authController(
     userDbRepository,
     userRepositoryMongoDb,
@@ -28,7 +26,7 @@ const authRouter = () => {
     controller.handleForgotPasswordOtpVerify
   );
   router.post("/reset-password", controller.handleResetPassword);
-  router.get("/refresh-access-token",controller.refreshAccessToken)
+  router.get("/refresh-access-token", controller.refreshAccessToken);
 
   return router;
 };

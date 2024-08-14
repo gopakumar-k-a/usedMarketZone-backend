@@ -1,6 +1,5 @@
 import mongoose, { Schema, Document, model } from "mongoose";
 
-// Define the interface for the User document
 interface IUser extends Document {
   firstName: string;
   lastName: string;
@@ -16,7 +15,6 @@ interface IUser extends Document {
   following: mongoose.Types.ObjectId[];
 }
 
-// Define the schema for the User document
 const userSchema: Schema = new Schema(
   {
     firstName: {
@@ -71,6 +69,5 @@ const userSchema: Schema = new Schema(
   { timestamps: true }
 );
 
-// Create and export the User model
 const User = model<IUser>("User", userSchema);
 export { User, IUser };

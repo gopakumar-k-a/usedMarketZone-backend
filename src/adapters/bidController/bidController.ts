@@ -7,8 +7,6 @@ import { CreateUserInterface } from "../../types/userInterface";
 import {
   handleAdminAcceptedBid,
   handleProductBidPost,
-  // handleAddToBookmark,
-  // handleRemoveFromBookmark,
 } from "../../application/user-cases/product/update";
 import { BookMarkDbInterface } from "../../application/repositories/bookmarkDbRepository";
 import { BookmarkRepositoryMongoDb } from "../../frameworks/database/mongodb/repositories/bookmarkRepositoryMongoDb";
@@ -35,8 +33,6 @@ import { KycRepositoryMongoDB } from "../../frameworks/database/mongodb/reposito
 export const bidController = (
   productDbRepository: ProductDbInterface,
   productDbImpl: ProductRepositoryMongoDb,
-  // bookmarkRepository: BookMarkDbInterface,
-  // bookmarkDbImpl: BookmarkRepositoryMongoDb,
   adminBidRequestDbRepository: AdminBidRequestDbInterface,
   adminBidRequestDbImpl: AdminBidRequestMongoDb,
   bidRepositoryDb: BidInterface,
@@ -47,11 +43,9 @@ export const bidController = (
   kycRepositoryImpl: KycRepositoryMongoDB
 ) => {
   const dbRepositoryProduct = productDbRepository(productDbImpl());
-  // const dbRepositoryBookmark = bookmarkRepository(bookmarkDbImpl());
   const dbRepositoryAdminBidRequest = adminBidRequestDbRepository(
     adminBidRequestDbImpl()
   );
-
   const dbBidRepository = bidRepositoryDb(bidRepositoryDbImpl());
   const dbBidHistoryRepository = bidHistroryDbRepository(bidHistoryDbImpl());
 
@@ -59,16 +53,13 @@ export const bidController = (
 
   const productBidPost = asyncHandler(
     async (req: ExtendedRequest, res: Response) => {
-      console.log("req.body productPost", req.body);
       const { _id } = req.user as CreateUserInterface;
-      console.log("req user ", req.user);
 
       await handleProductBidPost(
         req.body,
         _id,
         dbRepositoryProduct,
         dbRepositoryAdminBidRequest
-        // dbBidRepository
       );
 
       res.status(HttpStatusCodes.OK).json({
@@ -192,7 +183,6 @@ export const bidController = (
     async (req: ExtendedRequest, res: Response) => {
       const { _id: userId } = req.user as CreateUserInterface;
       const { productId } = req.params;
-      console.log('productId ',productId);
       
       const bidResult = await handleGetBidResultForOwner(
         productId,
@@ -200,7 +190,6 @@ export const bidController = (
         dbBidRepository
       );
 
-      console.log('bidResult is ',bidResult);
       
       res.status(HttpStatusCodes.OK).json({
         success: true,

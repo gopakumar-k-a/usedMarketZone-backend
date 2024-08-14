@@ -1,9 +1,6 @@
 import { UserDbInterface } from "../../repositories/userDbRepository";
 import { AuthServiceInterface } from "../../services/authServiceInterface";
 import createUserEntity, { UserEntityType } from "../../../entities/user";
-import createGoogleEntity, {
-  GoogleUserEntityType,
-} from "../../../entities/googleUserEntity";
 import AppError from "../../../utils/appError";
 import { HttpStatusCodes } from "../../../types/httpStatusCodes";
 import { generateOTP } from "../../../utils/generateOtp";
@@ -15,8 +12,6 @@ import {
 } from "../../../types/userInterface";
 import { JwtForgotPasswordPayload } from "../../../types/authInterface";
 import { removeSensitiveFields } from "../user/read";
-
-import schedule from "node-schedule";
 import { CustomJwtPayload } from "../../../frameworks/webserver/middlewares/jwtUserTokenVerifyMiddleware";
 export const VerifyAndRegister = async (
   user: {
@@ -32,10 +27,7 @@ export const VerifyAndRegister = async (
 ) => {
   const otpDoc = await userRepository.otpByEmail(user.email);
 
-  // console.log('otp in db ', otpDoc);
-
   if (otpDoc && otpDoc.otp == otp) {
-    // console.log('verfied otp true')
     user.email = user.email.toLowerCase();
 
     const isExistingEmail = await userRepository.getUserByEmail(user?.email);
@@ -69,8 +61,6 @@ export const VerifyAndRegister = async (
 
     const createdUserName = await userNameCreator(firstName, lastName);
 
-    console.log("created UserName ", createdUserName);
-
     const userEntity: UserEntityType = createUserEntity(
       firstName,
       lastName,
@@ -78,17 +68,13 @@ export const VerifyAndRegister = async (
       phone,
       password,
       createdUserName,
-      "" //image url
+      ""
     );
-    console.log(userEntity.getLastName());
 
     const createdUser: any = await userRepository.addUser(userEntity);
 
-    console.log(createdUser);
-
     return createdUser.email;
   } else {
-    console.log("not verifed ");
     throw new AppError(
       "user not registered Invalid Otp",
       HttpStatusCodes.CONFLICT
@@ -96,22 +82,12 @@ export const VerifyAndRegister = async (
   }
 };
 
-//send otp before registering user
 export const sendOtp = async (
   user: UserInterface,
   userRepository: ReturnType<UserDbInterface>,
   userService: ReturnType<AuthServiceInterface>,
   isResend: boolean = false
 ) => {
-  // const isExistingEmail = await userRepository.getUserByEmail(user?.email);
-
-  // if (isExistingEmail) {
-  //   throw new AppError("user email already exists", HttpStatusCodes.CONFLICT);
-  // }
-
-  // user.password = userService.generateToken(user.password);
-  // // user.confirmPassword = null
-  // console.log(user);
   if (!isResend) {
     const isExistingEmail = await userRepository.getUserByEmail(user?.email);
     if (isExistingEmail) {
@@ -119,7 +95,6 @@ export const sendOtp = async (
     }
 
     user.password = userService.generateToken(user.password);
-    console.log(user);
   }
 
   const otp = generateOTP();
@@ -151,22 +126,16 @@ export const userAuthenticate = async (
   const userData: CreateUserInterface | null =
     await userRepository.getUserByEmail(email);
 
-  console.log("user is ", userData);
-
   if (!userData) {
     throw new AppError("this user doesn't exist", HttpStatusCodes.UNAUTHORIZED);
   }
 
   if (userData.isActive == false) {
-    console.log("inside this");
-
     throw new AppError(
       "cannot sign in authentication blocked by admin ",
       HttpStatusCodes.UNAUTHORIZED
     );
   }
-
-  //   const applicantId = user?._id;
 
   const isPasswordCorrect = await userService.comparePassword(
     pass,
@@ -187,21 +156,12 @@ export const userAuthenticate = async (
     role,
   };
 
-  console.log("user data is ", user);
-
-  // const token = await userService.generateToken(JSON.stringify(jwtPayload));
   const accessToken = await userService.generateAccessToken(
     JSON.stringify(jwtPayload)
   );
   const refreshToken = await userService.generateRefreshToken(
     JSON.stringify(jwtPayload)
   );
-
-  // const tenSecondsFromNow = new Date(Date.now() + 10 * 1000);
-  // console.log(tenSecondsFromNow);
-  // schedule.scheduleJob(tenSecondsFromNow, () => {
-  //   console.log("job triggered on", tenSecondsFromNow);
-  // });
 
   return { user, role, refreshToken, accessToken };
 };
@@ -211,14 +171,11 @@ export const handleRefreshAccessToken = async (
   dbUserRepository: ReturnType<UserDbInterface>,
   authService: ReturnType<AuthServiceInterface>
 ) => {
-  console.log("cookies ", cookies);
   if (!cookies?.refreshToken) {
     throw new AppError("Invalid token!", HttpStatusCodes.UNAUTHORIZED);
   }
   const refreshToken = cookies.refreshToken;
-  console.log("refresh token cookies ", refreshToken);
   const decoded = authService.verifyToken(refreshToken);
-  console.log("decoded ", decoded);
   if (!decoded) {
     throw new AppError(
       "Token expired or invalid",
@@ -234,32 +191,14 @@ export const handleRefreshAccessToken = async (
     role: customPayload.role,
   };
 
-  console.log("custom payload ", customPayload);
-
   const newRefreshToken = authService.generateRefreshToken(
     JSON.stringify(jwtPayload)
   );
-  console.log("newRefreshToken refreshToken    ", newRefreshToken);
 
-  // const { userId, role } = authService.verifyRefreshToken(refreshToken.toString());
-  // if (!userId || role !== "client") {
-  //   throw new AppError("Invalid token!2", HttpStatusCodes.UNAUTHORIZED);
-  // }
-  // const user = await dbUserRepository.getUserById(userId);
-  // const role = user.role;
-
-  // const jwtPayload = {
-  //   _id: user._id,
-  //   role,
-  // };
-
-  // const newAccessToken = authService.generateAccessToken(userId, "client");
-  // return newAccessToken;
   return {
     accessToken: newRefreshToken,
   };
 };
-//google sign in
 export const googleAuthenticate = async (
   userCred: {
     firstName: string;
@@ -286,21 +225,15 @@ export const googleAuthenticate = async (
 
     user = userWithoutPass;
   } else {
-    console.log("else user data ");
-
     const generatePassword = (Math.random().toString(36).slice(-5) + "A1@")
       .split("")
       .sort(() => Math.random() - 0.5)
       .join("");
     const hashedPassword = await userService.encryptPassword(generatePassword);
 
-    console.log("hashed password", hashedPassword);
-
     const createdUserName = `${userCred.firstName.toLowerCase()}_${userCred.lastName.toLowerCase()}_${Math.floor(
       1000 + Math.random() * 9000
     )}`;
-
-    console.log("created user name ", createdUserName);
 
     const userEntity: UserEntityType = createUserEntity(
       userCred.firstName,
@@ -314,9 +247,6 @@ export const googleAuthenticate = async (
 
     const createdUser: any = await userRepository.addUser(userEntity);
 
-    // const plainUser = createdUser.toObject(); // Converts to plain JavaScript object
-    // const { password, ...userWithoutPass } = plainUser;
-
     const userWithoutPass = await removeSensitiveFields(createdUser);
 
     user = userWithoutPass;
@@ -325,8 +255,6 @@ export const googleAuthenticate = async (
       role: "user",
     };
     token = await userService.generateToken(JSON.stringify(jwtPayload));
-
-    console.log(createdUser._id);
   }
 
   return { token, user, role };
@@ -338,8 +266,6 @@ export const forgotPasswordSendOtp = async (
   userService: ReturnType<AuthServiceInterface>
 ) => {
   const user = userRepository.getUserByEmail(email);
-
-  console.log("user inside forgot password generate otp");
 
   if (!user) {
     throw new AppError(
@@ -372,16 +298,9 @@ export const verifyForgotPasswordOtp = async (
 
   const decodedData = JSON.parse(decoded.payload);
 
-  console.log("decoded ", decoded);
-  console.log("decodedData", decodedData);
   const otpDoc = await userRepository.otpByEmail(decodedData.email);
-  console.log("otp doc ", otpDoc);
-
-  // console.log('otp in db ', otpDoc);
 
   const user = await userRepository.getUserByEmail(decodedData.email);
-
-  console.log("user ", user);
 
   if (!decodedData.otp || !user || !otpDoc) {
     throw new AppError(" invalid request ", HttpStatusCodes.UNAUTHORIZED);

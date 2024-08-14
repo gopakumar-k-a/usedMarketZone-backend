@@ -1,16 +1,12 @@
-import { Request, Response, NextFunction } from "express";
+import { Response, NextFunction } from "express";
 import { authServiceInterface } from "../../../application/services/authServiceInterface";
 import { authService } from "../../services/authService";
-import { userDbRepository } from "../../../application/repositories/userDbRepository";
-import { userRepositoryMongoDb } from "../../database/mongodb/repositories/userRepositoryMongoDb";
 import AppError from "../../../utils/appError";
 import { HttpStatusCodes } from "../../../types/httpStatusCodes";
 import { JwtPayload } from "jsonwebtoken";
-import { CreateUserInterface } from "../../../types/userInterface";
 import { ExtendedAdminRequest } from "../../../types/extendedRequest";
 
 const serviceProvider = authServiceInterface(authService());
-const userDb = userDbRepository(userRepositoryMongoDb());
 
 interface CustomJwtPayload extends JwtPayload {
   _id: string;
@@ -38,14 +34,7 @@ export default async function jwtTokenVerifyAdmin(
       (decoded as any).payload
     ) as CustomJwtPayload;
 
-    // console.log("custom payload ", customPayload);
-
-    // const userData = await userDb.getUserById(customPayload._id);
-
-    // console.log("user data ", userData);
-
     if (customPayload.role === "admin") {
-      // req.admin = customPayload._id as string;
       (req as ExtendedAdminRequest).admin = customPayload._id as string;
 
       return next();
@@ -53,7 +42,6 @@ export default async function jwtTokenVerifyAdmin(
       return next(new AppError("Not authorized", HttpStatusCodes.UNAUTHORIZED));
     }
   } catch (err) {
-    console.error(err);
     return next(new AppError("Invalid token", HttpStatusCodes.UNAUTHORIZED));
   }
 }

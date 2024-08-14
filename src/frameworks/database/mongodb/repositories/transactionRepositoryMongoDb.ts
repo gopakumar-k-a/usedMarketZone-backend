@@ -35,7 +35,6 @@ export const transactionRepositoryMongoDb = () => {
     trackingNumber: string
   ) => {
     const transaction = await Transaction.findOne({ productId });
-    console.log("transaction shipProductToAdmin", transaction);
     if (transaction) {
       transaction.shipmentStatus = "shipped_to_admin";
       transaction.trackingNumbers.shippedToAdminTrackingNumber = trackingNumber;
@@ -150,8 +149,6 @@ export const transactionRepositoryMongoDb = () => {
       },
     ]);
 
-    console.log("transactions ", transactions);
-
     return transactions;
   };
 
@@ -178,7 +175,7 @@ export const transactionRepositoryMongoDb = () => {
     getTransactionByProductId,
     transactionStatistics,
     lastTransactionsAdmin,
-    getTransactionHistoryUser
+    getTransactionHistoryUser,
   };
 };
 

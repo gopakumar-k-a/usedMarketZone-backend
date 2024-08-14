@@ -1,4 +1,4 @@
-import mongoose, { mongo } from "mongoose";
+import mongoose from "mongoose";
 import { HttpStatusCodes } from "../../../types/httpStatusCodes";
 import AppError from "../../../utils/appError";
 import { BidHistoryInterface } from "../../repositories/bidHistoryRepository";
@@ -24,7 +24,6 @@ export const handleGetOwnerPostsImageList = async (
   const ownerPostsImageList = await productRepository.getOwnerPostsImageList(
     ownerId
   );
-  console.log("owner post image list ", ownerPostsImageList);
 
   return ownerPostsImageList;
 };
@@ -37,13 +36,11 @@ export const handleGetPostDetails = async (
   bidRepository: ReturnType<BidInterface>
 ) => {
   let postDetails = await productRepository.getUserPostDetails(userId, postId);
-  console.log("handleGetPostDetails postDetails ", postDetails);
 
   if (!postDetails) {
     throw new AppError("Invalid Post Id", HttpStatusCodes.BAD_GATEWAY);
   }
   if (postDetails[0].isBidding) {
-    //if post is bid product then add previousBidSumOfUser current highest bid data along with product data
     const [previousBidSumOfUser, bidData] = await Promise.all([
       bidHistoryRepository.getUserPreviousBidsSumOnProduct(
         new mongoose.Types.ObjectId(userId),
@@ -67,7 +64,6 @@ export const handleGetPostDetails = async (
     })) as IProductWithBidSum[];
   }
 
-  console.log("post deails ", postDetails);
 
   return postDetails;
 };

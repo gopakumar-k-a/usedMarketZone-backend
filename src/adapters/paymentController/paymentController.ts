@@ -35,10 +35,6 @@ export const paymentController = (
       const { _id: userId } = req.user as CreateUserInterface;
       const { amount, currency, receipt, notes } = req.body;
 
-      console.log(`amount ${amount}, 
-            currency ${currency}, 
-            receipt ${receipt},
-             notes ${notes}`);
       const order = await handleCreatePaymentOrder(
         amount,
         currency,
@@ -66,17 +62,6 @@ export const paymentController = (
         productId,
         bidId,
       } = req.body;
-      console.log("capturePayment ");
-
-      console.log(
-        "payment_id, fromUserId, toUserId, amount, currency,productId",
-        payment_id,
-        fromUserId,
-        toUserId,
-        amount,
-        currency,
-        productId
-      );
 
       const captureStatus = await handleCapturePayment(
         payment_id,
@@ -131,9 +116,6 @@ export const paymentController = (
         userId,
         dbTransaction
       );
-
-      console.log('transactionHistory is ',transactionHistory);
-      
 
       res.status(HttpStatusCodes.OK).json({
         success: true,

@@ -12,7 +12,6 @@ export interface CreateUserInterface {
   imageUrl: string;
   __v: number;
 }
-// interfaces/User.ts
 export interface IUser {}
 
 export interface UserInterface {
@@ -30,8 +29,8 @@ export interface UserInterface {
   isActive?: boolean;
   bio?: string;
   imageUrl?: string;
-  followers?: string[]; // Array of user IDs
-  following?: string[]; // Array of user IDs
+  followers?: string[]; 
+  following?: string[]; 
   createdAt?: Date;
   updatedAt?: Date;
 }

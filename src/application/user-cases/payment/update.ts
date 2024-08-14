@@ -10,11 +10,9 @@ import { BidInterface } from "../../repositories/bidRepository";
 import { createWalletHistoryEntity } from "../../../entities/createWalletHistoryEntity";
 
 const razorpay = new Razorpay({
-  // key_id: configKeys.RAZOR_KEY_ID,
   key_id: "rzp_test_xgAbYbKWLNZHR0",
 
   key_secret: "pBaRn0FrJtHGQABUEkHfJwCZ",
-  // key_secret: configKeys.RAZOR_KEY_SECRET,
 });
 export const handleCreatePaymentOrder = async (
   amount: number,
@@ -26,9 +24,6 @@ export const handleCreatePaymentOrder = async (
   },
   userId: string
 ) => {
-  console.log(`notes.fromUserId ${notes.fromUserId}
-        notes.toUserId ${notes.toUserId}`);
-
   if (notes.fromUserId != userId) {
     throw new AppError(
       "Cant make payment ,payment is not secure ",
@@ -36,23 +31,17 @@ export const handleCreatePaymentOrder = async (
     );
   }
 
-  console.log(`key  id ${configKeys.RAZOR_KEY_ID}`);
-  console.log(`key secret ${configKeys.RAZOR_KEY_SECRET}`);
-
   const options = {
     amount: Number(amount * 100),
     currency,
     receipt,
     notes,
   };
-  console.log("options ", options);
 
   try {
     const order = await razorpay.orders.create(options);
-    console.log("order ", order);
     return order;
   } catch (error) {
-    console.error("Order creation failed:", error);
     throw new AppError(
       "Failed to create payment order",
       HttpStatusCodes.INTERNAL_SERVER_ERROR
@@ -109,7 +98,6 @@ export const handleCapturePayment = async (
     }
     if (captureStatus === "captured") {
       await Promise.all([
-        // walletDb.addAmountToUserWallet(new Types.ObjectId(toUserId), amount),
         bidDb.updateBidWithClaimedUserId(
           new Types.ObjectId(productId),
           new Types.ObjectId(fromUserId)
@@ -117,7 +105,7 @@ export const handleCapturePayment = async (
       ]);
     }
 
-    return {captureStatus,transaction};
+    return { captureStatus, transaction };
   } catch (error) {
     console.error(error);
     throw new AppError(
@@ -163,7 +151,6 @@ export const handleChangeShipmentStatusToAdminRecieved = async (
       HttpStatusCodes.BAD_GATEWAY
     );
   }
-  console.log("transactionId ", transactionId);
 
   const updatedTransaction = await transactionDb.adminReceivesProduct(
     transactionId
@@ -204,7 +191,6 @@ export const handleProductDeliveredToWinner = async (
   transactionDb: ReturnType<TransactionInterface>,
   walletDb: ReturnType<WalletInterface>
 ) => {
-  // const transaction = await AdminTransaction.findById(transactionId);
   const transaction = await transactionDb.getTransactionById(transactionId);
 
   if (!transaction) {
@@ -216,14 +202,11 @@ export const handleProductDeliveredToWinner = async (
       HttpStatusCodes.BAD_GATEWAY
     );
   }
-  // const commissionRate = transaction.commissionRate;
   const commisionPercentage = 1;
   const commissionAmountInPaise =
     (transaction.amount * commisionPercentage) / 100;
-  console.log("commissionAmountInPaise ", commissionAmountInPaise);
 
   const amountAfterCommision = transaction.amount - commissionAmountInPaise;
-  console.log("amountAfterCommision ", amountAfterCommision);
   const adminWalletHistory = createWalletHistoryEntity(
     productId,
     bidId,
@@ -248,4 +231,3 @@ export const handleProductDeliveredToWinner = async (
     transactionDb.releasePayment(transactionId),
   ]);
 };
-

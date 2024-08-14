@@ -2,7 +2,6 @@ import Notification from "../models/notificationModel";
 import { CreateNotificationEntityType } from "../../../../entities/createNotificationEntity";
 import AppError from "../../../../utils/appError";
 import { HttpStatusCodes } from "../../../../types/httpStatusCodes";
-import { NotificationFromDb } from "../../../../types/notification";
 
 export const notificationRepositoryMongoDB = () => {
   const createNotification = async (
@@ -21,8 +20,6 @@ export const notificationRepositoryMongoDB = () => {
         priority: notificationEntity.getPriority(),
       });
 
-      console.log("new Notification ", newNotification);
-
       const populatedNotification = await Notification.findById(
         newNotification._id
       )
@@ -40,14 +37,12 @@ export const notificationRepositoryMongoDB = () => {
         })
         .exec();
 
-      console.log(populatedNotification, "populatedNotification");
       return populatedNotification;
     } catch (error) {
-      console.error("Error creating notification:", error);
       throw new AppError(
         "faliled To CreateNotification",
         HttpStatusCodes.BAD_GATEWAY
-      ); // Rethrow the error to be handled by the caller
+      );
     }
   };
 

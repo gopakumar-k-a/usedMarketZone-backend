@@ -7,7 +7,6 @@ export const postReportRepositoryMongoDb = () => {
       postId: postReportEntity.getPostId(),
     });
 
-    console.log("existingReportByUserOnPost ", existingReportByUserOnPost);
     if (existingReportByUserOnPost) {
       return "exists";
     }
@@ -20,9 +19,6 @@ export const postReportRepositoryMongoDb = () => {
     };
     const newPostReport = new PostReport(postReportData);
     await newPostReport.save();
-
-    console.log("postReportData ", postReportData);
-    console.log("newPostReport ", newPostReport);
 
     return newPostReport;
   };
@@ -73,8 +69,6 @@ export const postReportRepositoryMongoDb = () => {
       },
     ]);
 
-    console.log("postIncidentsData ", postReports);
-
     return postReports;
   };
 
@@ -85,13 +79,13 @@ export const postReportRepositoryMongoDb = () => {
       },
     ]);
 
-    return numberOfReports[0]
+    return numberOfReports[0];
   };
 
   return {
     submitPostReport,
     getReports,
-    getNumberOfPostReports
+    getNumberOfPostReports,
   };
 };
 

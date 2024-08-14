@@ -48,9 +48,6 @@ export const messageRepositoryMongoDb = () => {
     senderId: Types.ObjectId,
     recieverId: Types.ObjectId
   ) => {
-    console.log(`sender id ${senderId}
-      reciever id ${recieverId}`);
-
     const unseenMessagesCount = await Messages.aggregate([
       {
         $match: {
@@ -69,8 +66,6 @@ export const messageRepositoryMongoDb = () => {
       },
     ]);
 
-    console.log("unseen messages count", unseenMessagesCount);
-
     return unseenMessagesCount.length > 0
       ? unseenMessagesCount[0].unseenCount
       : 0;
@@ -80,8 +75,6 @@ export const messageRepositoryMongoDb = () => {
     senderId: Types.ObjectId,
     recieverId: Types.ObjectId
   ) => {
-    console.log(`sender id ${senderId}
-      reciever id ${recieverId}`);
     const updateResult = await Messages.updateMany(
       {
         senderId: senderId,
@@ -90,7 +83,6 @@ export const messageRepositoryMongoDb = () => {
       },
       { $set: { isSeen: true } }
     );
-    console.log(`Updated ${updateResult.modifiedCount} messages to seen.`);
 
     return;
   };
@@ -99,7 +91,7 @@ export const messageRepositoryMongoDb = () => {
     sendPostAsMessage,
     sendPostReplyAsMessage,
     getUnseenMessagesCount,
-    changeUnseenStatusConversationWise
+    changeUnseenStatusConversationWise,
   };
 };
 

@@ -1,6 +1,5 @@
 import mongoose, { Schema, Document, Model, Types } from "mongoose";
 
-// Define the interface for the KYC document
 interface IKYC extends Document {
   name: string;
   userId: Types.ObjectId;
@@ -38,7 +37,6 @@ const KYCSchema: Schema = new Schema(
   }
 );
 
-// Create the KYC model using the schema
 const KYC: Model<IKYC> = mongoose.model<IKYC>("KYC", KYCSchema);
 
 export default KYC;

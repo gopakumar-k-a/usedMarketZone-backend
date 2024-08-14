@@ -1,13 +1,11 @@
 import mongoose, { Schema, Document, Model, Types } from "mongoose";
 
-// Interface for bid duration
 interface BidDuration {
   day: number;
   hour: number;
   minute: number;
 }
 
-// Interface for the product
 export interface IProduct extends Document {
   productName: string;
   basePrice: number;
@@ -36,7 +34,6 @@ export interface IProduct extends Document {
   isDeactivatedPost: boolean;
 }
 
-// Schema definition for product
 const productSchema: Schema = new Schema(
   {
     productName: {
@@ -148,7 +145,6 @@ const productSchema: Schema = new Schema(
   }
 );
 
-// Create and export the model
 const Product: Model<IProduct> = mongoose.model<IProduct>(
   "Product",
   productSchema

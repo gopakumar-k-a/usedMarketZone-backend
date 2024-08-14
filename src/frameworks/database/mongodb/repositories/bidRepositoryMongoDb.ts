@@ -22,29 +22,11 @@ export const bidRepositoryMongoDb = () => {
 
   const getBidDetails = async (productId: string): Promise<IBid | null> => {
     const bidData: IBid | null = await Bid.findOne({ productId });
-    // const bidData: IBid[] | null = await Bid.aggregate([
-    //   {
-    //     $match: new Types.ObjectId(productId),
-    //   },
-    //   {
-    //     $lookup: {
-    //       from: "users",
-    //       foreignField: "_id",
-    //       localField: "productId",
-    //       as: "productData",
-    //     },
-    //   },
-    //   {
-    //     $unwind: "$productData",
-    //   },
-    // ]);
-    // console.log('bid product name ',bidData[0].productData.productName);
 
     if (!bidData) {
       throw new AppError("invalid product id ", HttpStatusCodes.BAD_GATEWAY);
     }
 
-    // return bidData[0];
     return bidData;
   };
 
@@ -57,14 +39,11 @@ export const bidRepositoryMongoDb = () => {
       );
     }
 
-    console.log("bidProduct .highest bidder id ", bidProduct.highestBidderId);
-
     return bidProduct.highestBidderId ? bidProduct.highestBidderId : false;
   };
 
   const getBidById = async (bidId: string): Promise<IBid> => {
     const bid = await Bid.findById(bidId);
-    console.log("bid history ", bid?.bidHistory);
 
     if (!bid) {
       throw new AppError("invalid product id ", HttpStatusCodes.BAD_GATEWAY);
@@ -86,16 +65,6 @@ export const bidRepositoryMongoDb = () => {
     currentHighestBid: number,
     highestBidderId: Types.ObjectId
   ) => {
-    console.log(
-      `inside place bid mongo db bidHistoryId,bidId,currentHighestBid,highestBidderId`,
-      bidHistoryId,
-      bidId,
-      currentHighestBid,
-      highestBidderId
-    );
-
-    //add current highest bid, highest bidder id push bid history id to bid
-    //set "highestBidderHistoryId" as bid history id
     const updatedBid = await Bid.updateOne(
       { _id: bidId },
       {
@@ -112,11 +81,6 @@ export const bidRepositoryMongoDb = () => {
     return placeBid;
   };
 
-  // await BidData.updateOne(
-  //   { productId },
-  //   { $set: { claimedUserId: fromUserId } }
-  // );
-
   const updateBidWithClaimedUserId = async (
     productId: Types.ObjectId,
     fromUserId: Types.ObjectId
@@ -127,12 +91,6 @@ export const bidRepositoryMongoDb = () => {
     );
     return;
   };
-
-  // Notify all other bidders
-  // const allBidders = await BidHistory.find({
-  //   bidData: bidId,
-  //   bidderId: { $ne: bidWinner }  // Exclude the highest bidder
-  // }).select('bidderId');
 
   const addBidClaimerAddress = async (
     bidId: Types.ObjectId,
@@ -162,8 +120,6 @@ export const bidRepositoryMongoDb = () => {
     productId: Types.ObjectId,
     userId: Types.ObjectId
   ) => {
-    console.log("product id userId", productId, " ", userId);
-
     const result = await Bid.aggregate([
       { $match: { productId: productId, userId: userId } },
 
@@ -270,7 +226,6 @@ export const bidRepositoryMongoDb = () => {
       },
     ]);
 
-    console.log("bid end result owner ", result);
     return result ? result[0] : null;
   };
 
@@ -306,17 +261,8 @@ export const bidRepositoryMongoDb = () => {
     fromDate: string = "",
     toDate: string = ""
   ) => {
-
-    console.log('from date is ',fromDate);
-    console.log('to date is ',toDate);
-    
-    console.log("page is ", page);
     const skip = (page - 1) * limit;
 
-    console.log("skip is ", skip);
-
-    console.log("sort ", sort);
-    console.log("shipmentStatus ", shipmentStatus);
     const filters: { [key: string]: any } = {};
     if (shipmentStatus) {
       filters["transactionData.shipmentStatus"] = shipmentStatus;
@@ -331,15 +277,18 @@ export const bidRepositoryMongoDb = () => {
     const sortCriteria: SortCriteria = {};
     const dateRangeFilter: { [key: string]: any } = {};
     if (fromDate && toDate) {
-      dateRangeFilter["transactionData.createdAt"] = { $gte: new Date(fromDate), $lte: new Date(toDate) };
+      dateRangeFilter["transactionData.createdAt"] = {
+        $gte: new Date(fromDate),
+        $lte: new Date(toDate),
+      };
     } else if (fromDate) {
-      dateRangeFilter["transactionData.createdAt"] = { $gte: new Date(fromDate) };
+      dateRangeFilter["transactionData.createdAt"] = {
+        $gte: new Date(fromDate),
+      };
     } else if (toDate) {
       dateRangeFilter["transactionData.createdAt"] = { $lte: new Date(toDate) };
     }
 
-    console.log('dateRangeFilter ',dateRangeFilter);
-    
     switch (sort) {
       case "createdAt_asc":
         sortCriteria.createdAt = 1;
@@ -356,7 +305,6 @@ export const bidRepositoryMongoDb = () => {
       default:
         sortCriteria.createdAt = -1;
     }
-    console.log("sortCriteria ", sortCriteria);
 
     const searchCriteria: any = {};
     if (searchQuery) {
@@ -369,13 +317,13 @@ export const bidRepositoryMongoDb = () => {
             $regex: searchQuery,
             $options: "i",
           },
-        }, // Case-insensitive search by payment status
+        },
         {
           "transactionData.shipmentStatus": {
             $regex: searchQuery,
             $options: "i",
           },
-        }, // Case-insensitive search by shipment status
+        },
         { highestWinnerId: { $regex: searchQuery, $options: "i" } }, // Case-insensitive search by highest winner ID
       ];
     }
@@ -446,11 +394,6 @@ export const bidRepositoryMongoDb = () => {
       },
     ]);
 
-    console.log("transactions ", transactions);
-
-    // const totalDocuments = await Bid.countDocuments(searchCriteria);
-    // console.log("total documents ", totalDocuments);
-
     const totalDocuments = await Bid.aggregate([
       {
         $match: {
@@ -487,7 +430,6 @@ export const bidRepositoryMongoDb = () => {
     addTransactionIdToBid,
     markBidAsEnded,
     getTransactionDetailsOfBidEndedProductsAdmin,
-    // addHighestBidHistoryIdToBid
   };
 };
 

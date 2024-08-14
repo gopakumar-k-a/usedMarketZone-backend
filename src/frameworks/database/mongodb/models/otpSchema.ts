@@ -12,7 +12,7 @@ const otpSchema: Schema = new Schema({
     },
     createdAt: {
         type: Date,
-        expires: 300, // TTL index in seconds ( 5 minutes)
+        expires: 300, 
         default: Date.now,
       },
 });

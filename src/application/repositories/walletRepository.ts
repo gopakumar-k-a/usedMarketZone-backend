@@ -17,14 +17,10 @@ export const walletRepository = (
     );
   const getUserWallet = async (userId: Types.ObjectId) =>
     await repository.getUserWallet(userId);
-  // const addPaymentHistoryToUserWallet = async (
-  //   userId: Types.ObjectId,
-  //   historyEntity: CreateWalletHistoryEntity
-  // ) => await repository.addPaymentHistoryToUserWallet(userId, historyEntity);
+
   return {
     addAmountToUserWallet,
     getUserWallet,
-    // addPaymentHistoryToUserWallet,
   };
 };
 

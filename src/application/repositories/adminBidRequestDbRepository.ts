@@ -1,10 +1,6 @@
 import { Types } from "mongoose";
 import { AdminBidRequestMongoDb } from "../../frameworks/database/mongodb/repositories/adminBidRequestRepositoryMongoDb";
 
-// import const adminBidRequestDb=()=>{
-
-// }
-
 export const adminBidRequestDb = (
   repository: ReturnType<AdminBidRequestMongoDb>
 ) => {

@@ -16,7 +16,7 @@ export const createNotificationEntity = (
   bidId?: string,
   additionalInfo?: string,
   priority: "low" | "medium" | "high" = "medium",
-  messageType?: "post" | "normal" // Add this line for message type
+  messageType?: "post" | "normal" 
 ) => {
   return {
     getNotificationType: ():

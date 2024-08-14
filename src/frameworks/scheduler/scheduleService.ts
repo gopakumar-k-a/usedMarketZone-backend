@@ -1,4 +1,3 @@
-// src/framework/scheduling/NodeScheduleAdapter.ts
 import schedule from "node-schedule";
 
 export const scheduleService = () => {

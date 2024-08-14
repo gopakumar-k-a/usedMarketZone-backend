@@ -6,6 +6,5 @@ export const handleGetUserNotifications = async (
 ) => {
   const notifications = await notificationDb.getNotifications(userId);
 
-  console.log('notifications ',notifications);
   return notifications;
 };

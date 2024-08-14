@@ -15,32 +15,23 @@ export const bidService = () => {
     productId: Types.ObjectId,
     notificationService: ReturnType<NotificationServiceInterface>
   ): Promise<void> => {
-    console.log("this is bid id ", bidId);
-
     await bidRepository.markBidAsEnded(bidId);
     const bid = await bidRepository.getBidById(String(bidId));
     if (!bid) {
-      console.error(`Bid with ID ${bidId} not found`);
       return;
     }
 
     const bidWinner = bid.highestBidderId;
     if (!bidWinner) {
-      console.error(`No winner for bid ID ${bidId}`);
       return;
     }
 
     const amountToBePaid = bid.currentHighestBid;
-    console.log(
-      `Bid ID: ${bidId}, Bid Winner: ${bidWinner}, Amount to be Paid: ${amountToBePaid}`
-    );
 
     const bidParticipents = await bidHistoryRepo.getBidParticipents(
       bidWinner,
       new Types.ObjectId(productId)
     );
-
-    console.log(` bidParticipents ${bidParticipents}`);
 
     const newWinnerNotificationEntity = createNotificationEntity(
       "bidWin",
@@ -55,8 +46,6 @@ export const bidService = () => {
     const winnerNotification = await notificationRepo.createNotification(
       newWinnerNotificationEntity
     );
-
-    console.log("winner notification ", winnerNotification);
 
     notificationService.sendRealTimeNotification(
       String(bidWinner),
@@ -81,7 +70,6 @@ export const bidService = () => {
           await notificationRepo.createNotification(
             newParticipentNotificationEntity
           );
-        console.log("participent notification ", participentNotification);
 
         notificationService.sendRealTimeNotification(
           userId,

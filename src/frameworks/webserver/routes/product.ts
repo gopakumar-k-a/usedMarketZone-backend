@@ -30,7 +30,6 @@ const productRouter = () => {
   );
 
   router.post("/post-product", controller.productPost);
-  // router.post("/post-bid",controller.productBidPost)
   router.get("/get-all-products-posts", controller.getAllPosts);
   router.patch("/bookmark-post/:postId", controller.addOrRemoveBookmark);
   router.post("/report-post",controller.reportPost)
@@ -43,7 +42,6 @@ const productRouter = () => {
   router.get("/get-comment-reply/:commentId",controller.getCommentReply)
   router.delete("/delete-comment",controller.deleteComment)
   router.patch("/deactivate-post/:postId",controller.deActivatePost)
-//   router.patch("/bookmark-post/remove/:postId", controller.removeFromBookmark);
 
   return router;
 };

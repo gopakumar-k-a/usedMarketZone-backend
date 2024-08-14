@@ -17,7 +17,6 @@ export const authServiceInterface = (service: AuthServiceReturnType) => {
     service.generateAccessToken(payload);
   const generateRefreshToken = (payload: any) =>
     service.generateRefreshToken(payload);
-  // const createUserName=async(firstName:string,lastName:string)=>await
 
   return {
     encryptPassword,

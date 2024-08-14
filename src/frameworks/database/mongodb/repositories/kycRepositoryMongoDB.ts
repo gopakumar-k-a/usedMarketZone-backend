@@ -31,8 +31,6 @@ export const kycRepositoryMongoDB = () => {
 
   const getKycByUserId = async (userId: Types.ObjectId) => {
     const kycData = await KYC.findOne({ userId });
-    console.log(`user id ${userId}
-  kycData ${kycData}`);
 
     return kycData;
   };
@@ -117,7 +115,6 @@ export const kycRepositoryMongoDB = () => {
     ]);
     const totalDocuments = await KYC.countDocuments(searchCriteria);
 
-    console.log("kycData ", kycData);
     return {
       kycData,
       totalDocuments,
@@ -150,7 +147,6 @@ export const kycRepositoryMongoDB = () => {
 
       return updatedKyc;
     } catch (error) {
-      console.error("Error updating KYC request:", error);
       throw error;
     }
   };
@@ -161,7 +157,6 @@ export const kycRepositoryMongoDB = () => {
     return kycData;
   };
 
-  // const
   return {
     createNewKycRequest,
     getKycByUserId,

@@ -6,7 +6,7 @@ const expressConfig = (app: Application) => {
   const corsOptions = {
     origin: configKeys.CLIENT_URL,
     optionsSuccessStatus: 200,
-    credentials: true, // For legacy browser support
+    credentials: true, 
   };
   app.use(cookieParser());
   app.use(cors(corsOptions));

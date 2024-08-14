@@ -1,5 +1,4 @@
 import { commentEntity } from "../../../entities/createCommentEntity";
-import { PostReportEntityType } from "../../../entities/createPostReportEntity";
 import { postReportEntity } from "../../../entities/createPostReportEntity";
 import { HttpStatusCodes } from "../../../types/httpStatusCodes";
 import AppError from "../../../utils/appError";
@@ -27,7 +26,6 @@ export const handlePostReportSubmit = async (
     createPostReportEntity
   );
 
-  console.log("createPostReport Entity ", createPostReportEntity);
   if (!newPostReport) {
     throw new AppError(
       "Cant Submit Post Report Try Again Later ",
@@ -36,8 +34,6 @@ export const handlePostReportSubmit = async (
   }
 
   if (newPostReport == "exists") {
-    console.log("newPostReport==exists");
-
     throw new AppError(
       "Already Submitted Report ,Can't Submit Report On Product ",
       HttpStatusCodes.CONFLICT
@@ -54,10 +50,6 @@ export const handleAddComment = async (
   authorId: string,
   commentRepository: CommentDbRepository
 ) => {
-  // content:string,
-  // authorId:string,
-  // postId:string,
-  // parentCommentId:string|null=null
   const createCommentEntity = commentEntity(
     commentData.content,
     authorId,
@@ -68,7 +60,6 @@ export const handleAddComment = async (
   const recieverSocketId = getRecieverSocketId(
     String(newComment[0].productOwnerId)
   );
-  console.log("recieverSocketId ", recieverSocketId);
   if (recieverSocketId) {
     io.to(recieverSocketId).emit("notification", {
       title: "New Comment",

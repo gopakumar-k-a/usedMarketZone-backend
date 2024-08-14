@@ -69,9 +69,7 @@ const userController = (
 
   const handleUserNameCheck = asyncHandlder(
     async (req: Request, res: Response) => {
-      // const userName = req.params.userName;
       const { userName, userId } = req.params;
-      console.log("userName,userId ", userName, userId);
 
       const userAvailablity = await checkUserNameAvailabilty(
         userName,
@@ -79,17 +77,13 @@ const userController = (
         dbRepositoryUser
       );
 
-      console.log("user name is ", userName);
       let message;
-      console.log("user availability ", userAvailablity);
 
       if (userAvailablity) {
         message = "user name is available";
       } else {
         message = "user name is not available";
       }
-
-      console.log("message is ", message);
 
       res.status(HttpStatusCodes.OK).json({
         success: true,
@@ -101,8 +95,6 @@ const userController = (
 
   const handleProfileUpdate = asyncHandlder(
     async (req: Request, res: Response) => {
-      console.log("req body in handleProfileUpdate ", req.body);
-      console.log("params in handleProfileUpdate ", req.params.userId);
       const { userId } = req.params;
       const userData: UserInterface = req.body;
       const updatedUser = await updateUserProfile(
@@ -122,8 +114,6 @@ const userController = (
     async (req: Request, res: Response) => {
       const { userId } = req.params;
       const { imageUrl } = req.body;
-
-      console.log("userId imageUrl", userId, imageUrl);
 
       const updatedUser = await updateUserImage(
         imageUrl,
@@ -292,7 +282,6 @@ const userController = (
   const addNewKycRequest = asyncHandlder(
     async (req: ExtendedRequest, res: Response) => {
       const { _id: userId } = req.user as CreateUserInterface;
-      console.log("req body addNewKycRequest", req.body);
 
       await handleCreateNewKycRequest(userId, req.body, dbRepositoryKyc);
 
@@ -311,9 +300,6 @@ const userController = (
         filter: string;
         subFilter: string;
       };
-      console.log("inside search on app");
-
-      console.log("req.query search on app ", req.query);
 
       const results = await handleSearchOnApp(
         dbRepositoryUser,
@@ -367,7 +353,6 @@ const userController = (
       const { _id: userId } = req.user as CreateUserInterface;
 
       const kycData = await handleGetKycByUserId(userId, dbRepositoryKyc);
-console.log('in controller ',kycData);
 
       res.status(HttpStatusCodes.OK).json({
         success: true,
@@ -376,7 +361,6 @@ console.log('in controller ',kycData);
       });
     }
   );
-
 
   return {
     handleGetUserProfile,

@@ -3,7 +3,6 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
 import nodemailer from "nodemailer";
-import crypto from "crypto";
 import configKeys from "../../config";
 import AppError from "../../utils/appError";
 import { HttpStatusCodes } from "../../types/httpStatusCodes";
@@ -44,8 +43,6 @@ export const authService = () => {
 
   const sendOtpEmail = async (email: string, otp: number) => {
     try {
-      console.log("sended otp ", otp);
-
       const transporter = nodemailer.createTransport({
         host: "smtp.gmail.com",
         port: 465,
@@ -114,9 +111,7 @@ export const authService = () => {
       };
 
       const info = await transporter.sendMail(mailOptions);
-      console.log("Email sent:", info.response);
     } catch (error: any) {
-      console.error("Error sending email:", error.message);
       throw new AppError("Error sending email", HttpStatusCodes.BAD_GATEWAY);
     }
   };

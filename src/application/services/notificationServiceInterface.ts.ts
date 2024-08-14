@@ -7,7 +7,7 @@ export const notificationServiceInterface = (
   const sendRealTimeNotification = (
     recieverId: string,
     notificationType: string,
-    newNotification: any, // adjust the type as per your Notification entity
+    newNotification: any, 
     additionalInfo?: any
   ) =>
     service.sendRealTimeNotification(

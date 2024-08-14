@@ -61,8 +61,6 @@ export const commentRepositoryMongoDb = () => {
       },
     ]);
 
-    console.log("new comment data ", newCommentData);
-
     return newCommentData;
   };
 
@@ -102,8 +100,6 @@ export const commentRepositoryMongoDb = () => {
       },
     ]);
 
-    console.log("commentData ", commentData);
-
     return commentData;
   };
   const getReplyData = async (parentCommentId: string) => {
@@ -141,17 +137,12 @@ export const commentRepositoryMongoDb = () => {
       },
     ]);
 
-    console.log("replyData ", replyData);
-
     return replyData;
   };
 
   const submitReplyComment = async (commentEntity: CommentEntityType) => {
     const parentCommentId = commentEntity.getParentCommentId();
-    console.log(
-      "parent id parentCommentId submitReplyComment",
-      parentCommentId
-    );
+
 
     const newComment = new Comment({
       content: commentEntity.getContent(),
@@ -166,7 +157,6 @@ export const commentRepositoryMongoDb = () => {
       { $push: { replies: newComment._id } },
       { new: true }
     );
-    console.log(" submitReplyComment", newComment);
 
     const newReply = await Comment.aggregate([
       {
@@ -197,8 +187,6 @@ export const commentRepositoryMongoDb = () => {
       },
     ]);
 
-    console.log("newReply ", newReply);
-
     return newReply;
   };
 
@@ -206,15 +194,11 @@ export const commentRepositoryMongoDb = () => {
     commentId: string,
     parentCommentId: string | null = null
   ) => {
-    console.log("parentCommentId commentId", parentCommentId, " ", commentId);
-
-    //delete child comment from parent
     if (parentCommentId) {
       await Comment.findByIdAndUpdate(parentCommentId, {
         $pull: { replies: commentId },
       });
     } else {
-      //delete parent comment
       const parentDocument = await Comment.findOne({ _id: commentId });
       if (parentDocument && parentDocument.replies.length > 0) {
         await Comment.deleteMany({ _id: { $in: parentDocument.replies } });

@@ -129,7 +129,6 @@ const adminController = (
       const { userId } = req.params;
 
       const updatedUser = await modifyUserAccess(userId, dbRepositoryUser);
-      console.log("updatedUser handleModifyUserAccess", updatedUser);
 
       res.status(HttpStatusCodes.OK).send({
         success: true,
@@ -181,17 +180,14 @@ const adminController = (
   );
 
   const getBidRequests = asyncHandler(async (req: Request, res: Response) => {
-    console.log("query params ", req.query);
     const page =
       typeof req.query.page === "string" ? parseInt(req.query.page) : 1;
     const limit =
       typeof req.query.limit === "string" ? parseInt(req.query.limit) : 5;
     const searchQuery =
       typeof req.query.searchQuery === "string" ? req.query.searchQuery : "";
-    console.log("search query ", searchQuery);
 
     const sort = typeof req.query.sort === "string" ? req.query.sort : "";
-    console.log("sort ", sort);
 
     const { bidRequests, totalDocuments, currentPage } =
       await handleGetBidRequests(
@@ -201,8 +197,6 @@ const adminController = (
         sort,
         dbRepositoryAdminBidRequest
       );
-
-    console.log("bid requests from mongo ", bidRequests);
 
     res.status(HttpStatusCodes.OK).json({
       success: true,
@@ -216,15 +210,14 @@ const adminController = (
   const acceptBidRequest = asyncHandler(async (req: Request, res: Response) => {
     const { bidProductId } = req.params;
     const { bidDuration } = req.body;
-    console.log(req.body, "acceptBidRequest req.body ");
 
     const isUpdated = await handleAdminAcceptedBid(
       bidProductId,
       bidDuration,
       dbRepositoryProduct,
       dbBidRepository,
-      biddingService,
-      scheduleServie
+      // biddingService,
+      // scheduleServie
     );
 
     res.status(HttpStatusCodes.OK).json({
@@ -278,17 +271,14 @@ const adminController = (
   );
 
   const getKycRequests = asyncHandler(async (req: Request, res: Response) => {
-    console.log("query params ", req.query);
     const page =
       typeof req.query.page === "string" ? parseInt(req.query.page) : 1;
     const limit =
       typeof req.query.limit === "string" ? parseInt(req.query.limit) : 5;
     const searchQuery =
       typeof req.query.searchQuery === "string" ? req.query.searchQuery : "";
-    console.log("search query ", searchQuery);
 
     const sort = typeof req.query.sort === "string" ? req.query.sort : "";
-    console.log("sort ", sort);
     const { kycData, totalDocuments, currentPage } =
       await handleGetKycRequestsAdmin(
         page,
@@ -323,17 +313,14 @@ const adminController = (
 
   const getAllProductPostAdmin = asyncHandler(
     async (req: Request, res: Response) => {
-      console.log("query params ", req.query);
       const page =
         typeof req.query.page === "string" ? parseInt(req.query.page) : 1;
       const limit =
         typeof req.query.limit === "string" ? parseInt(req.query.limit) : 5;
       const searchQuery =
         typeof req.query.searchQuery === "string" ? req.query.searchQuery : "";
-      console.log("search query ", searchQuery);
 
       const sort = typeof req.query.sort === "string" ? req.query.sort : "";
-      console.log("sort ", sort);
 
       const {
         products: productPosts,
@@ -364,7 +351,6 @@ const adminController = (
         dbRepositoryProduct,
         dbRepositoryUser
       );
-      console.log("statistics ", statistics);
 
       res.status(HttpStatusCodes.OK).json({
         success: true,
@@ -376,14 +362,12 @@ const adminController = (
 
   const getTransactionDetailsOfBidAdmin = asyncHandler(
     async (req: Request, res: Response) => {
-      console.log("query params ", req.query);
       const page =
         typeof req.query.page === "string" ? parseInt(req.query.page) : 1;
       const limit =
         typeof req.query.limit === "string" ? parseInt(req.query.limit) : 5;
       const searchQuery =
         typeof req.query.searchQuery === "string" ? req.query.searchQuery : "";
-      console.log("search query ", searchQuery);
 
       const sort = typeof req.query.sort === "string" ? req.query.sort : "";
       const shipmentStatus =
@@ -400,8 +384,7 @@ const adminController = (
       const toDate =
         typeof req.query.toDate == "string" ? req.query.toDate : "";
 
-      console.log("from date ", fromDate);
-      console.log(" toDate ", toDate);
+  
 
       const { transactions, totalDocuments, currentPage } =
         await handleGetTransactionDetailsOfBidAdmin(
@@ -468,10 +451,8 @@ const adminController = (
     async (req: ExtendedAdminRequest, res: Response) => {
       const { trId } = req.params;
       const { productOwnerId, productId, bidId } = req.body;
-      console.log("trId , productOwnerID", trId, " ", productOwnerId);
 
       const adminId = req.admin;
-      console.log("admin id ", adminId);
 
       await handleProductDeliveredToWinner(
         trId,

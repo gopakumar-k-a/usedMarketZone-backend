@@ -16,14 +16,9 @@ export interface CustomJwtPayload extends JwtPayload {
   role: string;
 }
 
-// interface Request{
-//   user?:UserInterface|null
-// }
-
 interface ExtendedRequest extends Request {
-  user?: CreateUserInterface; // Replace with your actual user type
+  user?: CreateUserInterface;
 }
-
 
 export default async function jwtTokenVerifyUser(
   req: ExtendedRequest,
@@ -40,30 +35,22 @@ export default async function jwtTokenVerifyUser(
   const token = authHeader.split(" ")[1];
   try {
     const decoded = serviceProvider.verifyToken(token);
-    console.log("decoded ", decoded);
 
- 
     const customPayload = JSON.parse(
       (decoded as any).payload
     ) as CustomJwtPayload;
 
-    // const decoded = serviceProvider.verifyToken(token) as CustomJwtPayload;
-    // console.log("decoded ", decoded);
-    
-
     const userData = await userDb.getUserWithOutPass(customPayload._id);
-    console.log('userData is ',userData);
-    
 
     if (userData && userData.role === "user" && userData.isActive) {
-      // req.user = userData;
-      req.user = userData.toObject() as CreateUserInterface
+      req.user = userData.toObject() as CreateUserInterface;
       return next();
     } else {
-      return next(new AppError("User is blocked", HttpStatusCodes.UNAUTHORIZED));
+      return next(
+        new AppError("User is blocked", HttpStatusCodes.UNAUTHORIZED)
+      );
     }
   } catch (err) {
-    console.error(err);
     return next(new AppError("Invalid token", HttpStatusCodes.UNAUTHORIZED));
   }
 }

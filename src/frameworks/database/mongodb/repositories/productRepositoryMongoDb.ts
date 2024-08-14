@@ -24,17 +24,13 @@ export const productRepositoryMongoDb = () => {
       isAdminAccepted: true,
     };
 
-    // Save to the database
     const newProduct = new Product(productData);
-    console.log("newProduct ", newProduct);
 
     await newProduct.save();
 
     return newProduct;
   };
   const postBid = async (bid: BidPostEntityType) => {
-    console.log("bid duration in mongo ", bid.getBidDuration());
-
     const bidData = {
       productName: bid.getProductName(),
       basePrice: bid.getBasePrice(),
@@ -51,9 +47,7 @@ export const productRepositoryMongoDb = () => {
       bidDuration: bid.getBidDuration(),
     };
 
-    // Save to the database
     const newProduct = new Product(bidData);
-    console.log("newProduct ", newProduct);
 
     await newProduct.save();
 
@@ -95,7 +89,7 @@ export const productRepositoryMongoDb = () => {
       {
         $unwind: {
           path: "$bidDetails",
-          preserveNullAndEmptyArrays: true, // Preserve products without bids
+          preserveNullAndEmptyArrays: true,
         },
       },
 
@@ -135,8 +129,6 @@ export const productRepositoryMongoDb = () => {
         },
       },
     ]);
-
-    console.log("products ", products);
 
     return products;
   };
@@ -200,13 +192,10 @@ export const productRepositoryMongoDb = () => {
       return false;
     }
 
-    console.log("Bookmark count increased successfully");
     return updatedProduct;
   };
 
   const getUserPosts = async (userId: string) => {
-    console.log("user id ", userId);
-
     const userPosts = await Product.aggregate([
       { $match: { userId: new ObjectId(userId) } },
       {
@@ -231,9 +220,6 @@ export const productRepositoryMongoDb = () => {
         },
       },
     ]);
-    // const userPosts=await Product.find({userId})
-
-    console.log("user posts ", userPosts);
 
     if (!userPosts) {
       return false;
@@ -243,8 +229,6 @@ export const productRepositoryMongoDb = () => {
   };
 
   const getUserPostDetailsAdmin = async (postId: string) => {
-    // const postDetails = await Product.findOne({ _id: postId });
-    // console.log("post Details getUserPostDetails", postDetails);
     const products = await Product.aggregate([
       {
         $match: {
@@ -273,7 +257,7 @@ export const productRepositoryMongoDb = () => {
       {
         $unwind: {
           path: "$bidDetails",
-          preserveNullAndEmptyArrays: true, // Preserve products without bids
+          preserveNullAndEmptyArrays: true,
         },
       },
 
@@ -314,8 +298,6 @@ export const productRepositoryMongoDb = () => {
       },
     ]);
 
-    console.log("products ", products);
-
     return products;
   };
 
@@ -339,8 +321,6 @@ export const productRepositoryMongoDb = () => {
       },
       { new: true }
     );
-
-    console.log("updateAdminAcceptBidStatus updated bid is ", updatedBid);
 
     return updatedBid;
   };
@@ -404,9 +384,6 @@ export const productRepositoryMongoDb = () => {
   };
 
   const getUserPostDetails = async (userId: string, postId: string) => {
-    console.log("user id ", userId);
-    console.log("product id ", postId);
-
     const products: IProduct[] = await Product.aggregate<IProduct>([
       {
         $match: {
@@ -461,7 +438,6 @@ export const productRepositoryMongoDb = () => {
         },
       },
     ]);
-    // console.log('products ',products);
 
     if (!products) {
       throw new AppError("invalid product id ", HttpStatusCodes.BAD_REQUEST);
@@ -476,7 +452,6 @@ export const productRepositoryMongoDb = () => {
   };
 
   const blockProductByAdmin = async (productId: string) => {
-    // const blockProduct=await Product.findByIdAndUpdate(productId,{isBlocked:!isBlocked})
     const product = await Product.findById(productId);
 
     if (!product) {
@@ -518,39 +493,7 @@ export const productRepositoryMongoDb = () => {
     isBidding: boolean,
     userId: Types.ObjectId
   ) => {
-    console.log(`    query: ${query},
-    isBidding: ${isBidding},`);
-
     const regex = new RegExp(query.trim(), "i");
-    // const results = await Product.find(
-    //   {
-    //     isBidding: isBidding,
-    //     $or: [
-    //       { description: regex },
-    //       { productName: regex },
-    //       { category: regex },
-    //       { subCategory: regex },
-    //     ],
-    //     // role: "user",
-    //     isAdminAccepted: true,
-
-    //   },
-    //   {
-    //     productName: 1,
-    //     basePrice: 1,
-    //     userId: 1,
-    //     isSold: 1,
-    //     isBlocked: 1,
-    //     category: 1,
-    //     subCategory: 1,
-    //     productImageUrls: 1,
-    //     address: 1,
-    //     createdAt: 1,
-    //     bidEndTime: 1,
-    //     isBidding: 1,
-    //     isDeactivatedPost: 1,
-    //   }
-    // )
 
     const results = await Product.aggregate([
       {
@@ -562,7 +505,6 @@ export const productRepositoryMongoDb = () => {
             { category: regex },
             { subCategory: regex },
           ],
-          // role: "user",
           isAdminAccepted: true,
           isDeactivatedPost: false,
         },
@@ -637,10 +579,6 @@ export const productRepositoryMongoDb = () => {
       },
     ]);
 
-    console.log("searchProduct results ", results);
-    // console.log("produts ", products);
-
-    // return products;
     return results;
   };
 
@@ -751,8 +689,6 @@ export const productRepositoryMongoDb = () => {
       },
     ]);
 
-    console.log("user bids getUserBids product mongodb", userBids);
-
     return userBids;
   };
 
@@ -763,10 +699,6 @@ export const productRepositoryMongoDb = () => {
     sort = "createdAt_desc"
   ) => {
     const skip = (page - 1) * limit;
-    // const totalDocuments = await Product.countDocuments({
-    //   isAdminAccepted: true,
-    //   isDeactivatedPost: false,
-    // });
 
     const searchCriteria = searchQuery
       ? {
@@ -779,31 +711,29 @@ export const productRepositoryMongoDb = () => {
         }
       : {};
 
-      type SortCriteria = {
-        [key: string]: 1 | -1;
-      };
-      
-      const sortCriteria: SortCriteria = {};
-      
-      switch (sort) {
-        case "createdAt_asc":
-          sortCriteria.createdAt = 1; // Oldest first
-          break;
-        case "createdAt_desc":
-          sortCriteria.createdAt = -1; // Newest first
-          break;
-        case "price_asc":
-          sortCriteria.basePrice = 1; // Price: Low to High
-          break;
-        case "price_desc":
-          sortCriteria.basePrice = -1; // Price: High to Low
-          break;
-        default:
-          sortCriteria.createdAt = -1; // Default to Newest first
-      }
-      
-      
-      
+    type SortCriteria = {
+      [key: string]: 1 | -1;
+    };
+
+    const sortCriteria: SortCriteria = {};
+
+    switch (sort) {
+      case "createdAt_asc":
+        sortCriteria.createdAt = 1;
+        break;
+      case "createdAt_desc":
+        sortCriteria.createdAt = -1;
+        break;
+      case "price_asc":
+        sortCriteria.basePrice = 1;
+        break;
+      case "price_desc":
+        sortCriteria.basePrice = -1;
+        break;
+      default:
+        sortCriteria.createdAt = -1;
+    }
+
     const totalDocuments = await Product.countDocuments({
       isAdminAccepted: true,
       isDeactivatedPost: false,
@@ -874,7 +804,7 @@ export const productRepositoryMongoDb = () => {
         },
       },
       {
-        $sort: sortCriteria, // Apply the sorting criteria
+        $sort: sortCriteria,
       },
       {
         $skip: skip,
@@ -883,8 +813,6 @@ export const productRepositoryMongoDb = () => {
         $limit: limit,
       },
     ]);
-
-    console.log("products ", products);
 
     return {
       products,
@@ -923,9 +851,6 @@ export const productRepositoryMongoDb = () => {
       },
     ]);
 
-    console.log("result ", result);
-
-    // Return default values if counts are missing
     return {
       numberOfProducts: result?.numberOfProducts || 0,
       numberOfBidProducts: result?.numberOfBidProducts || 0,

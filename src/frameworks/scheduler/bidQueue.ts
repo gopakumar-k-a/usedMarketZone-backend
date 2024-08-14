@@ -48,7 +48,6 @@ const connection = new IORedis({
 
 const bidQueue = new Queue("bidQueue", { connection });
 
-// Worker to process bid closure jobs
 const worker = new Worker(
   "bidQueue",
   async (job) => {

@@ -11,15 +11,13 @@ import messageRouter from "./message";
 import paymenRouter from "./payment";
 
 const routes = (app: Application) => {
-  console.log("inside index.ts");
-
   app.use("/api/auth", authRouter());
   app.use("/api/user", jwtTokenVerfiyUser, userRouter());
   app.use("/api/admin", jwtTokenVerifyAdmin, adminRouter());
-  app.use("/api/product",jwtTokenVerfiyUser,productRouter());
-  app.use("/api/bid",jwtTokenVerfiyUser,bidRouter())
-  app.use("/api/message",jwtTokenVerfiyUser,messageRouter())
-  app.use("/api/payment",jwtTokenVerfiyUser,paymenRouter())
+  app.use("/api/product", jwtTokenVerfiyUser, productRouter());
+  app.use("/api/bid", jwtTokenVerfiyUser, bidRouter());
+  app.use("/api/message", jwtTokenVerfiyUser, messageRouter());
+  app.use("/api/payment", jwtTokenVerfiyUser, paymenRouter());
 };
 
 export default routes;

@@ -1,4 +1,4 @@
-import mongoose, { Types } from "mongoose";
+import { Types } from "mongoose";
 import AdminBidRequest from "../models/adminBidRequestModel";
 
 export const adminBidRequestMongoDb = () => {
@@ -12,8 +12,6 @@ export const adminBidRequestMongoDb = () => {
     });
 
     await newBidRequest.save();
-
-    console.log("new bid request ", newBidRequest);
 
     return newBidRequest;
   };
@@ -30,19 +28,19 @@ export const adminBidRequestMongoDb = () => {
 
     switch (sort) {
       case "createdAt_asc":
-        sortCriteria.createdAt = 1; // Oldest first
+        sortCriteria.createdAt = 1;
         break;
       case "createdAt_desc":
-        sortCriteria.createdAt = -1; // Newest first
+        sortCriteria.createdAt = -1;
         break;
       case "price_asc":
-        sortCriteria["productData.basePrice"] = 1; // Price: Low to High
+        sortCriteria["productData.basePrice"] = 1;
         break;
       case "price_desc":
-        sortCriteria["productData.basePrice"] = -1; // Price: High to Low
+        sortCriteria["productData.basePrice"] = -1;
         break;
       default:
-        sortCriteria.createdAt = -1; // Default to Newest first
+        sortCriteria.createdAt = -1;
     }
 
     const matchCriteria = search
@@ -52,7 +50,6 @@ export const adminBidRequestMongoDb = () => {
             { "userData.firstName": { $regex: search, $options: "i" } },
             { "userData.lastName": { $regex: search, $options: "i" } },
             { "userData.userName": { $regex: search, $options: "i" } },
-            // Add more fields as needed
           ],
         }
       : {};
@@ -80,7 +77,7 @@ export const adminBidRequestMongoDb = () => {
         $unwind: "$userData",
       },
       {
-        $match: matchCriteria, // Apply the search criteria
+        $match: matchCriteria,
       },
       {
         $project: {
@@ -105,19 +102,16 @@ export const adminBidRequestMongoDb = () => {
         },
       },
       {
-        $sort: sortCriteria, // Apply the sorting criteria
+        $sort: sortCriteria,
       },
       {
-        $skip: skip, // Apply pagination - skip the previous pages
+        $skip: skip,
       },
       {
-        $limit: limit, // Apply pagination - limit to the number of items per page
+        $limit: limit,
       },
     ]);
 
-    console.log(bidRequests);
-
-    console.log("bidRequests ", bidRequests);
     const totalBidRequests = await AdminBidRequest.aggregate([
       {
         $lookup: {
@@ -142,20 +136,14 @@ export const adminBidRequestMongoDb = () => {
         $unwind: "$userData",
       },
       {
-        $match: matchCriteria, // Apply the search criteria for total count
+        $match: matchCriteria,
       },
       {
-        $count: "total", // Count the total number of matching documents
+        $count: "total",
       },
     ]);
-    // return bidRequests;
     const totalDocuments = totalBidRequests[0]?.total || 0;
-    // const totalPages = Math.ceil(totalDocuments / limit);
-    // return {
-    //   products,
-    //   totalDocuments,
-    //   currentPage: page,
-    // };
+
     return {
       bidRequests,
       totalDocuments,
@@ -182,17 +170,7 @@ export const adminBidRequestMongoDb = () => {
       {
         $unwind: "$productData",
       },
-      // {
-      //   $lookup: {
-      //     from: "users",
-      //     localField: "bidderId",
-      //     foreignField: "_id",
-      //     as: "userData",
-      //   },
-      // },
-      // {
-      //   $unwind: "$userData",
-      // },
+
       {
         $project: {
           _id: 1,
@@ -210,9 +188,6 @@ export const adminBidRequestMongoDb = () => {
           "productData.isAdminAccepted": 1,
           "productData.bidEndTime": 1,
           "userData.firstName": 1,
-          // "userData.lastName": 1,
-          // "userData.email": 1,
-          // "userData.userName": 1,
         },
       },
       {
@@ -227,17 +202,10 @@ export const adminBidRequestMongoDb = () => {
     return userBidRequests;
   };
 
-  //  const acceptBidRequest=async(requestId:string)=>{
-
-  //   await AdminBidRequest.findByIdAndUpdate(requestId,{$set:{isAccepted:true}})
-
-  //  }
-
   return {
     createBidRequestAdmin,
     getBidRequestsFromDb,
     getUserWiseBidRequests,
-    // acceptBidRequest
   };
 };
 

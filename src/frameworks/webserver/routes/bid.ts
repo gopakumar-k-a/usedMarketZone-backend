@@ -1,10 +1,7 @@
 import express from "express";
 import { productDbRepository } from "../../../application/repositories/productDbRepository";
 import { productRepositoryMongoDb } from "../../database/mongodb/repositories/productRepositoryMongoDb";
-// import { productController } from "../../../adapters/productController/productController";
 import { bidController } from "../../../adapters/bidController/bidController";
-// import { bookmarkRepositoryMongoDb } from "../../database/mongodb/repositories/bookmarkRepositoryMongoDb";
-// import { bookmarkDbRepository } from "../../../application/repositories/bookmarkDbRepository";
 import { adminBidRequestMongoDb } from "../../database/mongodb/repositories/adminBidRequestRepositoryMongoDb";
 import { adminBidRequestDb } from "../../../application/repositories/adminBidRequestDbRepository";
 import { bidDbRepository } from "../../../application/repositories/bidRepository";
@@ -18,8 +15,6 @@ const bidRouter = () => {
   const controller = bidController(
     productDbRepository,
     productRepositoryMongoDb,
-    // bookmarkDbRepository,
-    // bookmarkRepositoryMongoDb,
     adminBidRequestDb,
     adminBidRequestMongoDb,
     bidDbRepository,
@@ -38,12 +33,10 @@ const bidRouter = () => {
   );
   router.get("/get-user-bids", controller.getUserBids);
 
-  router.get("/my-participating-bids",controller.getMyParticipatingBids)
-  router.get("/claim-bid-details/:productId",controller.getClaimBidDetails)
-  router.post("/add-claimer-address/:bidId",controller.addBidClaimerAddress)
-  router.get("/bid-result-owner/:productId",controller.getBidResultForOwner)
-
-  //   router.patch("/bookmark-post/remove/:postId", controller.removeFromBookmark);
+  router.get("/my-participating-bids", controller.getMyParticipatingBids);
+  router.get("/claim-bid-details/:productId", controller.getClaimBidDetails);
+  router.post("/add-claimer-address/:bidId", controller.addBidClaimerAddress);
+  router.get("/bid-result-owner/:productId", controller.getBidResultForOwner);
 
   return router;
 };

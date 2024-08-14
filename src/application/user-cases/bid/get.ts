@@ -29,10 +29,6 @@ export const handleGetUserWiseBidRequests = async (
   adminBidRequestDb: ReturnType<AdminBidRequestDbInterface>,
   productDb: ReturnType<ProductDbInterface>
 ) => {
-  // const userWiseBidRequests = await adminBidRequestDb.getUserWiseBidRequests(
-  //   new Types.ObjectId(userId)
-  // );
-
   const userWiseBidRequests = await productDb.getUserBids(
     new Types.ObjectId(userId)
   );
@@ -80,13 +76,10 @@ export const handleGetClaimProductDetails = async (
   productId: string,
   bidHistoryDb: ReturnType<BidHistoryInterface>
 ) => {
-  console.log("product id ", productId);
-
   const claimableBid = await bidHistoryDb.getClaimableBidDetails(
     new Types.ObjectId(userId),
     new Types.ObjectId(productId)
   );
-  console.log("claim bid details ", claimableBid);
 
   return claimableBid;
 };

@@ -28,7 +28,6 @@ expressConfig(app);
 routes(app);
 
 app.use(errorHandlingMiddleware);
-// catch 404 and forward to error handler
 app.all("*", (req, res, next: NextFunction) => {
   next(new AppError("Not found", 404));
 });

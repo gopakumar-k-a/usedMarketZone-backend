@@ -38,7 +38,6 @@ export const bookmarkRepositoryMongoDb = () => {
       },
     ]);
 
-    console.log("bookmarkListImages ", bookmarkListImages);
 
     if (!bookmarkListImages) {
       throw new AppError("Invalid Post Id", HttpStatusCodes.BAD_GATEWAY);

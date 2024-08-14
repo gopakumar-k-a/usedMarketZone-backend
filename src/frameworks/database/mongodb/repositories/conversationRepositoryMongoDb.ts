@@ -32,8 +32,6 @@ export const conversationRepositoryMongoDb = () => {
   };
 
   const getMessages = async (recieverId: string, userToChatId: string) => {
-    console.log("sendId userToChatId", recieverId, " ", userToChatId);
-
     const chats = await Conversation.aggregate([
       {
         $match: {
@@ -98,7 +96,6 @@ export const conversationRepositoryMongoDb = () => {
       },
     ]);
 
-    console.log("chats ", chats);
     return chats;
   };
 
@@ -152,22 +149,7 @@ export const conversationRepositoryMongoDb = () => {
       },
     ]).exec();
 
-    console.log("Populated Conversations with User Data: ", conversations);
-    console.log("participents data ", conversations[0].participantsData);
-
     return conversations;
-
-    // const conversations = await Conversation.find({
-    //   participants: userId,
-    // })
-    //   .populate({
-    //     path: "participants",
-    //     select: "userName imageUrl createdAt _id",
-    //   })
-    //   .exec();
-
-    // console.log("conversations getConversationsWithUserData", conversations);
-    // return conversations;
   };
   return {
     createConversation,

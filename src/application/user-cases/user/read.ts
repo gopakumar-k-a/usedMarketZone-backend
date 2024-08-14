@@ -61,11 +61,8 @@ export const getUserProfile = async (
   }
 
   const user = await userRepository.getUserById(userId);
-  console.log("user ", user);
 
   const data = removeSensitiveFields(user);
-
-  console.log("data aaaaaaaaaaa ", data);
 
   return data;
 };
@@ -76,9 +73,6 @@ export const checkUserNameAvailabilty = async (
   userRepository: ReturnType<UserDbInterface>
 ) => {
   const user = await userRepository.getUserByUserName(userName);
-  console.log("user is ,", user);
-
-  console.log("user in the repository  ", user);
 
   if (user) {
     return false;

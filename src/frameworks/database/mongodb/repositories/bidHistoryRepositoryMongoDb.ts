@@ -1,7 +1,7 @@
 import { BidHistory } from "../models/bidHistoryModel";
 import { IBidHistory } from "../models/bidHistoryModel";
 import { CreateBidHistoryEntityType } from "../../../../entities/bidding/createBidHistory";
-import mongoose, { mongo, Types } from "mongoose";
+import mongoose, {  Types } from "mongoose";
 export const bidHistoryRepositoryMongoDb = () => {
   const createNewBidHistory = async (
     createBidHistoryEntity: CreateBidHistoryEntityType
@@ -14,7 +14,6 @@ export const bidHistoryRepositoryMongoDb = () => {
       productId: createBidHistoryEntity.getProductId(),
     });
 
-    console.log("newBidHistory ", newBidHistory);
 
     return newBidHistory;
   };
@@ -32,9 +31,7 @@ export const bidHistoryRepositoryMongoDb = () => {
     bidderId: Types.ObjectId,
     bidProductId: Types.ObjectId
   ) => {
-    console.log(`getUserPreviousBidsSum
-          userId:${bidderId},
-    bidProductId: ${bidProductId} `);
+
 
     interface PreviousBidSumOfUser {
       _id: Types.ObjectId;
@@ -52,7 +49,7 @@ export const bidHistoryRepositoryMongoDb = () => {
           $group: {
             _id: "$bidderId",
             previousBidSumOfBidder: { $sum: "$bidAmount" },
-            bidDetails: { $push: "$$ROOT" }, // Optionally include bid details
+            bidDetails: { $push: "$$ROOT" },
           },
         },
         {
@@ -84,7 +81,6 @@ export const bidHistoryRepositoryMongoDb = () => {
       },
     ]);
 
-    console.log("bidHistory ", bidHistory);
 
     return bidHistory;
   };
@@ -92,10 +88,7 @@ export const bidHistoryRepositoryMongoDb = () => {
   const getProductBidHistoryAdmin = async (
     bidProductId: mongoose.Types.ObjectId
   ) => {
-    //   bidder
-    //   Bid Amount
-    //   Bid Total Amount
-    //   Time
+
 
     const bidHistory = await BidHistory.aggregate([
       {
@@ -164,18 +157,13 @@ export const bidHistoryRepositoryMongoDb = () => {
     return bidHistory;
   };
 
-  // Notify all other bidders
-  // const allBidders = await BidHistory.find({
-  //   bidData: bidId,
-  //   bidderId: { $ne: bidWinner }  // Exclude the highest bidder
-  // }).select('bidderId');
+
 
   const getBidParticipents = async (
     bidWinnerId: Types.ObjectId,
     productId: Types.ObjectId
   ) => {
-    console.log("bidWinnerId ", bidWinnerId);
-    console.log("productId ", productId);
+
 
     const bidParticipents = await BidHistory.aggregate([
       {
@@ -192,9 +180,7 @@ export const bidHistoryRepositoryMongoDb = () => {
       },
     ]);
 
-    console.log("bidParticipents ", bidParticipents);
     const formattedResult = bidParticipents.length > 0 ? bidParticipents[0].bidders : [];
-    console.log('formateed result ',formattedResult);
     
     return formattedResult;
   };
@@ -250,7 +236,6 @@ export const bidHistoryRepositoryMongoDb = () => {
           _id: 0,
           productId: "$_id.productId",
           userId: "$bidData.userId",
-          // userId: "$_id.userId",
           totalBidAmount: 1,
           productName: "$productData.productName",
           productBasePrice: "$productData.basePrice",
@@ -268,7 +253,6 @@ export const bidHistoryRepositoryMongoDb = () => {
       },
     ]);
 
-    console.log("userBids ", userBids);
 
     return userBids;
   };
@@ -277,7 +261,6 @@ export const bidHistoryRepositoryMongoDb = () => {
     userId: Types.ObjectId,
     productId: Types.ObjectId
   ) => {
-    console.log('getClaimableBidDetails',productId,'userid',userId);
     
     const userBid = await BidHistory.aggregate([
       {
@@ -417,7 +400,6 @@ export const bidHistoryRepositoryMongoDb = () => {
       },
     ]);
 
-    console.log("get claimable bid ", userBid);
 
     return userBid && userBid.length > 0 ? userBid[0] : null;
   };

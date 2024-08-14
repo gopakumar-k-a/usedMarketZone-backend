@@ -1,21 +1,15 @@
 import { User } from "../models/userModel";
-
 import Otp from "../models/otpSchema";
 import { UserEntityType } from "../../../../entities/user";
 import { UserInterface } from "../../../../types/userInterface";
 import { OtpEntityType } from "../../../../entities/otp";
-import { CreateUserInterface } from "../../../../types/userInterface";
 import AppError from "../../../../utils/appError";
 import { HttpStatusCodes } from "../../../../types/httpStatusCodes";
 import mongoose from "mongoose";
 const { ObjectId } = mongoose.Types;
-// import { Document } from 'mongoose';
-// interface UserDocument extends UserInterface, Document {}
 
 export const userRepositoryMongoDb = () => {
   const getUserByEmail = async (email: string) => {
-    // const user: CreateUserInterface | null = await User.findOne({ email });
-    // return user;
     const userData = await User.aggregate([
       { $match: { email: email } },
       {
@@ -25,7 +19,6 @@ export const userRepositoryMongoDb = () => {
         },
       },
     ]);
-    console.log("user data ", userData);
 
     return userData[0];
   };
@@ -80,17 +73,12 @@ export const userRepositoryMongoDb = () => {
   };
 
   const getUserByUserName = async (userName: string) => {
-    console.log("user name is ", userName);
-
     const user = await User.findOne({ userName });
-    console.log("user in mongo ", user);
 
     return user;
   };
 
   const getUserById = async (userId: string) => {
-    // const user = await User.findById(userId);
-
     const userData = await User.aggregate([
       { $match: { _id: new ObjectId(userId) } },
       {
@@ -100,7 +88,6 @@ export const userRepositoryMongoDb = () => {
         },
       },
     ]);
-    console.log("user data ", userData);
 
     return userData[0];
   };
@@ -110,7 +97,6 @@ export const userRepositoryMongoDb = () => {
     return user;
   };
   const updateUserProfile = async (userData: UserInterface, userId: string) => {
-    console.log("inside mongog update user profile ", userData, userId);
     const updatedUser = await User.findByIdAndUpdate(
       userId,
       { $set: userData },
@@ -133,7 +119,6 @@ export const userRepositoryMongoDb = () => {
     const users = await User.find({ role: "user" }, { email: 1, isActive: 1 })
       .skip(startIndex)
       .limit(limit);
-    console.log("users in mongo ", users);
 
     const totalDocuments = await User.countDocuments();
 
@@ -146,7 +131,6 @@ export const userRepositoryMongoDb = () => {
       user.isActive = !user.isActive;
       await user.save();
     }
-    console.log("user in mongo modifyUserAccess", user);
 
     return user;
   };
@@ -157,8 +141,6 @@ export const userRepositoryMongoDb = () => {
       { password: newPassword },
       { new: true }
     );
-
-    console.log("updated password and thee user is ", updatedUser);
 
     return;
   };
@@ -175,7 +157,6 @@ export const userRepositoryMongoDb = () => {
 
   const followUser = async (userId: string, userToFollowId: string) => {
     const userToFollow = await User.findById(userToFollowId);
-    console.log("userto follow ", userToFollow);
 
     if (!userToFollow) {
       throw new AppError("userToFollow not found", HttpStatusCodes.NOT_FOUND);
@@ -193,11 +174,7 @@ export const userRepositoryMongoDb = () => {
   };
 
   const unFollowUser = async (userId: string, userToUnFollowId: string) => {
-    console.log("user id,userToUnFollow id ", userId, userToUnFollowId);
-
     const userToUnFollow = await User.findById(userToUnFollowId);
-
-    console.log("user to unfollow ", userToUnFollow);
 
     if (!userToUnFollow) {
       throw new AppError("userToFollow", HttpStatusCodes.NOT_FOUND);
@@ -232,14 +209,11 @@ export const userRepositoryMongoDb = () => {
     )
       .sort({ createdAt: -1 })
       .limit(10);
-    console.log("suggested user s ", suggestedUsers);
 
     return suggestedUsers;
   };
 
   const getFollowersById = async (userId: string) => {
-    console.log("followers ");
-
     const followerUsers = await User.aggregate([
       {
         $match: { _id: new ObjectId(userId) },
@@ -262,7 +236,6 @@ export const userRepositoryMongoDb = () => {
         },
       },
     ]);
-    console.log("followers ", followerUsers);
     return followerUsers;
   };
   const getFollowingById = async (userId: string) => {
@@ -291,7 +264,6 @@ export const userRepositoryMongoDb = () => {
       },
     ]);
 
-    console.log("usersFollowing ", followingUser);
     return followingUser;
   };
 
@@ -302,7 +274,7 @@ export const userRepositoryMongoDb = () => {
       {
         role: "user",
         $and: [
-          { _id: { $ne: userId } }, // Exclude current user
+          { _id: { $ne: userId } },
           {
             $or: [
               { firstName: { $regex: regex } },
@@ -319,8 +291,6 @@ export const userRepositoryMongoDb = () => {
         imageUrl: 1,
       }
     );
-
-    console.log("search user results ", results);
 
     return results;
   };

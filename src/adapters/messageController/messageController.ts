@@ -64,9 +64,6 @@ export const messageController = (
       const { _id } = req.user as CreateUserInterface;
       const { userId: recieverId } = req.params;
 
-      console.log("sender id controller", _id);
-      console.log("reciever id controller ", recieverId);
-
       const { message } = req.body;
 
       const newMessage = await handleSendNewMessage(
@@ -74,9 +71,7 @@ export const messageController = (
         recieverId,
         message,
         dbRepositoryMessage,
-        dbRepositoryConversation,
-        dbNotification,
-        notificationService
+        dbRepositoryConversation
       );
 
       res.status(HttpStatusCodes.OK).json({
@@ -92,17 +87,14 @@ export const messageController = (
       const { _id } = req.user as CreateUserInterface;
       const { userId: recieverId } = req.params;
       const { productId } = req.body;
-      // export const handleSendPostAsMessage = async (
-      //   senderId: string,
-      //   recieverId: string,
-      //   productId: string,
+
       const newMessage = await handleSendPostAsMessage(
         _id,
         recieverId,
         productId,
         dbRepositoryMessage,
         dbRepositoryConversation,
-        dbNotification
+        
       );
 
       res.status(HttpStatusCodes.OK).json({
@@ -117,15 +109,11 @@ export const messageController = (
     const { _id } = req.user as CreateUserInterface;
     const { userId: recieverId } = req.params;
 
-    console.log("inside get chat");
-
     const chats = await handleGetChat(
       _id,
       recieverId,
       dbRepositoryConversation
     );
-
-    console.log("chats ", chats);
 
     res.status(HttpStatusCodes.OK).json({
       success: true,
@@ -147,7 +135,6 @@ export const messageController = (
         message,
         dbRepositoryMessage,
         dbRepositoryConversation,
-        dbNotification
       );
 
       res.status(HttpStatusCodes.OK).json({
@@ -197,6 +184,6 @@ export const messageController = (
     postReplyAsMessage,
     getUnreadMessages,
     changeReadMessageStatus,
-    getConversations
+    getConversations,
   };
 };

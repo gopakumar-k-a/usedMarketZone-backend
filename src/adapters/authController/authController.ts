@@ -54,7 +54,6 @@ const authController = (
       dbRepositoryUser,
       userService
     );
-    console.log(userData);
 
     res.status(HttpStatusCodes.OK).json({
       status: true,
@@ -70,10 +69,6 @@ const authController = (
       throw new AppError("Email is required", HttpStatusCodes.BAD_REQUEST);
     }
 
-    // const user = await dbRepositoryUser.getUserByEmail(email);
-    // if (!user) {
-    //   throw new AppError("User not found", HttpStatusCodes.NOT_FOUND);
-    // }
 
     const userData = await resendOtp(req.body, dbRepositoryUser, userService);
 
@@ -94,7 +89,6 @@ const authController = (
         userService,
         otp
       );
-      console.log("registeredEmail ", registeredEmail);
 
       res.status(HttpStatusCodes.OK).json({
         status: true,
@@ -104,9 +98,6 @@ const authController = (
     }
   );
 
-  // const sendOtp=asyncHandler(async(req:Request,res:Response)=>{
-
-  // })
 
   const userLogIn = asyncHandler(async (req: Request, res: Response) => {
     const { email, password }: { email: string; password: string } = req.body;
@@ -137,8 +128,6 @@ const authController = (
   const refreshAccessToken = asyncHandler(
     async (req: Request, res: Response) => {
       const { refreshToken } = req.cookies;
-      console.log("inside refresh access token ");
-      console.log("refresh token ", refreshToken);
 
       const { accessToken } = await handleRefreshAccessToken(
         { refreshToken },
@@ -155,7 +144,6 @@ const authController = (
 
   const googleAuthenticator = asyncHandler(
     async (req: Request, res: Response) => {
-      console.log("googleAuthenticator body ", req.body);
       const { token, user, role } = await googleAuthenticate(
         req.body,
         dbRepositoryUser,
@@ -168,8 +156,6 @@ const authController = (
           HttpStatusCodes.BAD_REQUEST
         );
       }
-
-      console.log("google authenticator token, user, role ", token, user, role);
 
       res.status(HttpStatusCodes.OK).json({
         status: true,
@@ -204,9 +190,6 @@ const authController = (
     async (req: Request, res: Response) => {
       const { email, otpToken, otp } = req.body;
 
-      console.log("otp token ", otpToken);
-      console.log("otp ", otp);
-
       const otpCheck = await verifyForgotPasswordOtp(
         otpToken,
         otp,
@@ -226,7 +209,6 @@ const authController = (
   const handleResetPassword = asyncHandler(
     async (req: Request, res: Response) => {
       const { email, newPassword } = req.body;
-      console.log("email new password ", email, newPassword);
 
       if (!email || !newPassword) {
         throw new AppError(

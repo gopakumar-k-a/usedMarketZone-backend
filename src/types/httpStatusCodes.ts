@@ -1,4 +1,3 @@
-// src/constants/HttpStatusCodes.ts
 export enum HttpStatusCodes {
     // 1xx Informational
     CONTINUE = 100,

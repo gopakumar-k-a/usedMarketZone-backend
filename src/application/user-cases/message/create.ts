@@ -9,10 +9,8 @@ import { HttpStatusCodes } from "../../../types/httpStatusCodes";
 import { getRecieverSocketId } from "../../../frameworks/webSocket/socket";
 import { io } from "../../../app";
 import { createPostReplyMessageEntity } from "../../../entities/createPostReplyMessageEntity";
-// import socketConfig from "../../../frameworks/webSocket/socket";
 import { createNotificationEntity } from "../../../entities/createNotificationEntity";
 import { NotificationRepository } from "../../repositories/notificationRepository";
-import { send } from "process";
 import { NotificationServiceInterface } from "../../services/notificationServiceInterface.ts";
 
 export const handleSendNewMessage = async (
@@ -21,13 +19,9 @@ export const handleSendNewMessage = async (
   message: string,
   messageRepository: MessageDbRepository,
   conversationRepository: ConversationDbRepository,
-  notificationRepository: NotificationRepository,
-  notificationService: ReturnType<NotificationServiceInterface>
 ) => {
   const newMessageEntity = createMessageEntity(senderId, recieverId, message);
-  console.log("newMessageEntity ", newMessageEntity);
   const newMessage = await messageRepository.sendNewMessage(newMessageEntity);
-  console.log("newMessage ", newMessage);
 
   if (!newMessage) {
     throw new AppError("cant send message ", HttpStatusCodes.BAD_REQUEST);
@@ -39,16 +33,11 @@ export const handleSendNewMessage = async (
     newMessage._id as Types.ObjectId
   );
 
-  // const recieverId=socketConfig.getRecieverId()
   const conversationId = await conversationRepository.createConversation(
     conversationEntity
   );
 
-  console.log(`sender id ${senderId}
-    reciever Id ${recieverId}`);
-
   const recieverSocketId = getRecieverSocketId(recieverId);
-  console.log("recieverSocketId ", recieverSocketId);
 
   const newNotificationEntity = createNotificationEntity(
     "message",
@@ -63,20 +52,10 @@ export const handleSendNewMessage = async (
     "normal"
   );
 
-  // const newNotification = await notificationRepository.createNotification(
-  //   newNotificationEntity
-  // );
   if (recieverSocketId) {
     io.to(recieverSocketId).emit("newMessage", newMessage);
   }
 
-  console.log('recieversocket id ',recieverSocketId);
-  
-  // notificationService.sendRealTimeNotification(
-  //   recieverId,
-  //   "message",
-  //   newNotification
-  // );
   return newMessage;
 };
 
@@ -86,18 +65,15 @@ export const handleSendPostAsMessage = async (
   productId: string,
   messageRepository: MessageDbRepository,
   conversationRepository: ConversationDbRepository,
-  notificationRepository: NotificationRepository
 ) => {
   const newPostMessageEntity = createSendPostEntity(
     senderId,
     recieverId,
     productId
   );
-  console.log("newMessageEntity ", newPostMessageEntity);
   const newMessagePostMessage = await messageRepository.sendPostAsMessage(
     newPostMessageEntity
   );
-  console.log("newMessage ", newMessagePostMessage);
 
   if (!newMessagePostMessage) {
     throw new AppError("cant send message ", HttpStatusCodes.BAD_REQUEST);
@@ -109,11 +85,9 @@ export const handleSendPostAsMessage = async (
     newMessagePostMessage._id as Types.ObjectId
   );
 
-  // const recieverId=socketConfig.getRecieverId()
   await conversationRepository.createConversation(conversationEntity);
 
   const recieverSocketId = getRecieverSocketId(recieverId);
-  console.log("recieverSocketId ", recieverSocketId);
 
   if (recieverSocketId) {
     io.to(recieverSocketId).emit("newMessage", newMessagePostMessage);
@@ -129,20 +103,16 @@ export const handlePostReplyAsMessage = async (
   message: string,
   messageRepository: MessageDbRepository,
   conversationRepository: ConversationDbRepository,
-  notificationRepository: NotificationRepository
 ) => {
-  // const newMessageEntity = createMessageEntity(senderId, recieverId, message);
   const newPostMessageReplyEntity = createPostReplyMessageEntity(
     senderId,
     recieverId,
     productId,
     message
   );
-  console.log("newPostMessageReplyEntity ", newPostMessageReplyEntity);
   const newPostReplyMessage = await messageRepository.sendPostReplyAsMessage(
     newPostMessageReplyEntity
   );
-  console.log("newMessage ", newPostReplyMessage);
 
   if (!newPostReplyMessage) {
     throw new AppError("cant send message ", HttpStatusCodes.BAD_REQUEST);
@@ -154,11 +124,9 @@ export const handlePostReplyAsMessage = async (
     newPostReplyMessage._id as Types.ObjectId
   );
 
-  // const recieverId=socketConfig.getRecieverId()
   await conversationRepository.createConversation(conversationEntity);
 
   const recieverSocketId = getRecieverSocketId(recieverId);
-  console.log("recieverSocketId ", recieverSocketId);
 
   if (recieverSocketId) {
     io.to(recieverSocketId).emit("newMessage", newPostReplyMessage);

@@ -29,10 +29,7 @@ export const updateUserProfile = async (
   );
   const formatedUserData = await removeSensitiveFields(updatedUserObj);
 
-  console.log(
-    "user datat in inside formatedUserData use case ",
-    formatedUserData
-  );
+
   return formatedUserData;
 };
 
@@ -91,7 +88,6 @@ export const updateUserPassword = async (
   }
 
   const hashedPassword = await userService.encryptPassword(newPassword);
-  console.log("hashedpassword ", hashedPassword);
 
   const userEmail = user.email;
 
@@ -122,11 +118,9 @@ export const handleFollowUser = async (
     userId,
     userToFollowId
   );
-  console.log(`sender ${userId}`);
-  console.log(`reciever ${userToFollowId}`);
+
 
   const recieverSocketId = getRecieverSocketId(userToFollowId);
-  console.log("reciever socket id ", recieverSocketId);
 
   const newNotificationEntity = createNotificationEntity(
     "follow",
@@ -150,7 +144,6 @@ export const handleFollowUser = async (
       description: `${userToFollowUserName} started following you`,
       userToFollowId,
       //@ts-ignore
-      // additionalInfo: messageId.message,
       notificationType: "follow",
       newNotification,
     };

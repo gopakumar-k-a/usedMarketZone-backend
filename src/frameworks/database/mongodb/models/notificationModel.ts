@@ -40,14 +40,14 @@ const NotificationSchema: Schema = new Schema(
     },
     messageId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Messages", // Assuming you have a Message model
+      ref: "Messages", 
       required: function (this: NotificationDocument) {
         return this.notificationType === "message";
       },
     },
     bidId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "bid", // Assuming you have a Bid model
+      ref: "bid", 
       required: function (this: NotificationDocument) {
         return (
           this.notificationType === "outBid" ||

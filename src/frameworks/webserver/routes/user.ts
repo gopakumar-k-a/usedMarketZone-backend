@@ -64,7 +64,6 @@ const userRouter = () => {
     controller.changeNotificationReadStatus
   );
   router.get("/my-kyc", controller.getMyKycData);
-  // router.get("my-posts",controller)
 
   return router;
 };

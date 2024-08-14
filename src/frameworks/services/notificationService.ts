@@ -1,4 +1,3 @@
-// notificationService.ts
 import { io } from "../../app"; // adjust the path to your socket config
 import { getRecieverSocketId } from "../webSocket/socket";
 
@@ -19,9 +18,7 @@ export const notificationService = () => {
     additionalInfo?: any
   ) => {
     const recieverSocketId = getRecieverSocketId(recieverId);
-    console.log('new notification ',newNotification);
-    console.log('recieverId ',recieverId);
-    console.log('recieverSocketId ',recieverSocketId);
+
     
     if (recieverSocketId) {
       const notificationData: NotificationData = {
@@ -33,7 +30,6 @@ export const notificationService = () => {
         newNotification,
       };
 
-      // Customize the notification data based on the type
       switch (notificationType) {
         case "message":
           notificationData.title = "You have a new message";
