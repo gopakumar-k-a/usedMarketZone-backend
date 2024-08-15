@@ -281,6 +281,5 @@ export const productController = (
     deleteComment,
     getBookmarkImageList,
     deActivatePost,
-
   };
 };
