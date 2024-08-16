@@ -213,17 +213,24 @@ export const googleAuthenticate = async (
   const userData = await userRepository.getUserByEmail(userCred.email);
 
   let user;
-  let token;
-  const role = "user";
+  let accessToken;
+  let refreshToken;
+  let role = "user";
   if (userData) {
     const jwtPayload = {
       _id: userData._id,
       role: "user",
     };
-    token = await userService.generateToken(JSON.stringify(jwtPayload));
     const userWithoutPass = await removeSensitiveFields(userData);
 
     user = userWithoutPass;
+    role = user.role;
+    accessToken = await userService.generateAccessToken(
+      JSON.stringify(jwtPayload)
+    );
+    refreshToken = await userService.generateRefreshToken(
+      JSON.stringify(jwtPayload)
+    );
   } else {
     const generatePassword = (Math.random().toString(36).slice(-5) + "A1@")
       .split("")
@@ -254,10 +261,14 @@ export const googleAuthenticate = async (
       _id: createdUser._id,
       role: "user",
     };
-    token = await userService.generateToken(JSON.stringify(jwtPayload));
+    accessToken = await userService.generateAccessToken(
+      JSON.stringify(jwtPayload)
+    );
+    refreshToken = await userService.generateRefreshToken(
+      JSON.stringify(jwtPayload)
+    );
   }
-
-  return { token, user, role };
+  return { user, role, accessToken, refreshToken };
 };
 
 export const forgotPasswordSendOtp = async (

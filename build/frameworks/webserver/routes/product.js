@@ -1,0 +1,38 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = __importDefault(require("express"));
+const productDbRepository_1 = require("../../../application/repositories/productDbRepository");
+const productRepositoryMongoDb_1 = require("../../database/mongodb/repositories/productRepositoryMongoDb");
+const productController_1 = require("../../../adapters/productController/productController");
+const bookmarkRepositoryMongoDb_1 = require("../../database/mongodb/repositories/bookmarkRepositoryMongoDb");
+const bookmarkDbRepository_1 = require("../../../application/repositories/bookmarkDbRepository");
+const postReportRepositoryMongoDb_1 = require("../../database/mongodb/repositories/postReportRepositoryMongoDb");
+const postReportRepository_1 = require("../../../application/repositories/postReportRepository");
+const commentRepositoryMongoDb_1 = require("../../database/mongodb/repositories/commentRepositoryMongoDb");
+const commentRepository_1 = require("../../../application/repositories/commentRepository");
+const bidHistoryRepository_1 = require("../../../application/repositories/bidHistoryRepository");
+const bidHistoryRepositoryMongoDb_1 = require("../../database/mongodb/repositories/bidHistoryRepositoryMongoDb");
+const bidRepository_1 = require("../../../application/repositories/bidRepository");
+const bidRepositoryMongoDb_1 = require("../../database/mongodb/repositories/bidRepositoryMongoDb");
+const productRouter = () => {
+    const router = express_1.default.Router();
+    const controller = (0, productController_1.productController)(productDbRepository_1.productDbRepository, productRepositoryMongoDb_1.productRepositoryMongoDb, bookmarkDbRepository_1.bookmarkDbRepository, bookmarkRepositoryMongoDb_1.bookmarkRepositoryMongoDb, postReportRepository_1.postReportDbRepository, postReportRepositoryMongoDb_1.postReportRepositoryMongoDb, commentRepository_1.commentDbRepository, commentRepositoryMongoDb_1.commentRepositoryMongoDb, bidHistoryRepository_1.bidHistoryRepository, bidHistoryRepositoryMongoDb_1.bidHistoryRepositoryMongoDb, bidRepository_1.bidDbRepository, bidRepositoryMongoDb_1.bidRepositoryMongoDb);
+    router.post("/post-product", controller.productPost);
+    router.get("/get-all-products-posts", controller.getAllPosts);
+    router.patch("/bookmark-post/:postId", controller.addOrRemoveBookmark);
+    router.post("/report-post", controller.reportPost);
+    router.get("/owner/get-image-list", controller.getOwnerPostsImageList);
+    router.get("/owner/get-bookmark-list", controller.getBookmarkImageList);
+    router.get("/get-post-details/:postId", controller.getPostDetails);
+    router.post("/add-comment", controller.addComment);
+    router.patch("/reply-comment", controller.replyComment);
+    router.get("/get-post-comments/:postId", controller.getAllPostComments);
+    router.get("/get-comment-reply/:commentId", controller.getCommentReply);
+    router.delete("/delete-comment", controller.deleteComment);
+    router.patch("/deactivate-post/:postId", controller.deActivatePost);
+    return router;
+};
+exports.default = productRouter;

@@ -9,10 +9,8 @@ mongoose_1.default.set('strictQuery', true);
 const connectDB = async () => {
     try {
         await mongoose_1.default.connect(config_1.default.MONGODB_URI);
-        console.log(`Database connected successfully`);
     }
     catch (error) {
-        console.log(error);
         process.exit(1);
     }
 };

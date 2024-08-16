@@ -69,7 +69,6 @@ const authController = (
       throw new AppError("Email is required", HttpStatusCodes.BAD_REQUEST);
     }
 
-
     const userData = await resendOtp(req.body, dbRepositoryUser, userService);
 
     res.status(HttpStatusCodes.OK).json({
@@ -98,7 +97,6 @@ const authController = (
     }
   );
 
-
   const userLogIn = asyncHandler(async (req: Request, res: Response) => {
     const { email, password }: { email: string; password: string } = req.body;
 
@@ -108,9 +106,12 @@ const authController = (
         HttpStatusCodes.BAD_REQUEST
       );
     }
-    const {  user, role, accessToken, refreshToken } =
-      await userAuthenticate(email, password, dbRepositoryUser, userService);
-
+    const { user, role, accessToken, refreshToken } = await userAuthenticate(
+      email,
+      password,
+      dbRepositoryUser,
+      userService
+    );
 
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
@@ -144,25 +145,26 @@ const authController = (
 
   const googleAuthenticator = asyncHandler(
     async (req: Request, res: Response) => {
-      const { token, user, role } = await googleAuthenticate(
-        req.body,
-        dbRepositoryUser,
-        userService
-      );
+      const { user, role, accessToken, refreshToken } =
+        await googleAuthenticate(req.body, dbRepositoryUser, userService);
 
-      if (!token || !user || !role) {
+      if (!accessToken || !user || !role || !refreshToken) {
         throw new AppError(
           "some thing went wrong please try again ",
           HttpStatusCodes.BAD_REQUEST
         );
       }
+      res.cookie("refreshToken", refreshToken, {
+        httpOnly: true,
+        maxAge: 7.5 * 24 * 60 * 60 * 1000,
+      });
 
       res.status(HttpStatusCodes.OK).json({
         status: true,
         message: "success user log in success",
-        token,
         user,
         role,
+        accessToken
       });
     }
   );

@@ -1,0 +1,31 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = __importDefault(require("express"));
+const productDbRepository_1 = require("../../../application/repositories/productDbRepository");
+const productRepositoryMongoDb_1 = require("../../database/mongodb/repositories/productRepositoryMongoDb");
+const bidController_1 = require("../../../adapters/bidController/bidController");
+const adminBidRequestRepositoryMongoDb_1 = require("../../database/mongodb/repositories/adminBidRequestRepositoryMongoDb");
+const adminBidRequestDbRepository_1 = require("../../../application/repositories/adminBidRequestDbRepository");
+const bidRepository_1 = require("../../../application/repositories/bidRepository");
+const bidRepositoryMongoDb_1 = require("../../database/mongodb/repositories/bidRepositoryMongoDb");
+const bidHistoryRepository_1 = require("../../../application/repositories/bidHistoryRepository");
+const bidHistoryRepositoryMongoDb_1 = require("../../database/mongodb/repositories/bidHistoryRepositoryMongoDb");
+const kycDbRepository_1 = require("../../../application/repositories/kycDbRepository");
+const kycRepositoryMongoDB_1 = require("../../database/mongodb/repositories/kycRepositoryMongoDB");
+const bidRouter = () => {
+    const router = express_1.default.Router();
+    const controller = (0, bidController_1.bidController)(productDbRepository_1.productDbRepository, productRepositoryMongoDb_1.productRepositoryMongoDb, adminBidRequestDbRepository_1.adminBidRequestDb, adminBidRequestRepositoryMongoDb_1.adminBidRequestMongoDb, bidRepository_1.bidDbRepository, bidRepositoryMongoDb_1.bidRepositoryMongoDb, bidHistoryRepository_1.bidHistoryRepository, bidHistoryRepositoryMongoDb_1.bidHistoryRepositoryMongoDb, kycDbRepository_1.kycDbRepository, kycRepositoryMongoDB_1.kycRepositoryMongoDB);
+    router.post("/post-bid", controller.productBidPost);
+    router.post("/place-bid/:bidProductId", controller.placeBid);
+    router.get("/get-bid-history/:bidProductId", controller.getBidDetailsOfUserOnProduct);
+    router.get("/get-user-bids", controller.getUserBids);
+    router.get("/my-participating-bids", controller.getMyParticipatingBids);
+    router.get("/claim-bid-details/:productId", controller.getClaimBidDetails);
+    router.post("/add-claimer-address/:bidId", controller.addBidClaimerAddress);
+    router.get("/bid-result-owner/:productId", controller.getBidResultForOwner);
+    return router;
+};
+exports.default = bidRouter;
